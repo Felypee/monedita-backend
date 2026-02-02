@@ -20,7 +20,7 @@ if (driver === "supabase" || driver === "supa") {
     try {
       Supabase = await import("./supabaseDB.js");
     } catch (e) {
-      Supabase = await import("./supaBaseDB.js");
+      Supabase = await import("./supabaseDB.js");
     }
     UserDB = Supabase.UserDB;
     ExpenseDB = Supabase.ExpenseDB;
