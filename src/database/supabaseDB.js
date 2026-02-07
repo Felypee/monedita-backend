@@ -51,6 +51,7 @@ export const UserDB = {
             phone,
             preferences: data.preferences || {},
             currency: data.currency || null,
+            language: data.language || null,
           },
         ])
         .select()
@@ -129,6 +130,29 @@ export const UserDB = {
 
     if (error && error.code !== "PGRST116") throw error;
     return data ? data.currency : null;
+  },
+
+  async setLanguage(phone, language) {
+    const { data: user, error } = await supabase
+      .from("users")
+      .update({ language })
+      .eq("phone", phone)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return user;
+  },
+
+  async getLanguage(phone) {
+    const { data, error } = await supabase
+      .from("users")
+      .select("language")
+      .eq("phone", phone)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return data ? data.language : null;
   },
 };
 

@@ -6,6 +6,7 @@
 import cron from "node-cron";
 import { UserDB } from "../database/index.js";
 import { sendInteractiveButtons } from "../utils/whatsappClient.js";
+import { getMessage } from "../utils/languageUtils.js";
 
 // Track reminder state per user (to handle Yes responses)
 const pendingReminders = new Map();
@@ -15,21 +16,19 @@ const pendingReminders = new Map();
  */
 export async function sendExpenseReminder(phone) {
   try {
+    // Get user's language
+    const userLang = await UserDB.getLanguage(phone) || 'en';
+
     const now = new Date();
     const hour = now.getHours();
 
-    let greeting;
-    if (hour < 14) {
-      greeting = "Good afternoon";
-    } else {
-      greeting = "Good evening";
-    }
-
-    const message = `${greeting}! Have you made any purchases today that you'd like to track?`;
+    // Select appropriate greeting based on time
+    const messageKey = hour < 14 ? 'reminder_afternoon' : 'reminder_evening';
+    const message = getMessage(messageKey, userLang);
 
     await sendInteractiveButtons(phone, message, [
-      { id: "reminder_yes", title: "Yes, log expense" },
-      { id: "reminder_no", title: "No, all good" },
+      { id: "reminder_yes", title: getMessage('reminder_btn_yes', userLang) },
+      { id: "reminder_no", title: getMessage('reminder_btn_no', userLang) },
     ]);
 
     // Mark that this user has a pending reminder
@@ -38,7 +37,7 @@ export async function sendExpenseReminder(phone) {
       type: "expense_check",
     });
 
-    console.log(`📬 Sent reminder to ${phone}`);
+    console.log(`📬 Sent reminder to ${phone} (${userLang})`);
     return true;
   } catch (error) {
     console.error(`Error sending reminder to ${phone}:`, error.message);
