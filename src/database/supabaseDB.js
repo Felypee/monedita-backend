@@ -464,6 +464,72 @@ export const UnprocessedDB = {
 };
 
 /**
+ * Tutorial progress operations
+ */
+export const TutorialDB = {
+  async create(phone, step = 1) {
+    try {
+      const { data, error } = await supabase
+        .from("tutorials")
+        .insert([{ phone, current_step: step }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { phone: data.phone, currentStep: data.current_step, createdAt: data.created_at };
+    } catch (err) {
+      console.error("[supabase] create(tutorial) failed:", err?.message || err);
+      throw err;
+    }
+  },
+
+  async get(phone) {
+    const { data, error } = await supabase
+      .from("tutorials")
+      .select("*")
+      .eq("phone", phone)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    if (!data) return null;
+    return { phone: data.phone, currentStep: data.current_step, createdAt: data.created_at };
+  },
+
+  async updateStep(phone, step) {
+    const { data, error } = await supabase
+      .from("tutorials")
+      .update({ current_step: step })
+      .eq("phone", phone)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { phone: data.phone, currentStep: data.current_step, createdAt: data.created_at };
+  },
+
+  async delete(phone) {
+    const { error } = await supabase
+      .from("tutorials")
+      .delete()
+      .eq("phone", phone);
+
+    if (error) throw error;
+    return true;
+  },
+
+  async exists(phone) {
+    const { data, error } = await supabase
+      .from("tutorials")
+      .select("phone")
+      .eq("phone", phone)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return !!data;
+  }
+};
+
+/**
  * Health check
  */
 export async function testConnection() {

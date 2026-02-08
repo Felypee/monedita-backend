@@ -8,6 +8,7 @@ let UserDB = InMemory.UserDB;
 let ExpenseDB = InMemory.ExpenseDB;
 let BudgetDB = InMemory.BudgetDB;
 let UnprocessedDB = InMemory.UnprocessedDB;
+let TutorialDB = InMemory.TutorialDB;
 let testConnection = () => Promise.resolve(true);
 let supabase = null;
 
@@ -23,6 +24,7 @@ if (driver === "supabase" || driver === "supa") {
     ExpenseDB = Supabase.ExpenseDB;
     BudgetDB = Supabase.BudgetDB;
     UnprocessedDB = Supabase.UnprocessedDB;
+    TutorialDB = Supabase.TutorialDB;
     testConnection = Supabase.testConnection;
     supabase = Supabase.supabase;
   } catch (err) {
@@ -36,4 +38,4 @@ if (driver === "supabase" || driver === "supa") {
 
 console.log("[database] DB_DRIVER=", driver);
 
-export { UserDB, ExpenseDB, BudgetDB, UnprocessedDB, testConnection, supabase };
+export { UserDB, ExpenseDB, BudgetDB, UnprocessedDB, TutorialDB, testConnection, supabase };
