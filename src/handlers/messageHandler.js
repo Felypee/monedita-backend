@@ -33,6 +33,9 @@ import {
   processTutorialResponse,
   advanceTutorial,
   advanceToStep,
+  simulateExpenseResponse,
+  simulateSummaryResponse,
+  simulateBudgetResponse,
 } from "../services/onboardingService.js";
 
 /**
@@ -96,35 +99,35 @@ export async function handleIncomingMessage(message, phone) {
         if (tutorialResult) {
           // Check if this is an action that should be processed
           if (tutorialResult.advance) {
+            // Get user currency for formatting
+            const userCurrency = user.currency || 'USD';
+
             if (tutorialResult.processExpense) {
-              // Process the expense, then show next tutorial step
-              const expenseResponse = await processCommand(phone, messageText, lang);
-              if (expenseResponse) {
-                await sendTextMessage(phone, expenseResponse);
-              }
-              // Now advance to the next step
+              // SANDBOX: Simulate expense (don't save to real DB)
+              const expenseResponse = simulateExpenseResponse(messageText, userCurrency, lang);
+              await sendTextMessage(phone, expenseResponse);
+
+              // Advance to the next step
               const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
               if (nextStepMsg) {
                 await sendTextMessage(phone, nextStepMsg);
               }
               return;
             } else if (tutorialResult.processSummary) {
-              // Process the summary, then show next tutorial step
-              const summaryResponse = await handleSummary(phone, lang);
-              if (summaryResponse) {
-                await sendTextMessage(phone, summaryResponse);
-              }
+              // SANDBOX: Simulate summary (show mock data)
+              const summaryResponse = simulateSummaryResponse(userCurrency, lang);
+              await sendTextMessage(phone, summaryResponse);
+
               const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
               if (nextStepMsg) {
                 await sendTextMessage(phone, nextStepMsg);
               }
               return;
             } else if (tutorialResult.processBudget) {
-              // Process the budget, then show next tutorial step
-              const budgetResponse = await handleSetBudget(phone, messageText, lang);
-              if (budgetResponse) {
-                await sendTextMessage(phone, budgetResponse);
-              }
+              // SANDBOX: Simulate budget (don't save to real DB)
+              const budgetResponse = simulateBudgetResponse(messageText, userCurrency, lang);
+              await sendTextMessage(phone, budgetResponse);
+
               const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
               if (nextStepMsg) {
                 await sendTextMessage(phone, nextStepMsg);
