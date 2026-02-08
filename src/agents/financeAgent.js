@@ -118,13 +118,14 @@ Be conversational, helpful, and concise. Keep responses under 200 words for What
    * Detect if message contains expenses and extract them (supports multiple expenses)
    * Returns: { detected: boolean, expenses: Array<{amount, category, description}> }
    */
-  async detectExpenses(message) {
+  async detectExpenses(message, categories = null) {
+    const categoryList = categories ? categories.join(', ') : 'food, transport, shopping, entertainment, bills, health, other';
     const systemPrompt = `Extract ALL expense information from user messages. A single message may contain multiple expenses.
 Return ONLY a JSON object with: {"detected": boolean, "expenses": [...]}
 Each expense in the array should have: amount (number), category (string), description (string).
 If no expenses are detected, return: {"detected": false, "expenses": []}
 
-Categories: food, transport, shopping, entertainment, bills, health, other
+Categories: ${categoryList}
 
 Examples:
 "Spent 45 on groceries" → {"detected": true, "expenses": [{"amount": 45, "category": "food", "description": "groceries"}]}

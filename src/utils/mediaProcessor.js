@@ -23,7 +23,7 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY;
  * @param {string} mimeType - The image MIME type (image/jpeg, image/png, etc.)
  * @returns {Promise<{detected: boolean, expenses: Array}>}
  */
-export async function processExpenseImage(imageBuffer, mimeType) {
+export async function processExpenseImage(imageBuffer, mimeType, categories = null) {
   const base64Image = imageBuffer.toString("base64");
 
   // Normalize mime type for Claude API
@@ -34,12 +34,14 @@ export async function processExpenseImage(imageBuffer, mimeType) {
     mediaType = "image/jpeg";
   }
 
+  const categoryList = categories ? categories.join(', ') : 'food, transport, shopping, entertainment, bills, health, other';
+
   const systemPrompt = `You are an expense extraction assistant. Analyze the image (receipt, invoice, bill, or photo of expenses) and extract ALL expense information.
 
 Return ONLY a JSON object with: {"detected": boolean, "expenses": [...]}
 Each expense should have: amount (number), category (string), description (string).
 
-Categories: food, transport, shopping, entertainment, bills, health, other
+Categories: ${categoryList}
 
 If the image shows a receipt or bill:
 - Extract the total amount as the main expense
@@ -213,18 +215,20 @@ function getAudioExtension(mimeType) {
  * @param {string} mimeType - The audio MIME type
  * @returns {Promise<{transcription: string, detected: boolean, expenses: Array}>}
  */
-export async function processExpenseAudio(audioBuffer, mimeType) {
+export async function processExpenseAudio(audioBuffer, mimeType, categories = null) {
   try {
     // First, transcribe the audio
     const transcription = await transcribeAudio(audioBuffer, mimeType);
     console.log(`📝 Transcription: ${transcription}`);
+
+    const categoryList = categories ? categories.join(', ') : 'food, transport, shopping, entertainment, bills, health, other';
 
     // Then extract expenses from the transcription using Claude
     const systemPrompt = `Extract ALL expense information from the transcribed voice message.
 Return ONLY a JSON object with: {"detected": boolean, "expenses": [...]}
 Each expense should have: amount (number), category (string), description (string).
 
-Categories: food, transport, shopping, entertainment, bills, health, other
+Categories: ${categoryList}
 
 Examples:
 "Gasté mil pesos en el almuerzo" → {"detected": true, "expenses": [{"amount": 1000, "category": "food", "description": "almuerzo"}]}

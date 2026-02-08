@@ -154,6 +154,29 @@ export const UserDB = {
     if (error && error.code !== "PGRST116") throw error;
     return data ? data.language : null;
   },
+
+  async setCategories(phone, categories) {
+    const { data: user, error } = await supabase
+      .from("users")
+      .update({ categories })
+      .eq("phone", phone)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return user;
+  },
+
+  async getCategories(phone) {
+    const { data, error } = await supabase
+      .from("users")
+      .select("categories")
+      .eq("phone", phone)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return data ? data.categories : null;
+  },
 };
 
 /**
@@ -244,6 +267,18 @@ export const ExpenseDB = {
       .reduce((sum, e) => sum + parseFloat(e.amount), 0);
   },
 
+  async renameCategory(phone, oldName, newName) {
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({ category: newName })
+      .eq("phone", phone)
+      .eq("category", oldName)
+      .select();
+
+    if (error) throw error;
+    return data ? data.length : 0;
+  },
+
   async getCategorySummary(phone, startDate, endDate) {
     const expenses = await this.getByDateRange(phone, startDate, endDate);
     const summary = {};
@@ -332,6 +367,18 @@ export const BudgetDB = {
 
     if (error) throw error;
     return true;
+  },
+
+  async renameCategory(phone, oldName, newName) {
+    const { data, error } = await supabase
+      .from("budgets")
+      .update({ category: newName })
+      .eq("phone", phone)
+      .eq("category", oldName)
+      .select();
+
+    if (error) throw error;
+    return data ? data.length : 0;
   },
 
   /**

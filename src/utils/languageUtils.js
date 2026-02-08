@@ -108,6 +108,11 @@ Try it now! Tell me about a recent expense.`,
     reminder_yes_response: "Great! Tell me what you spent. You can:\n\n• Type: \"Spent 50 on lunch\"\n• Send a photo of your receipt\n• Send a voice message",
     reminder_no_response: "No problem! I'll check in with you later. Keep tracking your expenses!",
 
+    // Category rename
+    category_renamed: "Category \"{old}\" renamed to \"{new}\". All expenses and budgets have been updated.",
+    category_not_found: "Category \"{category}\" not found in your expenses or budgets.",
+    rename_help: "To rename a category, say: rename food to groceries",
+
     // General
     unsupported_message: "I can process text, images (receipts), and voice messages. Try one of those!",
     error_generic: "Sorry, I encountered an error. Please try again.",
@@ -191,6 +196,11 @@ Pregunta: "¿Cuál es mi mayor gasto?"
     reminder_yes_response: "¡Perfecto! Cuéntame qué gastaste. Puedes:\n\n• Escribir: \"Gasté 50000 en almuerzo\"\n• Enviar una foto del recibo\n• Enviar un mensaje de voz",
     reminder_no_response: "¡No hay problema! Te escribiré más tarde. ¡Sigue registrando tus gastos!",
 
+    // Category rename
+    category_renamed: "Categoría \"{old}\" renombrada a \"{new}\". Todos los gastos y presupuestos han sido actualizados.",
+    category_not_found: "Categoría \"{category}\" no encontrada en tus gastos o presupuestos.",
+    rename_help: "Para renombrar una categoría, di: renombrar comida a alimentación",
+
     // General
     unsupported_message: "Puedo procesar texto, imágenes (recibos) y mensajes de voz. ¡Intenta uno de esos!",
     error_generic: "Lo siento, ocurrió un error. Por favor intenta de nuevo.",
@@ -273,6 +283,11 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     reminder_btn_no: "Não, tudo certo",
     reminder_yes_response: "Ótimo! Me conte o que você gastou. Você pode:\n\n• Digitar: \"Gastei 50 em almoço\"\n• Enviar uma foto do recibo\n• Enviar uma mensagem de voz",
     reminder_no_response: "Sem problemas! Falo com você mais tarde. Continue registrando suas despesas!",
+
+    // Category rename
+    category_renamed: "Categoria \"{old}\" renomeada para \"{new}\". Todas as despesas e orçamentos foram atualizados.",
+    category_not_found: "Categoria \"{category}\" não encontrada nas suas despesas ou orçamentos.",
+    rename_help: "Para renomear uma categoria, diga: renomear comida para alimentação",
 
     // General
     unsupported_message: "Posso processar texto, imagens (recibos) e mensagens de voz. Tente um desses!",

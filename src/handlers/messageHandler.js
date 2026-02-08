@@ -25,6 +25,7 @@ import {
   getLanguageFromPhone,
   getMessage,
 } from "../utils/languageUtils.js";
+import { getUserCategories } from "../utils/categoryUtils.js";
 
 /**
  * Handle incoming WhatsApp messages
@@ -133,6 +134,14 @@ async function processCommand(phone, message, lang = 'en') {
     return await handleSetCurrency(phone, currencyMatch[1].toUpperCase(), lang);
   }
 
+  // Command: Rename category (EN/ES/PT)
+  const renameMatch = message.match(/(?:rename|renombrar|renomear)\s+(.+?)\s+(?:to|a|para)\s+(.+)/i);
+  if (renameMatch) {
+    const oldName = renameMatch[1].trim().toLowerCase();
+    const newName = renameMatch[2].trim().toLowerCase();
+    return await handleRenameCategory(phone, oldName, newName, lang);
+  }
+
   // Command: Set budget (supports English and Spanish)
   if ((lowerMsg.includes("set") && lowerMsg.includes("budget")) ||
       (lowerMsg.includes("pon") && lowerMsg.includes("presupuesto"))) {
@@ -168,7 +177,8 @@ async function processCommand(phone, message, lang = 'en') {
   }
 
   // Auto-detect and log expenses (supports multiple expenses in one message)
-  const expenseDetection = await agent.detectExpenses(message);
+  const categories = await getUserCategories(phone, lang);
+  const expenseDetection = await agent.detectExpenses(message, categories);
 
   if (expenseDetection.detected && expenseDetection.expenses.length > 0) {
     // Get user's currency
@@ -297,6 +307,37 @@ async function handleSetCurrency(phone, currencyCode, lang = 'en') {
   // Set the currency
   await UserDB.setCurrency(phone, currencyCode);
   return getMessage('currency_set', lang, { currency: `${getCurrencyName(currencyCode)} (${currencyCode})` });
+}
+
+/**
+ * Handle renaming a category
+ */
+async function handleRenameCategory(phone, oldName, newName, lang = 'en') {
+  // Check if old category exists in user's expenses or budgets
+  const allExpenses = await ExpenseDB.getByUser(phone);
+  const allBudgets = await BudgetDB.getByUser(phone);
+
+  const hasExpenses = allExpenses.some(e => e.category === oldName);
+  const hasBudget = allBudgets.some(b => b.category === oldName);
+
+  if (!hasExpenses && !hasBudget) {
+    return getMessage('category_not_found', lang, { category: oldName });
+  }
+
+  // Rename in expenses and budgets
+  await ExpenseDB.renameCategory(phone, oldName, newName);
+  await BudgetDB.renameCategory(phone, oldName, newName);
+
+  // Update user's custom categories list
+  const categories = await getUserCategories(phone, lang);
+  const updatedCategories = categories.map(c => c === oldName ? newName : c);
+  // Add newName if oldName wasn't in the default list (edge case)
+  if (!updatedCategories.includes(newName)) {
+    updatedCategories.push(newName);
+  }
+  await UserDB.setCategories(phone, updatedCategories);
+
+  return getMessage('category_renamed', lang, { old: oldName, new: newName });
 }
 
 /**
@@ -460,8 +501,9 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
     // Download the image
     const { buffer, mimeType } = await downloadMedia(imageData.id);
 
-    // Process with Claude Vision
-    const result = await processExpenseImage(buffer, mimeType);
+    // Process with Claude Vision (pass localized categories)
+    const categories = await getUserCategories(phone, lang);
+    const result = await processExpenseImage(buffer, mimeType, categories);
 
     if (!result.detected || result.expenses.length === 0) {
       return getMessage('image_no_expense', lang);
@@ -541,8 +583,9 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
     // Download the audio
     const { buffer, mimeType } = await downloadMedia(audioData.id);
 
-    // Process: transcribe and extract expenses
-    const result = await processExpenseAudio(buffer, mimeType);
+    // Process: transcribe and extract expenses (pass localized categories)
+    const categories = await getUserCategories(phone, lang);
+    const result = await processExpenseAudio(buffer, mimeType, categories);
 
     if (result.error) {
       return getMessage('audio_error', lang);

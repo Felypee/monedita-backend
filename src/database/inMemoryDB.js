@@ -79,6 +79,20 @@ export const UserDB = {
   getLanguage(phone) {
     const user = users.get(phone);
     return user ? user.language : null;
+  },
+
+  setCategories(phone, categories) {
+    const user = users.get(phone);
+    if (user) {
+      user.categories = categories;
+      users.set(phone, user);
+    }
+    return user;
+  },
+
+  getCategories(phone) {
+    const user = users.get(phone);
+    return user ? user.categories || null : null;
   }
 };
 
@@ -133,6 +147,18 @@ export const ExpenseDB = {
     return userExpenses
       .filter(e => e.category === category)
       .reduce((sum, e) => sum + e.amount, 0);
+  },
+
+  renameCategory(phone, oldName, newName) {
+    const userExpenses = expenses.get(phone) || [];
+    let count = 0;
+    for (const expense of userExpenses) {
+      if (expense.category === oldName) {
+        expense.category = newName;
+        count++;
+      }
+    }
+    return count;
   },
 
   getCategorySummary(phone, startDate, endDate) {
@@ -198,5 +224,17 @@ export const BudgetDB = {
     const filtered = userBudgets.filter(b => b.category !== category);
     budgets.set(phone, filtered);
     return filtered.length < userBudgets.length;
+  },
+
+  renameCategory(phone, oldName, newName) {
+    const userBudgets = budgets.get(phone) || [];
+    let count = 0;
+    for (const budget of userBudgets) {
+      if (budget.category === oldName) {
+        budget.category = newName;
+        count++;
+      }
+    }
+    return count;
   }
 };
