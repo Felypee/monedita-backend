@@ -27,6 +27,13 @@ import {
   getMessage,
 } from "../utils/languageUtils.js";
 import { getUserCategories } from "../utils/categoryUtils.js";
+import {
+  isInTutorial,
+  startTutorial,
+  processTutorialResponse,
+  advanceTutorial,
+  advanceToStep,
+} from "../services/onboardingService.js";
 
 /**
  * Handle incoming WhatsApp messages
@@ -35,6 +42,10 @@ export async function handleIncomingMessage(message, phone) {
   try {
     // Mark message as read
     await markAsRead(message.id);
+
+    // Check if this is an existing user
+    const existingUser = await UserDB.get(phone);
+    const isNewUser = !existingUser;
 
     // Get or create user
     const user = await UserDB.getOrCreate(phone);
@@ -58,6 +69,76 @@ export async function handleIncomingMessage(message, phone) {
     }
 
     const lang = user.language || 'en';
+
+    // Start tutorial for new users
+    if (isNewUser) {
+      const tutorialMsg = await startTutorial(phone, lang);
+      await sendTextMessage(phone, tutorialMsg);
+      return;
+    }
+
+    // Check if user is in tutorial mode
+    if (message.type === "text") {
+      const messageText = message.text.body;
+      const lowerMsg = messageText.toLowerCase().trim();
+
+      // Handle "tutorial" command to restart tutorial
+      if (lowerMsg === "tutorial") {
+        const tutorialMsg = await startTutorial(phone, lang);
+        await sendTextMessage(phone, tutorialMsg);
+        return;
+      }
+
+      // Check if in tutorial and process response
+      if (await isInTutorial(phone)) {
+        const tutorialResult = await processTutorialResponse(phone, messageText, lang);
+
+        if (tutorialResult) {
+          // Check if this is an action that should be processed
+          if (tutorialResult.advance) {
+            if (tutorialResult.processExpense) {
+              // Process the expense, then show next tutorial step
+              const expenseResponse = await processCommand(phone, messageText, lang);
+              if (expenseResponse) {
+                await sendTextMessage(phone, expenseResponse);
+              }
+              // Now advance to the next step
+              const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
+              if (nextStepMsg) {
+                await sendTextMessage(phone, nextStepMsg);
+              }
+              return;
+            } else if (tutorialResult.processSummary) {
+              // Process the summary, then show next tutorial step
+              const summaryResponse = await handleSummary(phone, lang);
+              if (summaryResponse) {
+                await sendTextMessage(phone, summaryResponse);
+              }
+              const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
+              if (nextStepMsg) {
+                await sendTextMessage(phone, nextStepMsg);
+              }
+              return;
+            } else if (tutorialResult.processBudget) {
+              // Process the budget, then show next tutorial step
+              const budgetResponse = await handleSetBudget(phone, messageText, lang);
+              if (budgetResponse) {
+                await sendTextMessage(phone, budgetResponse);
+              }
+              const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
+              if (nextStepMsg) {
+                await sendTextMessage(phone, nextStepMsg);
+              }
+              return;
+            }
+          } else {
+            // Regular tutorial message (hint or step content)
+            await sendTextMessage(phone, tutorialResult);
+            return;
+          }
+        }
+      }
+    }
 
     // Handle different message types
     let response;
