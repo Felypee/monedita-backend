@@ -17,12 +17,16 @@ import { formatAmount } from "../utils/currencyUtils.js";
 const TUTORIAL_STEPS = {
   1: 'welcome',           // Quick greeting → user replies → step 2
   2: 'try_expense',       // User logs expense → auto-advance to step 3
-  3: 'try_summary',       // User checks status → auto-advance to step 4
-  4: 'try_budget',        // User sets budget → auto-advance to complete
-  5: 'complete',          // Done!
+  3: 'try_summary',       // User checks status (shows their expense) → step 4
+  4: 'try_media',         // Mention photos/audio → step 5
+  5: 'try_budget',        // User sets budget → auto-advance to complete
+  6: 'complete',          // Done!
 };
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
+
+// Temporary storage for tutorial expenses (in-memory, per user)
+const tutorialExpenses = new Map();
 
 /**
  * Check if user is in tutorial mode
@@ -98,13 +102,16 @@ export async function processTutorialResponse(phone, message, lang = 'en') {
       }
       return getMessage('tutorial_try_summary_hint', lang);
 
-    case 4: // Waiting for budget command
+    case 4: // Media tip - any response advances to step 5
+      return await advanceTutorial(phone, lang);
+
+    case 5: // Waiting for budget command
       if (isBudgetCommand(lowerMsg, message)) {
-        return { advance: true, processBudget: true, nextStep: 5 };
+        return { advance: true, processBudget: true, nextStep: 6 };
       }
       return getMessage('tutorial_try_budget_hint', lang);
 
-    case 5: // Complete - should not reach here
+    case 6: // Complete - should not reach here
       await completeTutorial(phone);
       return null;
 
@@ -191,6 +198,8 @@ export async function advanceToStep(phone, step, lang = 'en') {
  */
 export async function completeTutorial(phone) {
   await TutorialDB.delete(phone);
+  // Clean up temporary tutorial data
+  tutorialExpenses.delete(phone);
 }
 
 /**
@@ -226,8 +235,9 @@ function hasExpensePattern(message) {
 
 /**
  * Simulate expense logging during tutorial (no real DB save)
+ * Stores the expense temporarily for use in summary
  */
-export function simulateExpenseResponse(message, currency, lang = 'en') {
+export function simulateExpenseResponse(phone, message, currency, lang = 'en') {
   // Extract amount from message
   const amountMatch = message.match(/(\d+(?:[.,]\d+)?)/);
   const amount = amountMatch ? parseFloat(amountMatch[1].replace(',', '.')) : 25;
@@ -250,31 +260,41 @@ export function simulateExpenseResponse(message, currency, lang = 'en') {
     }
   }
 
+  // Store expense for summary step
+  tutorialExpenses.set(phone, { amount, category, currency });
+
   // Return simulated success message
   const formattedAmount = formatAmount(amount, currency);
   return `${getMessage('expense_logged', lang)} ${formattedAmount} ${getMessage('expense_for', lang)} ${category}`;
 }
 
 /**
- * Simulate summary during tutorial (mock data)
+ * Simulate summary during tutorial - uses the expense they just logged
  */
-export function simulateSummaryResponse(currency, lang = 'en') {
+export function simulateSummaryResponse(phone, currency, lang = 'en') {
   const now = new Date();
   const monthName = now.toLocaleString(lang === 'es' ? 'es-ES' : lang === 'pt' ? 'pt-BR' : 'en-US', { month: 'long' });
 
-  // Mock summary data
-  const mockTotal = 150;
-  const mockCategories = [
-    { name: 'food', total: 75, count: 3 },
-    { name: 'transport', total: 50, count: 2 },
-    { name: 'other', total: 25, count: 1 },
-  ];
+  // Get the expense they logged in step 2
+  const tutorialExpense = tutorialExpenses.get(phone);
+
+  let totalSpent = 0;
+  let categories = [];
+
+  if (tutorialExpense) {
+    totalSpent = tutorialExpense.amount;
+    categories = [{ name: tutorialExpense.category, total: tutorialExpense.amount, count: 1 }];
+  } else {
+    // Fallback if no expense stored
+    totalSpent = 25;
+    categories = [{ name: 'other', total: 25, count: 1 }];
+  }
 
   let response = getMessage('summary_title', lang, { month: monthName }) + '\n\n';
-  response += `${getMessage('summary_total_spent', lang)} ${formatAmount(mockTotal, currency)}\n\n`;
+  response += `${getMessage('summary_total_spent', lang)} ${formatAmount(totalSpent, currency)}\n\n`;
   response += `${getMessage('summary_by_category', lang)}\n`;
 
-  for (const cat of mockCategories) {
+  for (const cat of categories) {
     response += `• ${cat.name}: ${formatAmount(cat.total, currency)} (${cat.count} ${getMessage('summary_expenses', lang)})\n`;
   }
 

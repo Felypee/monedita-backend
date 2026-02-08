@@ -104,7 +104,7 @@ export async function handleIncomingMessage(message, phone) {
 
             if (tutorialResult.processExpense) {
               // SANDBOX: Simulate expense (don't save to real DB)
-              const expenseResponse = simulateExpenseResponse(messageText, userCurrency, lang);
+              const expenseResponse = simulateExpenseResponse(phone, messageText, userCurrency, lang);
               await sendTextMessage(phone, expenseResponse);
 
               // Advance to the next step
@@ -114,8 +114,8 @@ export async function handleIncomingMessage(message, phone) {
               }
               return;
             } else if (tutorialResult.processSummary) {
-              // SANDBOX: Simulate summary (show mock data)
-              const summaryResponse = simulateSummaryResponse(userCurrency, lang);
+              // SANDBOX: Simulate summary (shows the expense they logged)
+              const summaryResponse = simulateSummaryResponse(phone, userCurrency, lang);
               await sendTextMessage(phone, summaryResponse);
 
               const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);

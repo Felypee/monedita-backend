@@ -152,11 +152,16 @@ Ask me: "How am I doing?"`,
 
 Or type *skip* to exit.`,
 
-    tutorial_try_budget: `Perfect! Now let's set a budget.
+    tutorial_try_media: `You can also send:
+📷 *Photos* of receipts - I'll read them automatically
+🎤 *Voice messages* - Just tell me what you spent
 
-*Step 3 of 3: Set a budget*
+Reply anything to continue.`,
 
-Try: "Set food budget to 500"`,
+    tutorial_try_budget: `*Last step: Set a budget*
+
+Control your spending! Try:
+"Set food budget to 500"`,
 
     tutorial_try_budget_hint: `Try: "Set food budget to 500"
 
@@ -302,11 +307,16 @@ Pregúntame: "¿Cómo voy?"`,
 
 O escribe *saltar* para salir.`,
 
-    tutorial_try_budget: `¡Perfecto! Ahora define un presupuesto.
+    tutorial_try_media: `También puedes enviar:
+📷 *Fotos* de recibos - Los leo automáticamente
+🎤 *Notas de voz* - Solo dime qué gastaste
 
-*Paso 3 de 3: Crear presupuesto*
+Responde lo que sea para continuar.`,
 
-Prueba: "Pon presupuesto de comida en 500000"`,
+    tutorial_try_budget: `*Último paso: Define un presupuesto*
+
+¡Controla tus gastos! Prueba:
+"Pon presupuesto de comida en 500000"`,
 
     tutorial_try_budget_hint: `Prueba: "Pon presupuesto de comida en 500000"
 
@@ -452,11 +462,16 @@ Me pergunte: "Como estou?"`,
 
 Ou digite *pular* para sair.`,
 
-    tutorial_try_budget: `Perfeito! Agora defina um orçamento.
+    tutorial_try_media: `Você também pode enviar:
+📷 *Fotos* de recibos - Leio automaticamente
+🎤 *Mensagens de voz* - Só me diga o que gastou
 
-*Passo 3 de 3: Criar orçamento*
+Responda qualquer coisa para continuar.`,
 
-Tente: "Defina orçamento de comida para 500"`,
+    tutorial_try_budget: `*Último passo: Defina um orçamento*
+
+Controle seus gastos! Tente:
+"Defina orçamento de comida para 500"`,
 
     tutorial_try_budget_hint: `Tente: "Defina orçamento de comida para 500"
 
