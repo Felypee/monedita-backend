@@ -26,9 +26,14 @@ export function getDefaultCategories(language) {
  * @returns {Promise<string[]>} Array of category names
  */
 export async function getUserCategories(phone, language) {
-  const custom = await UserDB.getCategories(phone);
-  if (custom && custom.length > 0) {
-    return custom;
+  try {
+    const custom = await UserDB.getCategories(phone);
+    if (custom && custom.length > 0) {
+      return custom;
+    }
+  } catch (err) {
+    // Gracefully handle missing column or DB errors — fall back to defaults
+    console.warn('[categoryUtils] Could not load custom categories, using defaults:', err.message || err);
   }
   return getDefaultCategories(language);
 }
