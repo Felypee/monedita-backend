@@ -113,6 +113,10 @@ Try it now! Tell me about a recent expense.`,
     category_not_found: "Category \"{category}\" not found in your expenses or budgets.",
     rename_help: "To rename a category, say: rename food to groceries",
 
+    // Unprocessed cases
+    image_saved_for_review: "I detected a transaction in this image but couldn't categorize it automatically. It has been saved for review.",
+    audio_saved_for_review: "I heard your message but couldn't process it as an expense. It has been saved for review.",
+
     // General
     unsupported_message: "I can process text, images (receipts), and voice messages. Try one of those!",
     error_generic: "Sorry, I encountered an error. Please try again.",
@@ -201,6 +205,10 @@ Pregunta: "¿Cuál es mi mayor gasto?"
     category_not_found: "Categoría \"{category}\" no encontrada en tus gastos o presupuestos.",
     rename_help: "Para renombrar una categoría, di: renombrar comida a alimentación",
 
+    // Unprocessed cases
+    image_saved_for_review: "Detecté una transacción en esta imagen pero no pude categorizarla automáticamente. Ha sido guardada para revisión.",
+    audio_saved_for_review: "Escuché tu mensaje pero no pude procesarlo como gasto. Ha sido guardado para revisión.",
+
     // General
     unsupported_message: "Puedo procesar texto, imágenes (recibos) y mensajes de voz. ¡Intenta uno de esos!",
     error_generic: "Lo siento, ocurrió un error. Por favor intenta de nuevo.",
@@ -288,6 +296,10 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     category_renamed: "Categoria \"{old}\" renomeada para \"{new}\". Todas as despesas e orçamentos foram atualizados.",
     category_not_found: "Categoria \"{category}\" não encontrada nas suas despesas ou orçamentos.",
     rename_help: "Para renomear uma categoria, diga: renomear comida para alimentação",
+
+    // Unprocessed cases
+    image_saved_for_review: "Detectei uma transação nesta imagem, mas não consegui categorizá-la automaticamente. Foi salva para revisão.",
+    audio_saved_for_review: "Ouvi sua mensagem, mas não consegui processá-la como despesa. Foi salva para revisão.",
 
     // General
     unsupported_message: "Posso processar texto, imagens (recibos) e mensagens de voz. Tente um desses!",

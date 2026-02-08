@@ -12,8 +12,12 @@ const expenses = new Map();
 // Store budgets
 const budgets = new Map();
 
+// Store unprocessed cases
+const unprocessedCases = [];
+
 let expenseIdCounter = 1;
 let budgetIdCounter = 1;
+let unprocessedIdCounter = 1;
 
 /**
  * User operations
@@ -236,5 +240,42 @@ export const BudgetDB = {
       }
     }
     return count;
+  }
+};
+
+/**
+ * Unprocessed cases — messages the system couldn't handle
+ */
+export const UnprocessedDB = {
+  create(phone, caseData) {
+    const entry = {
+      id: unprocessedIdCounter++,
+      phone,
+      type: caseData.type,           // 'text', 'image', 'audio'
+      content: caseData.content || null,       // message text or transcription
+      media_id: caseData.media_id || null,     // WhatsApp media ID
+      reason: caseData.reason || 'unknown',    // 'no_expense_detected', 'processing_error', etc.
+      raw_result: caseData.raw_result || null,  // partial AI response
+      resolved: false,
+      createdAt: new Date()
+    };
+    unprocessedCases.push(entry);
+    return entry;
+  },
+
+  getAll() {
+    return unprocessedCases.filter(c => !c.resolved);
+  },
+
+  getByPhone(phone) {
+    return unprocessedCases.filter(c => c.phone === phone && !c.resolved);
+  },
+
+  resolve(id) {
+    const entry = unprocessedCases.find(c => c.id === id);
+    if (entry) {
+      entry.resolved = true;
+    }
+    return entry;
   }
 };

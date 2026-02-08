@@ -4,7 +4,7 @@ import {
   markAsRead,
   downloadMedia,
 } from "../utils/whatsappClient.js";
-import { UserDB, ExpenseDB, BudgetDB } from "../database/index.js";
+import { UserDB, ExpenseDB, BudgetDB, UnprocessedDB } from "../database/index.js";
 import { FinanceAgent } from "../agents/financeAgent.js";
 import {
   getCurrencyFromPhone,
@@ -506,7 +506,13 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
     const result = await processExpenseImage(buffer, mimeType, categories);
 
     if (!result.detected || result.expenses.length === 0) {
-      return getMessage('image_no_expense', lang);
+      await UnprocessedDB.create(phone, {
+        type: 'image',
+        media_id: imageData.id,
+        reason: 'no_expense_detected',
+        raw_result: result,
+      });
+      return getMessage('image_saved_for_review', lang);
     }
 
     // Validate all amounts
@@ -566,6 +572,12 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
     return response;
   } catch (error) {
     console.error("Error processing image:", error);
+    await UnprocessedDB.create(phone, {
+      type: 'image',
+      media_id: imageData.id,
+      reason: 'processing_error',
+      content: error.message,
+    });
     return getMessage('image_error', lang);
   }
 }
@@ -592,10 +604,17 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
     }
 
     if (!result.detected || result.expenses.length === 0) {
+      await UnprocessedDB.create(phone, {
+        type: 'audio',
+        media_id: audioData.id,
+        content: result.transcription || null,
+        reason: 'no_expense_detected',
+        raw_result: result,
+      });
       if (result.transcription) {
-        return `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n${getMessage('audio_no_expense', lang)}`;
+        return `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n${getMessage('audio_saved_for_review', lang)}`;
       }
-      return getMessage('audio_error', lang);
+      return getMessage('audio_saved_for_review', lang);
     }
 
     // Validate all amounts
@@ -655,6 +674,12 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
     return response;
   } catch (error) {
     console.error("Error processing audio:", error);
+    await UnprocessedDB.create(phone, {
+      type: 'audio',
+      media_id: audioData.id,
+      reason: 'processing_error',
+      content: error.message,
+    });
     return getMessage('audio_error', lang);
   }
 }

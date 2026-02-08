@@ -397,6 +397,73 @@ export const BudgetDB = {
 };
 
 /**
+ * Unprocessed cases — messages the system couldn't handle
+ */
+export const UnprocessedDB = {
+  async create(phone, caseData) {
+    try {
+      const { data, error } = await supabase
+        .from("unprocessed_cases")
+        .insert([
+          {
+            phone,
+            type: caseData.type,
+            content: caseData.content || null,
+            media_id: caseData.media_id || null,
+            reason: caseData.reason || 'unknown',
+            raw_result: caseData.raw_result || null,
+            resolved: false,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      // Don't crash the main flow if saving the case fails
+      console.error("[supabase] Failed to save unprocessed case:", err?.message || err);
+      return null;
+    }
+  },
+
+  async getAll() {
+    const { data, error } = await supabase
+      .from("unprocessed_cases")
+      .select("*")
+      .eq("resolved", false)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getByPhone(phone) {
+    const { data, error } = await supabase
+      .from("unprocessed_cases")
+      .select("*")
+      .eq("phone", phone)
+      .eq("resolved", false)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async resolve(id) {
+    const { data, error } = await supabase
+      .from("unprocessed_cases")
+      .update({ resolved: true })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+};
+
+/**
  * Health check
  */
 export async function testConnection() {
