@@ -131,45 +131,32 @@ Try it now! Tell me about a recent expense.`,
     // Tutorial/Onboarding - Step by step guided tour
     tutorial_welcome: `Hey! I'm FinanceFlow, your personal expense tracker.
 
-Let me show you around in 3 quick steps.
-
-Reply anything to start!`,
+I'll show you around in 3 quick steps. Reply anything to start!`,
 
     tutorial_try_expense: `*Step 1 of 3: Log an expense*
 
-Try it now! Just type something like:
+Try it now! Type something like:
+"Spent 20 on coffee"`,
 
-"Spent 20 on coffee"
-
-Go ahead, give it a try!`,
-
-    tutorial_try_expense_hint: `Try logging an expense like: "Spent 15 on lunch"
-
-Or type *skip* to exit the tutorial.`,
-
-    tutorial_expense_logged: `Nice work!
-
-You just logged your first expense. You can also send photos of receipts or voice messages.`,
-
-    tutorial_try_summary: `*Step 2 of 3: Check your spending*
-
-Now ask me:
-
-"How am I doing?"`,
-
-    tutorial_try_summary_hint: `Try asking: "How am I doing?" or "status"
+    tutorial_try_expense_hint: `Try: "Spent 15 on lunch"
 
 Or type *skip* to exit.`,
 
-    tutorial_summary_shown: `That's your spending summary!
+    tutorial_try_summary: `Great! Now let's check your spending.
 
-I track everything by category so you always know where your money goes.`,
+*Step 2 of 3: Check status*
 
-    tutorial_try_budget: `*Step 3 of 3: Set a budget*
+Ask me: "How am I doing?"`,
 
-Control your spending! Try:
+    tutorial_try_summary_hint: `Try: "How am I doing?"
 
-"Set food budget to 500"`,
+Or type *skip* to exit.`,
+
+    tutorial_try_budget: `Perfect! Now let's set a budget.
+
+*Step 3 of 3: Set a budget*
+
+Try: "Set food budget to 500"`,
 
     tutorial_try_budget_hint: `Try: "Set food budget to 500"
 
@@ -178,15 +165,15 @@ Or type *skip* to finish.`,
     tutorial_complete: `You're all set!
 
 Quick reference:
-- Log expense: "Spent 30 on groceries"
-- Check status: "How am I doing?"
-- Set budget: "Set food budget to 500"
+• Log expense: "Spent 30 on groceries"
+• Check status: "How am I doing?"
+• Set budget: "Set food budget to 500"
 
-Type *tutorial* anytime to see this again.`,
+Type *tutorial* anytime to review. Now tell me about a real expense!`,
 
-    tutorial_skipped: `No problem! Type *tutorial* anytime if you need help.
+    tutorial_skipped: `No problem! Type *tutorial* if you need help.
 
-Go ahead and tell me about an expense!`,
+Tell me about an expense to get started!`,
 
     tutorial_hint: `Reply anything to continue, or *skip* to exit.`,
 
@@ -292,47 +279,34 @@ Escribe *tutorial* para ver la guía completa.
     error_generic: "Lo siento, ocurrió un error. Por favor intenta de nuevo.",
 
     // Tutorial/Onboarding - Guía paso a paso
-    tutorial_welcome: `¡Hola! Soy FinanceFlow, tu asistente de gastos personal.
+    tutorial_welcome: `¡Hola! Soy FinanceFlow, tu asistente de gastos.
 
-Te muestro cómo funciono en 3 pasos rápidos.
-
-¡Responde lo que sea para empezar!`,
+Te muestro cómo funciono en 3 pasos. ¡Responde lo que sea para empezar!`,
 
     tutorial_try_expense: `*Paso 1 de 3: Registra un gasto*
 
-¡Inténtalo! Solo escribe algo como:
+Escribe algo como:
+"Gasté 20000 en café"`,
 
-"Gasté 20000 en café"
-
-¡Adelante, pruébalo!`,
-
-    tutorial_try_expense_hint: `Prueba registrar un gasto como: "Gasté 15000 en almuerzo"
-
-O escribe *saltar* para salir del tutorial.`,
-
-    tutorial_expense_logged: `¡Muy bien!
-
-Acabas de registrar tu primer gasto. También puedes enviar fotos de recibos o mensajes de voz.`,
-
-    tutorial_try_summary: `*Paso 2 de 3: Revisa tus gastos*
-
-Ahora pregúntame:
-
-"¿Cómo voy?"`,
-
-    tutorial_try_summary_hint: `Prueba preguntar: "¿Cómo voy?" o "resumen"
+    tutorial_try_expense_hint: `Prueba: "Gasté 15000 en almuerzo"
 
 O escribe *saltar* para salir.`,
 
-    tutorial_summary_shown: `¡Ese es tu resumen de gastos!
+    tutorial_try_summary: `¡Bien! Ahora veamos tus gastos.
 
-Organizo todo por categoría para que siempre sepas en qué gastas.`,
+*Paso 2 de 3: Ver estado*
 
-    tutorial_try_budget: `*Paso 3 de 3: Define un presupuesto*
+Pregúntame: "¿Cómo voy?"`,
 
-¡Controla tus gastos! Prueba:
+    tutorial_try_summary_hint: `Prueba: "¿Cómo voy?"
 
-"Pon presupuesto de comida en 500000"`,
+O escribe *saltar* para salir.`,
+
+    tutorial_try_budget: `¡Perfecto! Ahora define un presupuesto.
+
+*Paso 3 de 3: Crear presupuesto*
+
+Prueba: "Pon presupuesto de comida en 500000"`,
 
     tutorial_try_budget_hint: `Prueba: "Pon presupuesto de comida en 500000"
 
@@ -341,15 +315,15 @@ O escribe *saltar* para terminar.`,
     tutorial_complete: `¡Listo!
 
 Referencia rápida:
-- Registrar gasto: "Gasté 30000 en mercado"
-- Ver estado: "¿Cómo voy?"
-- Presupuesto: "Pon presupuesto de comida en 500000"
+• Registrar gasto: "Gasté 30000 en mercado"
+• Ver estado: "¿Cómo voy?"
+• Presupuesto: "Pon presupuesto de comida en 500000"
 
-Escribe *tutorial* cuando quieras ver esto de nuevo.`,
+Escribe *tutorial* para repasar. ¡Ahora cuéntame un gasto real!`,
 
-    tutorial_skipped: `¡Sin problema! Escribe *tutorial* cuando necesites ayuda.
+    tutorial_skipped: `¡Sin problema! Escribe *tutorial* si necesitas ayuda.
 
-¡Cuéntame sobre algún gasto!`,
+¡Cuéntame sobre un gasto para empezar!`,
 
     tutorial_hint: `Responde lo que sea para continuar, o *saltar* para salir.`,
 
@@ -455,47 +429,34 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     error_generic: "Desculpe, ocorreu um erro. Por favor, tente novamente.",
 
     // Tutorial/Onboarding - Guia passo a passo
-    tutorial_welcome: `Oi! Sou o FinanceFlow, seu assistente pessoal de despesas.
+    tutorial_welcome: `Oi! Sou o FinanceFlow, seu assistente de despesas.
 
-Vou te mostrar como funciono em 3 passos rápidos.
-
-Responda qualquer coisa para começar!`,
+Vou te mostrar como funciono em 3 passos. Responda qualquer coisa para começar!`,
 
     tutorial_try_expense: `*Passo 1 de 3: Registre uma despesa*
 
-Experimente agora! Digite algo como:
+Digite algo como:
+"Gastei 20 em café"`,
 
-"Gastei 20 em café"
-
-Vai lá, tente!`,
-
-    tutorial_try_expense_hint: `Tente registrar uma despesa como: "Gastei 15 em almoço"
-
-Ou digite *pular* para sair do tutorial.`,
-
-    tutorial_expense_logged: `Muito bem!
-
-Você acabou de registrar sua primeira despesa. Também pode enviar fotos de recibos ou mensagens de voz.`,
-
-    tutorial_try_summary: `*Passo 2 de 3: Veja seus gastos*
-
-Agora me pergunte:
-
-"Como estou?"`,
-
-    tutorial_try_summary_hint: `Tente perguntar: "Como estou?" ou "resumo"
+    tutorial_try_expense_hint: `Tente: "Gastei 15 em almoço"
 
 Ou digite *pular* para sair.`,
 
-    tutorial_summary_shown: `Esse é o seu resumo de gastos!
+    tutorial_try_summary: `Ótimo! Agora vamos ver seus gastos.
 
-Organizo tudo por categoria para você sempre saber onde está gastando.`,
+*Passo 2 de 3: Ver status*
 
-    tutorial_try_budget: `*Passo 3 de 3: Defina um orçamento*
+Me pergunte: "Como estou?"`,
 
-Controle seus gastos! Tente:
+    tutorial_try_summary_hint: `Tente: "Como estou?"
 
-"Defina orçamento de comida para 500"`,
+Ou digite *pular* para sair.`,
+
+    tutorial_try_budget: `Perfeito! Agora defina um orçamento.
+
+*Passo 3 de 3: Criar orçamento*
+
+Tente: "Defina orçamento de comida para 500"`,
 
     tutorial_try_budget_hint: `Tente: "Defina orçamento de comida para 500"
 
@@ -504,15 +465,15 @@ Ou digite *pular* para finalizar.`,
     tutorial_complete: `Pronto!
 
 Referência rápida:
-- Registrar despesa: "Gastei 30 em mercado"
-- Ver status: "Como estou?"
-- Orçamento: "Defina orçamento de comida para 500"
+• Registrar despesa: "Gastei 30 em mercado"
+• Ver status: "Como estou?"
+• Orçamento: "Defina orçamento de comida para 500"
 
-Digite *tutorial* sempre que quiser ver isso de novo.`,
+Digite *tutorial* para revisar. Agora me conte uma despesa real!`,
 
-    tutorial_skipped: `Sem problemas! Digite *tutorial* quando precisar de ajuda.
+    tutorial_skipped: `Sem problemas! Digite *tutorial* se precisar de ajuda.
 
-Me conte sobre alguma despesa!`,
+Me conte sobre uma despesa para começar!`,
 
     tutorial_hint: `Responda qualquer coisa para continuar, ou *pular* para sair.`,
 

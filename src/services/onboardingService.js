@@ -13,18 +13,16 @@ import { TutorialDB } from "../database/index.js";
 import { getMessage } from "../utils/languageUtils.js";
 import { formatAmount } from "../utils/currencyUtils.js";
 
-// Tutorial steps configuration - designed as a guided tour
+// Tutorial steps - simplified flow, auto-advance after each action
 const TUTORIAL_STEPS = {
-  1: 'welcome',           // Quick greeting
-  2: 'try_expense',       // Prompt to log first expense
-  3: 'expense_logged',    // Celebrate + intro to summaries
-  4: 'try_summary',       // Prompt to check status
-  5: 'summary_shown',     // Intro to budgets
-  6: 'try_budget',        // Prompt to set a budget
-  7: 'complete',          // All done!
+  1: 'welcome',           // Quick greeting → user replies → step 2
+  2: 'try_expense',       // User logs expense → auto-advance to step 3
+  3: 'try_summary',       // User checks status → auto-advance to step 4
+  4: 'try_budget',        // User sets budget → auto-advance to complete
+  5: 'complete',          // Done!
 };
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 5;
 
 /**
  * Check if user is in tutorial mode
@@ -85,38 +83,28 @@ export async function processTutorialResponse(phone, message, lang = 'en') {
 
   // Handle based on current step
   switch (currentStep) {
-    case 1: // Welcome - waiting for any response to continue
+    case 1: // Welcome - any response advances to step 2
       return await advanceTutorial(phone, lang);
 
-    case 2: // Waiting for user to log an expense
+    case 2: // Waiting for expense
       if (hasExpensePattern(message)) {
-        // Let the expense be processed, then advance
         return { advance: true, processExpense: true, nextStep: 3 };
       }
-      // Remind them to try logging an expense
       return getMessage('tutorial_try_expense_hint', lang);
 
-    case 3: // After expense logged - waiting for "next" or any response
-      return await advanceTutorial(phone, lang);
-
-    case 4: // Waiting for user to check summary
+    case 3: // Waiting for summary command
       if (isSummaryCommand(lowerMsg)) {
-        // Let the summary be processed, then advance
-        return { advance: true, processSummary: true, nextStep: 5 };
+        return { advance: true, processSummary: true, nextStep: 4 };
       }
       return getMessage('tutorial_try_summary_hint', lang);
 
-    case 5: // After summary shown - waiting for "next" or any response
-      return await advanceTutorial(phone, lang);
-
-    case 6: // Waiting for user to set a budget
+    case 4: // Waiting for budget command
       if (isBudgetCommand(lowerMsg, message)) {
-        // Let the budget be processed, then advance
-        return { advance: true, processBudget: true, nextStep: 7 };
+        return { advance: true, processBudget: true, nextStep: 5 };
       }
       return getMessage('tutorial_try_budget_hint', lang);
 
-    case 7: // Complete - should not reach here
+    case 5: // Complete - should not reach here
       await completeTutorial(phone);
       return null;
 
@@ -166,11 +154,10 @@ export async function advanceTutorial(phone, lang = 'en') {
 
   await TutorialDB.updateStep(phone, nextStep);
 
-  // Step 7 is completion - delete tutorial data after showing message
+  // Step 5 is completion - delete tutorial data after showing message
   if (nextStep === TOTAL_STEPS) {
-    const completeMsg = getTutorialStep(nextStep, lang);
     await completeTutorial(phone);
-    return completeMsg;
+    return getMessage('tutorial_complete', lang);
   }
 
   return getTutorialStep(nextStep, lang);
