@@ -5,10 +5,11 @@
 ## Table of Contents
 
 1. [Service Costs Overview](#service-costs-overview)
-2. [Cost Per Message Type](#cost-per-message-type)
-3. [Subscription Plans](#subscription-plans)
-4. [User Scenarios Analysis](#user-scenarios-analysis)
-5. [Profitability Summary](#profitability-summary)
+2. [Tool-Based Architecture Impact](#tool-based-architecture-impact)
+3. [Cost Per Message Type](#cost-per-message-type)
+4. [Subscription Plans](#subscription-plans)
+5. [User Scenarios Analysis](#user-scenarios-analysis)
+6. [Profitability Summary](#profitability-summary)
 
 ---
 
@@ -34,34 +35,106 @@
 
 ---
 
+## Tool-Based Architecture Impact
+
+### Overview
+
+FinanceFlow uses Claude's `tool_use` feature for intelligent intent routing. Instead of regex/if-else chains, Claude analyzes user messages and calls the appropriate tool.
+
+### Current Tools (14 total)
+
+| Tool | Description | Avg Tokens |
+|------|-------------|------------|
+| log_expense | Log expenses | ~80 |
+| set_budget | Create/update budget | ~60 |
+| show_summary | Monthly summary | ~40 |
+| show_budgets | List budgets | ~40 |
+| show_expenses | Recent transactions | ~50 |
+| export_expenses | Export to CSV | ~50 |
+| rename_category | Rename category | ~50 |
+| set_currency | Set currency | ~50 |
+| subscription_status | Plan & usage | ~40 |
+| upgrade_info | Upgrade options | ~40 |
+| help_info | Welcome/help | ~30 |
+| delete_expense | Delete expense | ~70 |
+| edit_expense | Edit expense | ~80 |
+| delete_budget | Delete budget | ~50 |
+
+### Token Overhead Per Request
+
+```
+Tool Definitions:
+- 14 tools x ~55 tokens avg = ~770 tokens
+- Sent with EVERY request as input tokens
+
+Additional Cost Per Request:
+- 770 tokens x ($3/1M) = $0.00231
+
+Monthly Impact (per user tier):
+- Free (38 msgs):    +$0.088
+- Basic (157 msgs):  +$0.363
+- Premium (365 msgs): +$0.843
+```
+
+### Updated Token Estimates (with tools)
+
+| Operation                        | Input (old) | Input (new) | Difference |
+| -------------------------------- | ----------- | ----------- | ---------- |
+| Text expense detection           | ~600        | ~1,370      | +770       |
+| AI conversation (processMessage) | ~800        | ~1,570      | +770       |
+| Image receipt OCR                | ~2,500      | ~2,500      | -          |
+| Audio expense extraction         | ~600        | ~600        | -          |
+
+> Note: Image and audio processing don't use tool_use (handled separately)
+
+### Tradeoffs
+
+| Aspect | Without Tools | With Tools |
+|--------|---------------|------------|
+| **Intent Accuracy** | Regex-based, error-prone | AI-driven, highly accurate |
+| **Maintainability** | Complex if/else chains | Modular, easy to extend |
+| **Cost per text msg** | $0.0041 | $0.0064 |
+| **User Experience** | May misunderstand intent | Natural language understanding |
+
+### Cost Optimization Strategies
+
+1. **Shorter tool descriptions** - Reduce tokens per tool definition
+2. **Lazy tool loading** - Only send relevant tools based on context
+3. **Prompt caching** - Anthropic caches repeated system prompts (automatic)
+4. **Batch similar operations** - Group multiple expenses in one call
+
+---
+
 ## Cost Per Message Type
 
-### 1. Text Message (Expense Detection)
+### 1. Text Message (Expense Detection) - WITH TOOL_USE
 
 ```
 Claude API:
-- Input:  600 tokens  x ($3/1M)  = $0.0018
-- Output: 150 tokens  x ($15/1M) = $0.00225
-                                   ─────────
-                         Subtotal = $0.00405
+- Input:  1,370 tokens x ($3/1M)  = $0.00411
+  (600 base + 770 tool definitions)
+- Output: 150 tokens   x ($15/1M) = $0.00225
+                                    ─────────
+                          Subtotal = $0.00636
 
 WhatsApp: FREE (service message)
-                         ─────────
-              TOTAL COST = $0.0041
+                          ─────────
+               TOTAL COST = $0.0064
 ```
 
-### 2. AI Conversation Message
+### 2. AI Conversation Message - WITH TOOL_USE
 
 ```
 Claude API:
-- Input:  800 tokens  x ($3/1M)  = $0.0024
-- Output: 300 tokens  x ($15/1M) = $0.0045
-                                   ─────────
-                         Subtotal = $0.0069
+- Input:  1,570 tokens x ($3/1M)  = $0.00471
+  (800 base + 770 tool definitions)
+- Output: 300 tokens   x ($15/1M) = $0.0045
+                                    ─────────
+                          Subtotal = $0.00921
 
 WhatsApp: FREE (service message)
-                         ─────────
-              TOTAL COST = $0.0069
+                          ─────────
+               TOTAL COST = $0.0092
 ```
 
 ### 3. Image/Receipt Processing (Claude Vision)
@@ -97,12 +170,15 @@ WhatsApp: FREE (service message)
 
 ### Cost Summary Table
 
-| Message Type | Cost/Message | Notes                   |
-| ------------ | ------------ | ----------------------- |
-| **Text**     | $0.0041      | Expense detection       |
-| **AI Chat**  | $0.0069      | Conversational response |
-| **Image**    | $0.0098      | Receipt OCR             |
-| **Audio**    | $0.0044      | Voice note (30s avg)    |
+| Message Type | Cost/Message | Notes                          |
+| ------------ | ------------ | ------------------------------ |
+| **Text**     | $0.0064      | Expense detection (with tools) |
+| **AI Chat**  | $0.0092      | Conversational (with tools)    |
+| **Image**    | $0.0098      | Receipt OCR (no tools)         |
+| **Audio**    | $0.0044      | Voice note (no tools)          |
+
+> Note: Text and AI Chat costs increased ~55% due to tool definitions overhead.
+> Image and Audio processing bypass tool_use for efficiency.
 
 ---
 
@@ -129,48 +205,50 @@ WhatsApp: FREE (service message)
 | **Basic**   | 100  | 30      | 12     | 15    |
 | **Premium** | 200  | 80      | 35     | 50    |
 
-### Cost Per User Per Month
+### Cost Per User Per Month (with tool_use)
 
 #### Free Tier User
 
 ```
-Text:    25 x $0.0041 = $0.1025
-AI Chat:  8 x $0.0069 = $0.0552
+Text:    25 x $0.0064 = $0.16
+AI Chat:  8 x $0.0092 = $0.0736
 Images:   3 x $0.0098 = $0.0294
 Audio:    2 x $0.0044 = $0.0088
                         ────────
-           TOTAL COST = $0.1959
+           TOTAL COST = $0.27
 ```
 
 #### Basic Tier User
 
 ```
-Text:   100 x $0.0041 = $0.41
-AI Chat: 30 x $0.0069 = $0.207
+Text:   100 x $0.0064 = $0.64
+AI Chat: 30 x $0.0092 = $0.276
 Images:  12 x $0.0098 = $0.1176
 Audio:   15 x $0.0044 = $0.066
                         ────────
-           TOTAL COST = $0.80
+           TOTAL COST = $1.10
 ```
 
 #### Premium Tier User
 
 ```
-Text:   200 x $0.0041 = $0.82
-AI Chat: 80 x $0.0069 = $0.552
+Text:   200 x $0.0064 = $1.28
+AI Chat: 80 x $0.0092 = $0.736
 Images:  35 x $0.0098 = $0.343
 Audio:   50 x $0.0044 = $0.22
                         ────────
-           TOTAL COST = $1.94
+           TOTAL COST = $2.58
 ```
 
-### Per-User Economics
+### Per-User Economics (with tool_use)
 
 | Plan        | Price | API Cost | Gross Margin | Margin % |
 | ----------- | ----- | -------- | ------------ | -------- |
-| **Free**    | $0.00 | $0.20    | -$0.20       | N/A      |
-| **Basic**   | $2.99 | $0.80    | +$2.19       | 73.2%    |
-| **Premium** | $7.99 | $1.94    | +$6.05       | 75.7%    |
+| **Free**    | $0.00 | $0.27    | -$0.27       | N/A      |
+| **Basic**   | $2.99 | $1.10    | +$1.89       | 63.2%    |
+| **Premium** | $7.99 | $2.58    | +$5.41       | 67.7%    |
+
+> Note: Margins decreased ~10% due to tool_use overhead, but UX significantly improved.
 
 ---
 
@@ -197,14 +275,14 @@ Audio:   50 x $0.0044 = $0.22
 | Premium   | 5      | $7.99 | $39.95          |
 | **Total** | **50** |       | **$69.85**      |
 
-#### API Costs
+#### API Costs (with tool_use)
 
 | Plan      | Users  | Cost/User | Monthly Cost |
 | --------- | ------ | --------- | ------------ |
-| Free      | 35     | $0.20     | $7.00        |
-| Basic     | 10     | $0.80     | $8.00        |
-| Premium   | 5      | $1.94     | $9.70        |
-| **Total** | **50** |           | **$24.70**   |
+| Free      | 35     | $0.27     | $9.45        |
+| Basic     | 10     | $1.10     | $11.00       |
+| Premium   | 5      | $2.58     | $12.90       |
+| **Total** | **50** |           | **$33.35**   |
 
 #### Infrastructure Costs
 
@@ -220,11 +298,11 @@ Audio:   50 x $0.0044 = $0.22
 | Metric            | Amount     |
 | ----------------- | ---------- |
 | Revenue           | $69.85     |
-| API Costs         | $24.70     |
+| API Costs         | $33.35     |
 | Infrastructure    | $13.00     |
-| **Total Costs**   | **$37.70** |
-| **Net Profit**    | **$32.15** |
-| **Profit Margin** | **46.0%**  |
+| **Total Costs**   | **$46.35** |
+| **Net Profit**    | **$23.50** |
+| **Profit Margin** | **33.6%**  |
 
 ---
 
@@ -239,14 +317,14 @@ Audio:   50 x $0.0044 = $0.22
 | Premium   | 50      | $7.99 | $399.50         |
 | **Total** | **500** |       | **$848.00**     |
 
-#### API Costs
+#### API Costs (with tool_use)
 
 | Plan      | Users   | Cost/User | Monthly Cost |
 | --------- | ------- | --------- | ------------ |
-| Free      | 300     | $0.20     | $60.00       |
-| Basic     | 150     | $0.80     | $120.00      |
-| Premium   | 50      | $1.94     | $97.00       |
-| **Total** | **500** |           | **$277.00**  |
+| Free      | 300     | $0.27     | $81.00       |
+| Basic     | 150     | $1.10     | $165.00      |
+| Premium   | 50      | $2.58     | $129.00      |
+| **Total** | **500** |           | **$375.00**  |
 
 #### Infrastructure Costs
 
@@ -263,11 +341,11 @@ Audio:   50 x $0.0044 = $0.22
 | Metric            | Amount      |
 | ----------------- | ----------- |
 | Revenue           | $848.00     |
-| API Costs         | $277.00     |
+| API Costs         | $375.00     |
 | Infrastructure    | $61.00      |
-| **Total Costs**   | **$338.00** |
-| **Net Profit**    | **$510.00** |
-| **Profit Margin** | **60.1%**   |
+| **Total Costs**   | **$436.00** |
+| **Net Profit**    | **$412.00** |
+| **Profit Margin** | **48.6%**   |
 
 ---
 
@@ -282,14 +360,14 @@ Audio:   50 x $0.0044 = $0.22
 | Premium   | 500      | $7.99 | $3,995.00       |
 | **Total** | **5000** |       | **$9,975.00**   |
 
-#### API Costs
+#### API Costs (with tool_use)
 
 | Plan      | Users    | Cost/User | Monthly Cost  |
 | --------- | -------- | --------- | ------------- |
-| Free      | 2500     | $0.20     | $500.00       |
-| Basic     | 2000     | $0.80     | $1,600.00     |
-| Premium   | 500      | $1.94     | $970.00       |
-| **Total** | **5000** |           | **$3,070.00** |
+| Free      | 2500     | $0.27     | $675.00       |
+| Basic     | 2000     | $1.10     | $2,200.00     |
+| Premium   | 500      | $2.58     | $1,290.00     |
+| **Total** | **5000** |           | **$4,165.00** |
 
 #### Infrastructure Costs
 
@@ -307,44 +385,45 @@ Audio:   50 x $0.0044 = $0.22
 | Metric            | Amount        |
 | ----------------- | ------------- |
 | Revenue           | $9,975.00     |
-| API Costs         | $3,070.00     |
+| API Costs         | $4,165.00     |
 | Infrastructure    | $1,300.00     |
-| **Total Costs**   | **$4,370.00** |
-| **Net Profit**    | **$5,605.00** |
-| **Profit Margin** | **56.2%**     |
+| **Total Costs**   | **$5,465.00** |
+| **Net Profit**    | **$4,510.00** |
+| **Profit Margin** | **45.2%**     |
 
 ---
 
 ## Profitability Summary
 
-### Comparison Across Scenarios
+### Comparison Across Scenarios (with tool_use)
 
 | Metric              | 50 Users | 500 Users | 5000 Users |
 | ------------------- | -------- | --------- | ---------- |
 | **Monthly Revenue** | $69.85   | $848.00   | $9,975.00  |
-| **API Costs**       | $24.70   | $277.00   | $3,070.00  |
+| **API Costs**       | $33.35   | $375.00   | $4,165.00  |
 | **Infrastructure**  | $13.00   | $61.00    | $1,300.00  |
-| **Total Costs**     | $37.70   | $338.00   | $4,370.00  |
-| **Net Profit**      | $32.15   | $510.00   | $5,605.00  |
-| **Profit Margin**   | 46.0%    | 60.1%     | 56.2%      |
+| **Total Costs**     | $46.35   | $436.00   | $5,465.00  |
+| **Net Profit**      | $23.50   | $412.00   | $4,510.00  |
+| **Profit Margin**   | 33.6%    | 48.6%     | 45.2%      |
 | **Revenue/User**    | $1.40    | $1.70     | $2.00      |
-| **Cost/User**       | $0.75    | $0.68     | $0.87      |
-| **Profit/User**     | $0.64    | $1.02     | $1.12      |
+| **Cost/User**       | $0.93    | $0.87     | $1.09      |
+| **Profit/User**     | $0.47    | $0.82     | $0.90      |
 
-### Annual Projections
+### Annual Projections (with tool_use)
 
 | Metric             | 50 Users | 500 Users | 5000 Users |
 | ------------------ | -------- | --------- | ---------- |
 | **Annual Revenue** | $838     | $10,176   | $119,700   |
-| **Annual Costs**   | $452     | $4,056    | $52,440    |
-| **Annual Profit**  | $386     | $6,120    | $67,260    |
+| **Annual Costs**   | $556     | $5,232    | $65,580    |
+| **Annual Profit**  | $282     | $4,944    | $54,120    |
 
 ### Key Insights
 
-1. **Break-even Point**: ~25 paying users cover infrastructure costs
+1. **Break-even Point**: ~30 paying users cover infrastructure + API costs
 2. **Optimal Mix**: Higher Basic tier adoption improves margins
-3. **Free Tier Strategy**: Each free user costs $0.20/month but aids conversion
-4. **Scale Benefits**: Profit margin improves with scale due to fixed costs
+3. **Free Tier Strategy**: Each free user costs $0.27/month but aids conversion
+4. **Tool_use Tradeoff**: ~35% higher API costs but significantly better UX
+5. **Still Profitable**: Even with tool overhead, all tiers remain profitable
 
 ### Cost Optimization Strategies
 
@@ -352,6 +431,9 @@ Audio:   50 x $0.0044 = $0.22
 2. **Batch API for non-urgent tasks** - 50% discount on Claude
 3. **Implement response caching** - Reduce duplicate API calls
 4. **Limit free tier usage** - Prevents abuse while maintaining funnel
+5. **Shorten tool descriptions** - Reduce ~100-200 tokens per request
+6. **Prompt caching** - Anthropic automatically caches repeated prompts
+7. **Selective tool loading** - Only send relevant tools based on user context
 
 ---
 
