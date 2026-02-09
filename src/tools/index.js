@@ -14,6 +14,9 @@ import setCurrency from "./setCurrency.js";
 import subscriptionStatus from "./subscriptionStatus.js";
 import upgradeInfo from "./upgradeInfo.js";
 import helpInfo from "./helpInfo.js";
+import deleteExpense from "./deleteExpense.js";
+import editExpense from "./editExpense.js";
+import deleteBudget from "./deleteBudget.js";
 
 // Registry of all available tools
 const tools = {
@@ -28,6 +31,9 @@ const tools = {
   subscription_status: subscriptionStatus,
   upgrade_info: upgradeInfo,
   help_info: helpInfo,
+  delete_expense: deleteExpense,
+  edit_expense: editExpense,
+  delete_budget: deleteBudget,
 };
 
 /**

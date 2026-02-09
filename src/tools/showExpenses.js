@@ -35,7 +35,7 @@ export async function handler(phone, params, lang, userCurrency) {
 
   for (const expense of expenses) {
     const date = new Date(expense.date).toLocaleDateString(locale);
-    response += `• ${formatAmount(expense.amount, userCurrency)} - ${expense.category}`;
+    response += `#${expense.id} • ${formatAmount(expense.amount, userCurrency)} - ${expense.category}`;
     if (expense.description) {
       response += ` (${expense.description})`;
     }
