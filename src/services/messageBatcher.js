@@ -13,7 +13,7 @@ const userBatches = new Map();
 /**
  * Add a message to the user's batch queue
  * @param {string} phone - User's phone number
- * @param {object} message - Message object { type, content, ... }
+ * @param {object} message - Message object { type, content, id, ... }
  * @param {Function} onBatchReady - Callback when batch is ready to process
  * @returns {boolean} - true if message was queued, false if should process immediately
  */
@@ -32,17 +32,22 @@ export function queueMessage(phone, message, onBatchReady) {
       messages: [],
       timer: null,
       callback: onBatchReady,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      lastMessageId: null
     };
     userBatches.set(phone, batch);
   }
 
-  // Add message to batch
+  // Add message to batch and track last message ID
   batch.messages.push({
     type: message.type,
     content: message.text?.body || '',
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    id: message.id
   });
+
+  // Keep track of the last message ID for processing indicator
+  batch.lastMessageId = message.id;
 
   // Clear existing timer and set new one
   if (batch.timer) {
@@ -78,13 +83,14 @@ function processBatch(phone) {
 
   console.log(`[batcher] Processing batch for ${phone}: "${combinedContent.substring(0, 50)}..."`);
 
-  // Call the callback with combined message
+  // Call the callback with combined message and last message ID for indicator
   if (batch.callback) {
     batch.callback(phone, {
       type: 'text',
       text: { body: combinedContent },
       batched: true,
-      messageCount: batch.messages.length
+      messageCount: batch.messages.length,
+      lastMessageId: batch.lastMessageId
     });
   }
 

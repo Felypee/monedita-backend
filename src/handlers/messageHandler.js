@@ -4,7 +4,7 @@ import {
   sendDocument,
   markAsRead,
   downloadMedia,
-  sendTypingIndicator,
+  showProcessingIndicator,
 } from "../utils/whatsappClient.js";
 import {
   queueMessage,
@@ -166,9 +166,10 @@ export async function handleIncomingMessage(message, phone) {
       const messageText = message.text.body;
       console.log(`📨 Text from ${phone}: ${messageText}`);
 
-      await sendTypingIndicator(phone);
+      const clearIndicator = await showProcessingIndicator(phone, message.id);
       const agent = new FinanceAgent(phone, user.currency, lang);
       response = await agent.processMessage(messageText);
+      await clearIndicator();
 
     } else if (message.type === "interactive") {
       const buttonId = message.interactive.button_reply.id;
@@ -184,20 +185,23 @@ export async function handleIncomingMessage(message, phone) {
         response = getMessage('reminder_no_response', lang);
       } else {
         // Other button responses - process via agent
-        await sendTypingIndicator(phone);
+        const clearIndicator = await showProcessingIndicator(phone, message.id);
         const agent = new FinanceAgent(phone, user.currency, lang);
         response = await agent.processMessage(buttonTitle);
+        await clearIndicator();
       }
 
     } else if (message.type === "image") {
       console.log(`📷 Image from ${phone}`);
-      await sendTypingIndicator(phone);
+      const clearIndicator = await showProcessingIndicator(phone, message.id);
       response = await processImageMessage(phone, message.image, user.currency, lang);
+      await clearIndicator();
 
     } else if (message.type === "audio") {
       console.log(`🎤 Audio from ${phone}`);
-      await sendTypingIndicator(phone);
+      const clearIndicator = await showProcessingIndicator(phone, message.id);
       response = await processAudioMessage(phone, message.audio, user.currency, lang);
+      await clearIndicator();
 
     } else {
       await sendTextMessage(phone, getMessage('unsupported_message', lang));
@@ -225,15 +229,19 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
   try {
     const messageText = batchedMessage.text.body;
     const messageCount = batchedMessage.messageCount || 1;
+    const messageId = batchedMessage.lastMessageId;
 
     console.log(`📨 Processing batch for ${phone}: ${messageCount} messages -> "${messageText.substring(0, 50)}..."`);
 
-    // Send typing indicator
-    await sendTypingIndicator(phone);
+    // Show processing indicator (⏳ reaction on last message)
+    const clearIndicator = await showProcessingIndicator(phone, messageId);
 
     // Use the AI agent to process the combined message
     const agent = new FinanceAgent(phone, user.currency, lang);
     const response = await agent.processMessage(messageText);
+
+    // Clear the processing indicator
+    await clearIndicator();
 
     if (response) {
       await sendTextMessage(phone, response);

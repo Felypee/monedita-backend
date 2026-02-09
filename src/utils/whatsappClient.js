@@ -156,27 +156,70 @@ export async function sendDocument(to, fileBuffer, filename, caption) {
 }
 
 /**
- * Send typing indicator to show bot is processing
- * Note: WhatsApp doesn't have a direct "typing" API, but we can use
- * a reaction or mark as read to indicate activity. For now, this is a placeholder
- * that could be replaced with a "processing" message approach.
+ * Send a reaction to a message (used for typing indicator)
+ * @param {string} to - Recipient phone number
+ * @param {string} messageId - Message ID to react to
+ * @param {string} emoji - Emoji to react with (empty string to remove)
+ */
+export async function sendReaction(to, messageId, emoji) {
+  try {
+    const response = await axios.post(
+      `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+      {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: to,
+        type: 'reaction',
+        reaction: {
+          message_id: messageId,
+          emoji: emoji  // Empty string "" removes the reaction
+        }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error sending reaction:', error.response?.data || error.message);
+    return null;
+  }
+}
+
+/**
+ * Show "processing" indicator using reaction
+ * Returns a function to clear the indicator when done
+ * @param {string} to - Recipient phone number
+ * @param {string} messageId - Message ID to react to
+ * @returns {Function} - Call this to remove the reaction
+ */
+export async function showProcessingIndicator(to, messageId) {
+  if (!messageId) {
+    console.log('[whatsapp] No messageId for processing indicator');
+    return () => {};
+  }
+
+  // Add ⏳ reaction to show processing
+  await sendReaction(to, messageId, '⏳');
+  console.log(`[whatsapp] Processing indicator shown for ${to}`);
+
+  // Return function to clear the indicator
+  return async () => {
+    await sendReaction(to, messageId, '');  // Empty string removes reaction
+    console.log(`[whatsapp] Processing indicator cleared for ${to}`);
+  };
+}
+
+/**
+ * Simple typing indicator (legacy - just logs)
+ * Use showProcessingIndicator for actual visual feedback
  */
 export async function sendTypingIndicator(to) {
-  try {
-    // WhatsApp Cloud API doesn't support typing indicators directly
-    // But we can use the "mark as read" to show we've seen the message
-    // For better UX, some implementations send a brief "..." message
-    // that gets replaced, but that's not ideal for WhatsApp.
-
-    // Alternative: Use presence update if available in future API versions
-    // For now, we just log - the actual "typing" effect is simulated
-    // by the quick "read" status
-    console.log(`[whatsapp] Typing indicator for ${to}`);
-    return true;
-  } catch (error) {
-    console.error('Error sending typing indicator:', error.response?.data || error.message);
-    return false;
-  }
+  console.log(`[whatsapp] Typing indicator for ${to}`);
+  return true;
 }
 
 /**
