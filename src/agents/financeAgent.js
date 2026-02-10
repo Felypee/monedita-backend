@@ -5,6 +5,7 @@ import { getToolDefinitions, executeTool } from "../tools/index.js";
 import { checkLimit, trackUsage, getSubscriptionStatus, getLimitExceededMessage, getUpgradeMessage, USAGE_TYPES } from "../services/subscriptionService.js";
 import { getMessage } from "../utils/languageUtils.js";
 import { getContextForClaude, addMessage } from "../services/conversationContext.js";
+import { trackUsage as trackDailyUsage, isAllowed } from "../utils/usageMonitor.js";
 
 dotenv.config();
 
@@ -101,6 +102,16 @@ When logging expenses:
     ];
 
     try {
+      // Check daily API limit (DDoS/cost protection)
+      if (!isAllowed('claude_calls')) {
+        console.error('[financeAgent] Daily Claude API limit exceeded');
+        return getMessage('error_service_unavailable', this.userLanguage) ||
+          'Service temporarily unavailable. Please try again later.';
+      }
+
+      // Track the API call
+      trackDailyUsage('claude_calls');
+
       const response = await axios.post(
         ANTHROPIC_API_URL,
         {
@@ -212,6 +223,12 @@ Examples:
 "How am I doing?" → {"detected": false, "expenses": []}`;
 
     try {
+      // Check daily limit
+      if (!isAllowed('claude_calls')) {
+        return { detected: false, expenses: [] };
+      }
+      trackDailyUsage('claude_calls');
+
       const response = await axios.post(
         ANTHROPIC_API_URL,
         {

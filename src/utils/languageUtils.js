@@ -127,6 +127,7 @@ Try it now! Tell me about a recent expense.`,
     // General
     unsupported_message: "I can process text, images (receipts), and voice messages. Try one of those!",
     error_generic: "Sorry, I encountered an error. Please try again.",
+    error_service_unavailable: "Service temporarily unavailable due to high demand. Please try again later.",
 
     // Tutorial/Onboarding - Step by step guided tour
     tutorial_ask_name: `👋 Hey! I'm Monedita, your personal expense tracker.
@@ -319,6 +320,7 @@ Escribe *tutorial* para ver la guía completa.
     // General
     unsupported_message: "Puedo procesar texto, imágenes (recibos) y mensajes de voz. ¡Intenta uno de esos!",
     error_generic: "Lo siento, ocurrió un error. Por favor intenta de nuevo.",
+    error_service_unavailable: "Servicio temporalmente no disponible por alta demanda. Por favor intenta más tarde.",
 
     // Tutorial/Onboarding - Guía paso a paso
     tutorial_ask_name: `👋 ¡Hola! Soy Monedita, tu asistente de gastos.
@@ -511,6 +513,7 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     // General
     unsupported_message: "Posso processar texto, imagens (recibos) e mensagens de voz. Tente um desses!",
     error_generic: "Desculpe, ocorreu um erro. Por favor, tente novamente.",
+    error_service_unavailable: "Serviço temporariamente indisponível devido à alta demanda. Por favor, tente novamente mais tarde.",
 
     // Tutorial/Onboarding - Guia passo a passo
     tutorial_ask_name: `👋 Oi! Sou o Monedita, seu assistente de despesas.

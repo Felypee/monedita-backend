@@ -7,6 +7,7 @@
 import axios from "axios";
 import FormData from "form-data";
 import dotenv from "dotenv";
+import { trackUsage, isAllowed } from "./usageMonitor.js";
 
 dotenv.config();
 
@@ -56,6 +57,13 @@ Examples of good responses:
 - Electric bill for $85 → {"detected": true, "expenses": [{"amount": 85, "category": "bills", "description": "electric bill"}]}`;
 
   try {
+    // Check daily API limit (DDoS/cost protection)
+    if (!isAllowed('vision_calls')) {
+      console.error('[mediaProcessor] Daily vision API limit exceeded');
+      return { detected: false, expenses: [], error: 'Daily limit exceeded' };
+    }
+    trackUsage('vision_calls');
+
     const response = await axios.post(
       ANTHROPIC_API_URL,
       {
@@ -114,6 +122,13 @@ Examples of good responses:
  * @returns {Promise<string>} - The transcribed text
  */
 export async function transcribeAudio(audioBuffer, mimeType) {
+  // Check daily API limit (DDoS/cost protection)
+  if (!isAllowed('whisper_calls')) {
+    console.error('[mediaProcessor] Daily whisper API limit exceeded');
+    throw new Error('Daily transcription limit exceeded');
+  }
+  trackUsage('whisper_calls');
+
   // Try Groq first (free tier available)
   if (GROQ_API_KEY) {
     try {

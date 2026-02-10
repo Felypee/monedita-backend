@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { handleIncomingMessage } from './handlers/messageHandler.js';
 import { verifyWebhook } from './utils/webhookVerification.js';
@@ -9,17 +10,69 @@ import {
   sendExpenseReminder,
 } from './services/reminderService.js';
 import { handleWompiWebhook } from './handlers/wompiWebhookHandler.js';
+import { getUsageStats } from './utils/usageMonitor.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for accurate IP detection (required for Vercel, Railway, etc.)
+app.set('trust proxy', 1);
+
 app.use(bodyParser.json());
+
+// ======================
+// RATE LIMITING (DDoS Protection)
+// ======================
+
+// Global rate limit: 100 requests per minute per IP
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(globalLimiter);
+
+// Strict limit for WhatsApp webhook: 30 messages per minute per IP
+// This prevents API cost explosion from DDoS
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30,
+  message: { error: 'Rate limit exceeded' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    // Use phone number if available, otherwise IP
+    const phone = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.from;
+    return phone || req.ip;
+  },
+});
+
+// Wompi webhook limit: 10 per minute (payments shouldn't be that frequent)
+const wompiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Rate limit exceeded' },
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Monedita server is running' });
+});
+
+// Usage stats endpoint (protected)
+app.get('/api/usage', (req, res) => {
+  // Protect with same reminder secret
+  if (REMINDER_SECRET) {
+    const token = req.headers['x-reminder-secret'] || req.query.secret;
+    if (token !== REMINDER_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+  res.json(getUsageStats());
 });
 
 // Reminder endpoint - can be triggered by external cron services (e.g., cron-job.org)
@@ -60,8 +113,8 @@ app.post('/api/reminders/send/:phone', async (req, res) => {
   }
 });
 
-// Wompi payment webhook
-app.post('/webhook/wompi', async (req, res) => {
+// Wompi payment webhook (with rate limiting)
+app.post('/webhook/wompi', wompiLimiter, async (req, res) => {
   try {
     const signature = req.headers['x-event-checksum'];
     const timestamp = req.headers['x-event-timestamp'];
@@ -78,8 +131,8 @@ app.post('/webhook/wompi', async (req, res) => {
 // Webhook verification endpoint (required by WhatsApp)
 app.get('/webhook', verifyWebhook);
 
-// Webhook endpoint to receive messages
-app.post('/webhook', async (req, res) => {
+// Webhook endpoint to receive messages (with rate limiting)
+app.post('/webhook', webhookLimiter, async (req, res) => {
   try {
     const body = req.body;
 
