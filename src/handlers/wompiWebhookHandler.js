@@ -6,6 +6,8 @@
 import {
   verifyWebhookSignature,
   parsePaymentReference,
+  getPendingPayment,
+  removePendingPayment,
   getTransactionStatus,
   formatPriceCOP,
   SUBSCRIPTION_PLANS,
@@ -45,10 +47,13 @@ export async function handleWompiWebhook(payload, signature, timestamp) {
 
   const transaction = data.transaction;
   const status = transaction.status;
-  // Reference is stored in payment_link name or transaction reference
-  const reference = transaction.payment_link?.name || transaction.reference;
+  const paymentLinkId = transaction.payment_link_id;
 
   console.log(`[wompi webhook] Transaction ${transaction.id}: ${status}`);
+  console.log(`[wompi webhook] Payment Link ID: ${paymentLinkId}`);
+
+  // Look up pending payment by link ID
+  const pendingPayment = getPendingPayment(paymentLinkId);
 
   // Only process approved transactions
   if (status !== "APPROVED") {
@@ -56,23 +61,22 @@ export async function handleWompiWebhook(payload, signature, timestamp) {
 
     // Notify user of failed payment
     if (status === "DECLINED" || status === "ERROR") {
-      const parsed = parsePaymentReference(reference);
-      if (parsed) {
-        await notifyPaymentFailed(parsed.phone, status);
+      if (pendingPayment) {
+        await notifyPaymentFailed(pendingPayment.phone, status);
       }
     }
     return;
   }
 
-  // Parse the reference to get user phone and plan
-  const parsed = parsePaymentReference(reference);
-
-  if (!parsed) {
-    console.error("[wompi webhook] Could not parse reference:", reference);
+  if (!pendingPayment) {
+    console.error("[wompi webhook] No pending payment found for link:", paymentLinkId);
     return;
   }
 
-  const { phone, planId } = parsed;
+  const { phone, planId } = pendingPayment;
+
+  // Remove from pending after processing
+  removePendingPayment(paymentLinkId);
   const plan = SUBSCRIPTION_PLANS[planId];
 
   if (!plan) {

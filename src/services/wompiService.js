@@ -20,6 +20,10 @@ const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET;
 // WhatsApp number for redirect after payment
 const WHATSAPP_BOT_NUMBER = process.env.WHATSAPP_BOT_NUMBER || "573000000000";
 
+// In-memory store for pending payments (in production, use database)
+// Maps payment_link_id -> { phone, planId, createdAt }
+const pendingPayments = new Map();
+
 // Subscription plans with COP prices
 export const SUBSCRIPTION_PLANS = {
   basic: {
@@ -105,12 +109,21 @@ export async function createPaymentLink(phone, planId) {
       return { success: false, error: data.error?.message || "Error creando link de pago" };
     }
 
-    console.log("[wompi] Payment link created:", data.data.id);
+    const linkId = data.data.id;
+    console.log("[wompi] Payment link created:", linkId);
+
+    // Store pending payment for webhook lookup
+    pendingPayments.set(linkId, {
+      phone,
+      planId,
+      createdAt: new Date(),
+    });
+    console.log("[wompi] Stored pending payment:", linkId, "->", { phone, planId });
 
     return {
       success: true,
-      paymentUrl: data.data.payment_link_url || `https://checkout.wompi.co/l/${data.data.id}`,
-      linkId: data.data.id,
+      paymentUrl: data.data.payment_link_url || `https://checkout.wompi.co/l/${linkId}`,
+      linkId,
       reference,
     };
   } catch (error) {
@@ -252,6 +265,45 @@ export function formatPriceCOP(amount) {
   }).format(amount);
 }
 
+/**
+ * Get pending payment by link ID
+ * @param {string} linkId - Wompi payment link ID
+ * @returns {{phone: string, planId: string} | null}
+ */
+export function getPendingPayment(linkId) {
+  const payment = pendingPayments.get(linkId);
+  if (payment) {
+    console.log("[wompi] Found pending payment for link:", linkId, "->", payment);
+    return payment;
+  }
+  console.log("[wompi] No pending payment found for link:", linkId);
+  return null;
+}
+
+/**
+ * Remove pending payment after processing
+ * @param {string} linkId - Wompi payment link ID
+ */
+export function removePendingPayment(linkId) {
+  pendingPayments.delete(linkId);
+  console.log("[wompi] Removed pending payment:", linkId);
+}
+
+/**
+ * Clean up old pending payments (older than 48 hours)
+ */
+export function cleanupPendingPayments() {
+  const now = Date.now();
+  const maxAge = 48 * 60 * 60 * 1000; // 48 hours
+
+  for (const [linkId, payment] of pendingPayments.entries()) {
+    if (now - payment.createdAt.getTime() > maxAge) {
+      pendingPayments.delete(linkId);
+      console.log("[wompi] Cleaned up expired pending payment:", linkId);
+    }
+  }
+}
+
 export default {
   createPaymentLink,
   createCheckoutSession,
@@ -259,5 +311,8 @@ export default {
   parsePaymentReference,
   getTransactionStatus,
   formatPriceCOP,
+  getPendingPayment,
+  removePendingPayment,
+  cleanupPendingPayments,
   SUBSCRIPTION_PLANS,
 };
