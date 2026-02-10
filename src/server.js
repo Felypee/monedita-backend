@@ -8,6 +8,7 @@ import {
   sendRemindersToAllUsers,
   sendExpenseReminder,
 } from './services/reminderService.js';
+import { handleWompiWebhook } from './handlers/wompiWebhookHandler.js';
 
 dotenv.config();
 
@@ -56,6 +57,21 @@ app.post('/api/reminders/send/:phone', async (req, res) => {
     res.json({ success });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Wompi payment webhook
+app.post('/webhook/wompi', async (req, res) => {
+  try {
+    const signature = req.headers['x-event-checksum'];
+    const timestamp = req.headers['x-event-timestamp'];
+
+    await handleWompiWebhook(req.body, signature, timestamp);
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('[wompi webhook] Error:', error);
+    res.sendStatus(500);
   }
 });
 

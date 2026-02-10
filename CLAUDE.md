@@ -41,7 +41,10 @@ The agent uses Claude's `tool_use` feature to intelligently route user messages.
 src/tools/
 ├── index.js              # Tool registry + executor
 ├── logExpense.js         # Log expenses (amount, category, description)
+├── editExpense.js        # Edit existing expense (by ID, description, or last)
+├── deleteExpense.js      # Delete expense (by ID, description, or last)
 ├── setBudget.js          # Create/update budgets
+├── deleteBudget.js       # Delete a budget
 ├── showSummary.js        # Monthly spending summary
 ├── showBudgets.js        # List budgets with progress
 ├── showExpenses.js       # Recent transactions
@@ -49,7 +52,7 @@ src/tools/
 ├── renameCategory.js     # Rename categories
 ├── setCurrency.js        # Set user currency
 ├── subscriptionStatus.js # Show plan & usage
-├── upgradeInfo.js        # Upgrade options
+├── upgradeInfo.js        # Upgrade options + payment links
 └── helpInfo.js           # Welcome/help message
 ```
 
@@ -72,6 +75,15 @@ Each tool exports:
 - **src/database/supabaseDB.js**: Supabase implementation (same interface as inMemoryDB)
 - **src/database/subscriptionDB.*.js**: Subscription plans, user subscriptions, and usage tracking
 - **src/utils/whatsappClient.js**: WhatsApp API wrapper for sending messages
+- **src/services/wompiService.js**: Wompi payment gateway integration for subscription upgrades
+- **src/handlers/wompiWebhookHandler.js**: Processes Wompi payment webhooks and updates user subscriptions
+
+### Payment Flow (Wompi)
+1. User types "upgrade" or "quiero premium" → `upgrade_info` tool shows plans
+2. User selects plan → Wompi payment link is generated and sent via WhatsApp
+3. User clicks link → pays on Wompi checkout page
+4. Wompi sends webhook to `/webhook/wompi` → plan is upgraded
+5. User receives confirmation message via WhatsApp
 
 ### MCP Server (mcp-servers/expense-analytics/)
 Standalone MCP server providing analytics tools: `analyze_spending_trends`, `predict_budget_overrun`, `get_category_insights`, `compare_to_average`. Currently returns simulated data.
@@ -124,6 +136,14 @@ For voice messages (at least one required):
 
 For reminders (optional):
 - `REMINDER_SECRET` - Secret token to protect the /api/reminders endpoint
+
+For payments (Wompi):
+- `WOMPI_PUBLIC_KEY` - Wompi public key (starts with pub_)
+- `WOMPI_PRIVATE_KEY` - Wompi private key (starts with prv_)
+- `WOMPI_EVENTS_SECRET` - Wompi events secret for webhook verification
+- `WOMPI_INTEGRITY_SECRET` - Wompi integrity secret for checkout widget
+- `WOMPI_ENV` - "sandbox" or "production" (default: sandbox)
+- `WOMPI_REDIRECT_URL` - URL to redirect after payment (default: https://monedita.app/gracias)
 
 ## Code Patterns
 
