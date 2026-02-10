@@ -22,7 +22,9 @@ import { UserDB } from "../database/index.js";
  * @param {string} timestamp - X-Event-Timestamp header
  */
 export async function handleWompiWebhook(payload, signature, timestamp) {
+  console.log("[wompi webhook] ========================================");
   console.log("[wompi webhook] Received event:", payload.event);
+  console.log("[wompi webhook] Full payload:", JSON.stringify(payload, null, 2));
 
   // Verify signature in production
   if (process.env.NODE_ENV === "production") {
@@ -82,18 +84,22 @@ export async function handleWompiWebhook(payload, signature, timestamp) {
 
   try {
     // Update user subscription
-    await UserSubscriptionDB.upgradePlan(phone, planId);
+    console.log(`[wompi webhook] Calling UserSubscriptionDB.upgradePlan...`);
+    const updatedSubscription = await UserSubscriptionDB.upgradePlan(phone, planId);
+    console.log(`[wompi webhook] Subscription updated:`, JSON.stringify(updatedSubscription));
 
     // Get user language for notification
     const user = await UserDB.get(phone);
     const lang = user?.language || "es";
 
     // Notify user via WhatsApp
+    console.log(`[wompi webhook] Sending success notification to ${phone}...`);
     await notifyPaymentSuccess(phone, plan, lang);
 
-    console.log(`[wompi webhook] Successfully upgraded ${phone} to ${planId}`);
+    console.log(`[wompi webhook] ✅ Successfully upgraded ${phone} to ${planId}`);
+    console.log("[wompi webhook] ========================================");
   } catch (error) {
-    console.error("[wompi webhook] Error upgrading user:", error);
+    console.error("[wompi webhook] ❌ Error upgrading user:", error);
     throw error;
   }
 }
