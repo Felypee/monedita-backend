@@ -577,37 +577,34 @@
         </div>
     </section>
 
-    <!-- Insights Section - Monthly Report Preview -->
-    <section id="insights" class="py-20 bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+    <!-- Insights Section - Addressing the Fear: "Where did my money go?" -->
+    <section id="insights" class="py-20 bg-gradient-to-br from-red-50 via-white to-orange-50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <!-- Left: Text -->
+                <!-- Left: The Fear & Solution -->
                 <div class="text-center lg:text-left">
-                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">
-                        <span data-i18n="insights.title1">Know where your</span><br>
-                        <span class="gradient-text" data-i18n="insights.title2">money goes</span>
-                    </h2>
-                    <p class="text-gray-600 mb-6" data-i18n="insights.subtitle">
-                        Get monthly reports, compare with previous months, and discover spending patterns.
+                    <!-- The Fear -->
+                    <p class="text-red-500 font-medium mb-2 flex items-center justify-center lg:justify-start" data-i18n="insights.fear.label">
+                        <span class="mr-2">😰</span> The hidden problem
                     </p>
-                    <ul class="space-y-3 text-left max-w-md mx-auto lg:mx-0">
-                        <li class="flex items-start">
-                            <span class="text-green-500 mr-2 mt-0.5">✓</span>
-                            <span data-i18n="insights.feature1">Spending by category breakdown</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-green-500 mr-2 mt-0.5">✓</span>
-                            <span data-i18n="insights.feature2">Compare vs previous month</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-green-500 mr-2 mt-0.5">✓</span>
-                            <span data-i18n="insights.feature3">Budget alerts before overspending</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-green-500 mr-2 mt-0.5">✓</span>
-                            <span data-i18n="insights.feature4">AI-powered savings tips</span>
-                        </li>
-                    </ul>
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">
+                        <span data-i18n="insights.fear.title1">"Where did my</span><br>
+                        <span class="text-red-500" data-i18n="insights.fear.title2">money go?"</span>
+                    </h2>
+                    <p class="text-gray-600 mb-6 text-lg" data-i18n="insights.fear.desc">
+                        Small daily expenses that seem harmless add up to hundreds every month. That $5 coffee, the $8 snack, the $3 parking... they're invisible until you track them.
+                    </p>
+
+                    <!-- The Solution -->
+                    <div class="bg-white rounded-xl p-5 shadow-lg border-l-4 border-green-500 mb-6">
+                        <p class="text-green-600 font-semibold mb-2 flex items-center" data-i18n="insights.solution.label">
+                            <span class="mr-2">✨</span> Monedita reveals the truth
+                        </p>
+                        <p class="text-gray-700" data-i18n="insights.solution.desc">
+                            Track every expense in 3 seconds. At month's end, you'll know exactly where every dollar went—no surprises.
+                        </p>
+                    </div>
+
                     <div class="mt-8 flex justify-center lg:justify-start">
                         <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta inline-flex items-center justify-center px-8 py-4 bg-whatsapp hover:bg-whatsapp-dark text-white rounded-full font-semibold text-lg transition shadow-lg shadow-green-500/30 hover:shadow-green-500/50">
                             <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -618,121 +615,73 @@
                     </div>
                 </div>
 
-                <!-- Right: Report Mockup -->
+                <!-- Right: Shocking Report Mockup -->
                 <div class="relative">
                     <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-auto">
-                        <!-- Report Header -->
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <p class="text-xs text-gray-400 uppercase tracking-wide" data-i18n="insights.report.label">Monthly Report</p>
-                                <h3 class="text-lg font-bold text-gray-800" data-i18n="insights.report.month">January 2025</h3>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-2xl font-bold text-gray-800">$1,247</p>
-                                <p class="text-xs text-green-500 font-medium flex items-center justify-end">
-                                    <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" transform="rotate(180 10 10)"/></svg>
-                                    <span data-i18n="insights.report.change">12% vs last month</span>
-                                </p>
-                            </div>
+                        <!-- Alert Header -->
+                        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-5">
+                            <p class="text-red-600 font-bold text-center text-sm mb-1" data-i18n="insights.alert.title">🚨 Hidden Expenses Detected</p>
+                            <p class="text-red-500 text-xs text-center" data-i18n="insights.alert.subtitle">Expenses under $10 this month</p>
                         </div>
 
-                        <!-- Category Breakdown -->
-                        <div class="space-y-4 mb-6">
-                            <!-- Food -->
-                            <div class="flex items-center justify-between">
+                        <!-- The Shocking Revelation -->
+                        <div class="text-center mb-5">
+                            <p class="text-4xl font-black text-gray-800">47</p>
+                            <p class="text-sm text-gray-500" data-i18n="insights.reveal.purchases">small purchases</p>
+                            <div class="flex items-center justify-center my-2">
+                                <div class="h-px bg-gray-300 w-8"></div>
+                                <span class="mx-2 text-gray-400">=</span>
+                                <div class="h-px bg-gray-300 w-8"></div>
+                            </div>
+                            <p class="text-3xl font-black text-red-500">$312</p>
+                            <p class="text-sm text-gray-500" data-i18n="insights.reveal.thismonth">this month alone</p>
+                        </div>
+
+                        <!-- Breakdown of small expenses -->
+                        <div class="space-y-3 mb-5">
+                            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                                 <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-sm">🍔</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-800" data-i18n="insights.cat.food">Food</p>
-                                        <p class="text-xs text-gray-400">42 expenses</p>
-                                    </div>
+                                    <span class="text-lg mr-2">☕</span>
+                                    <span class="text-sm text-gray-700" data-i18n="insights.small.coffee">Coffee & snacks</span>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-800">$485</p>
-                                    <p class="text-xs text-green-500">↓ 8%</p>
+                                    <p class="text-sm font-bold text-gray-800">$127</p>
+                                    <p class="text-xs text-gray-400">23x</p>
                                 </div>
                             </div>
-                            <!-- Transport -->
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                                 <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-sm">🚗</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-800" data-i18n="insights.cat.transport">Transport</p>
-                                        <p class="text-xs text-gray-400">28 expenses</p>
-                                    </div>
+                                    <span class="text-lg mr-2">🚕</span>
+                                    <span class="text-sm text-gray-700" data-i18n="insights.small.rides">Short rides</span>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-800">$312</p>
-                                    <p class="text-xs text-red-500">↑ 15%</p>
+                                    <p class="text-sm font-bold text-gray-800">$98</p>
+                                    <p class="text-xs text-gray-400">14x</p>
                                 </div>
                             </div>
-                            <!-- Shopping -->
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                                 <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-sm">🛍️</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-800" data-i18n="insights.cat.shopping">Shopping</p>
-                                        <p class="text-xs text-gray-400">15 expenses</p>
-                                    </div>
+                                    <span class="text-lg mr-2">🛒</span>
+                                    <span class="text-sm text-gray-700" data-i18n="insights.small.misc">Small purchases</span>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-800">$280</p>
-                                    <p class="text-xs text-green-500">↓ 22%</p>
-                                </div>
-                            </div>
-                            <!-- Entertainment -->
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-sm">🎬</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-800" data-i18n="insights.cat.entertainment">Entertainment</p>
-                                        <p class="text-xs text-gray-400">8 expenses</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-800">$170</p>
-                                    <p class="text-xs text-gray-400">= 0%</p>
+                                    <p class="text-sm font-bold text-gray-800">$87</p>
+                                    <p class="text-xs text-gray-400">10x</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Budget Progress -->
-                        <div class="bg-gray-50 rounded-xl p-4 mb-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <p class="text-xs font-medium text-gray-600" data-i18n="insights.budget.title">Monthly Budget</p>
-                                <p class="text-xs text-gray-500">$1,247 / $1,500</p>
-                            </div>
-                            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full" style="width: 83%;"></div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1" data-i18n="insights.budget.remaining">$253 remaining</p>
-                        </div>
-
-                        <!-- AI Insight -->
-                        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100">
-                            <div class="flex items-start">
-                                <div class="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
-                                    <span class="text-white text-xs">✨</span>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-medium text-purple-700 mb-1" data-i18n="insights.ai.label">AI Insight</p>
-                                    <p class="text-sm text-gray-700" data-i18n="insights.ai.message">You spent 22% less on shopping this month! Keep it up to save $67 more by month end.</p>
-                                </div>
-                            </div>
+                        <!-- Annual Projection - The Real Impact -->
+                        <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200">
+                            <p class="text-xs font-medium text-orange-700 mb-1" data-i18n="insights.projection.label">📊 At this rate, you'll spend:</p>
+                            <p class="text-2xl font-black text-red-600">$3,744<span class="text-sm font-normal text-gray-500" data-i18n="insights.projection.year">/year</span></p>
+                            <p class="text-xs text-gray-600 mt-1" data-i18n="insights.projection.could">on things you don't even remember buying</p>
                         </div>
                     </div>
 
                     <!-- Decorative elements -->
-                    <div class="absolute -top-4 -right-4 w-20 h-20 bg-purple-200 rounded-full opacity-50 blur-2xl"></div>
-                    <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-indigo-200 rounded-full opacity-50 blur-2xl"></div>
+                    <div class="absolute -top-4 -right-4 w-20 h-20 bg-red-200 rounded-full opacity-50 blur-2xl"></div>
+                    <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-orange-200 rounded-full opacity-50 blur-2xl"></div>
                 </div>
             </div>
         </div>
@@ -894,24 +843,22 @@
                 "features.photo.desc": "Snap a photo, AI extracts data",
                 "features.insights.title": "Smart Insights",
                 "features.insights.desc": "Budgets, summaries, exports",
-                "insights.title1": "Know where your",
-                "insights.title2": "money goes",
-                "insights.subtitle": "Get monthly reports, compare with previous months, and discover spending patterns.",
-                "insights.feature1": "Spending by category breakdown",
-                "insights.feature2": "Compare vs previous month",
-                "insights.feature3": "Budget alerts before overspending",
-                "insights.feature4": "AI-powered savings tips",
-                "insights.report.label": "Monthly Report",
-                "insights.report.month": "January 2025",
-                "insights.report.change": "12% vs last month",
-                "insights.cat.food": "Food",
-                "insights.cat.transport": "Transport",
-                "insights.cat.shopping": "Shopping",
-                "insights.cat.entertainment": "Entertainment",
-                "insights.budget.title": "Monthly Budget",
-                "insights.budget.remaining": "$253 remaining",
-                "insights.ai.label": "AI Insight",
-                "insights.ai.message": "You spent 22% less on shopping this month! Keep it up to save $67 more by month end.",
+                "insights.fear.label": "The hidden problem",
+                "insights.fear.title1": "\"Where did my",
+                "insights.fear.title2": "money go?\"",
+                "insights.fear.desc": "Small daily expenses that seem harmless add up to hundreds every month. That $5 coffee, the $8 snack, the $3 parking... they're invisible until you track them.",
+                "insights.solution.label": "Monedita reveals the truth",
+                "insights.solution.desc": "Track every expense in 3 seconds. At month's end, you'll know exactly where every dollar went—no surprises.",
+                "insights.alert.title": "🚨 Hidden Expenses Detected",
+                "insights.alert.subtitle": "Expenses under $10 this month",
+                "insights.reveal.purchases": "small purchases",
+                "insights.reveal.thismonth": "this month alone",
+                "insights.small.coffee": "Coffee & snacks",
+                "insights.small.rides": "Short rides",
+                "insights.small.misc": "Small purchases",
+                "insights.projection.label": "📊 At this rate, you'll spend:",
+                "insights.projection.year": "/year",
+                "insights.projection.could": "on things you don't even remember buying",
                 "pricing.title": "Simple Pricing",
                 "pricing.perMonth": "/mo",
                 "pricing.popular": "Popular",
@@ -968,24 +915,22 @@
                 "features.photo.desc": "Toma una foto, la IA extrae los datos",
                 "features.insights.title": "Insights Inteligentes",
                 "features.insights.desc": "Presupuestos, resúmenes, exportar",
-                "insights.title1": "Sabe a dónde va",
-                "insights.title2": "tu dinero",
-                "insights.subtitle": "Obtén reportes mensuales, compara con meses anteriores y descubre patrones de gasto.",
-                "insights.feature1": "Desglose de gastos por categoría",
-                "insights.feature2": "Compara vs mes anterior",
-                "insights.feature3": "Alertas de presupuesto antes de gastar de más",
-                "insights.feature4": "Tips de ahorro con IA",
-                "insights.report.label": "Reporte Mensual",
-                "insights.report.month": "Enero 2025",
-                "insights.report.change": "12% vs mes pasado",
-                "insights.cat.food": "Comida",
-                "insights.cat.transport": "Transporte",
-                "insights.cat.shopping": "Compras",
-                "insights.cat.entertainment": "Entretenimiento",
-                "insights.budget.title": "Presupuesto Mensual",
-                "insights.budget.remaining": "$253 restantes",
-                "insights.ai.label": "Insight de IA",
-                "insights.ai.message": "¡Gastaste 22% menos en compras este mes! Sigue así para ahorrar $67 más antes de fin de mes.",
+                "insights.fear.label": "El problema oculto",
+                "insights.fear.title1": "\"¿A dónde se fue",
+                "insights.fear.title2": "mi dinero?\"",
+                "insights.fear.desc": "Los pequeños gastos diarios que parecen inofensivos suman cientos cada mes. El café de $5, el snack de $8, el parqueadero de $3... son invisibles hasta que los registras.",
+                "insights.solution.label": "Monedita revela la verdad",
+                "insights.solution.desc": "Registra cada gasto en 3 segundos. Al final del mes, sabrás exactamente a dónde fue cada peso—sin sorpresas.",
+                "insights.alert.title": "🚨 Gastos Hormiga Detectados",
+                "insights.alert.subtitle": "Gastos menores a $10 este mes",
+                "insights.reveal.purchases": "compras pequeñas",
+                "insights.reveal.thismonth": "solo este mes",
+                "insights.small.coffee": "Café y snacks",
+                "insights.small.rides": "Viajes cortos",
+                "insights.small.misc": "Compras pequeñas",
+                "insights.projection.label": "📊 A este ritmo, gastarás:",
+                "insights.projection.year": "/año",
+                "insights.projection.could": "en cosas que ni recuerdas haber comprado",
                 "pricing.title": "Precios Simples",
                 "pricing.perMonth": "/mes",
                 "pricing.popular": "Popular",
@@ -1042,24 +987,22 @@
                 "features.photo.desc": "Tire uma foto, a IA extrai os dados",
                 "features.insights.title": "Insights Inteligentes",
                 "features.insights.desc": "Orçamentos, resumos, exportar",
-                "insights.title1": "Saiba para onde vai",
-                "insights.title2": "seu dinheiro",
-                "insights.subtitle": "Receba relatórios mensais, compare com meses anteriores e descubra padrões de gastos.",
-                "insights.feature1": "Detalhamento de gastos por categoria",
-                "insights.feature2": "Compare com mês anterior",
-                "insights.feature3": "Alertas de orçamento antes de gastar demais",
-                "insights.feature4": "Dicas de economia com IA",
-                "insights.report.label": "Relatório Mensal",
-                "insights.report.month": "Janeiro 2025",
-                "insights.report.change": "12% vs mês passado",
-                "insights.cat.food": "Comida",
-                "insights.cat.transport": "Transporte",
-                "insights.cat.shopping": "Compras",
-                "insights.cat.entertainment": "Entretenimento",
-                "insights.budget.title": "Orçamento Mensal",
-                "insights.budget.remaining": "R$253 restantes",
-                "insights.ai.label": "Insight de IA",
-                "insights.ai.message": "Você gastou 22% menos em compras este mês! Continue assim para economizar R$67 até o fim do mês.",
+                "insights.fear.label": "O problema oculto",
+                "insights.fear.title1": "\"Para onde foi",
+                "insights.fear.title2": "meu dinheiro?\"",
+                "insights.fear.desc": "Pequenos gastos diários que parecem inofensivos somam centenas todo mês. O café de R$5, o lanche de R$8, o estacionamento de R$3... são invisíveis até você rastrear.",
+                "insights.solution.label": "Monedita revela a verdade",
+                "insights.solution.desc": "Registre cada gasto em 3 segundos. No fim do mês, você saberá exatamente para onde foi cada real—sem surpresas.",
+                "insights.alert.title": "🚨 Gastos Ocultos Detectados",
+                "insights.alert.subtitle": "Gastos abaixo de R$10 este mês",
+                "insights.reveal.purchases": "pequenas compras",
+                "insights.reveal.thismonth": "só este mês",
+                "insights.small.coffee": "Café e lanches",
+                "insights.small.rides": "Corridas curtas",
+                "insights.small.misc": "Comprinhas",
+                "insights.projection.label": "📊 Nesse ritmo, você gastará:",
+                "insights.projection.year": "/ano",
+                "insights.projection.could": "em coisas que nem lembra de ter comprado",
                 "pricing.title": "Preços Simples",
                 "pricing.perMonth": "/mês",
                 "pricing.popular": "Popular",
@@ -1116,24 +1059,22 @@
                 "features.photo.desc": "Prenez une photo, l'IA extrait les données",
                 "features.insights.title": "Insights Intelligents",
                 "features.insights.desc": "Budgets, résumés, exports",
-                "insights.title1": "Sachez où va",
-                "insights.title2": "votre argent",
-                "insights.subtitle": "Recevez des rapports mensuels, comparez avec les mois précédents et découvrez vos habitudes de dépenses.",
-                "insights.feature1": "Répartition des dépenses par catégorie",
-                "insights.feature2": "Comparez avec le mois précédent",
-                "insights.feature3": "Alertes budget avant de trop dépenser",
-                "insights.feature4": "Conseils d'économie par IA",
-                "insights.report.label": "Rapport Mensuel",
-                "insights.report.month": "Janvier 2025",
-                "insights.report.change": "12% vs mois dernier",
-                "insights.cat.food": "Alimentation",
-                "insights.cat.transport": "Transport",
-                "insights.cat.shopping": "Achats",
-                "insights.cat.entertainment": "Loisirs",
-                "insights.budget.title": "Budget Mensuel",
-                "insights.budget.remaining": "253€ restants",
-                "insights.ai.label": "Conseil IA",
-                "insights.ai.message": "Vous avez dépensé 22% de moins en achats ce mois! Continuez pour économiser 67€ de plus d'ici la fin du mois.",
+                "insights.fear.label": "Le problème caché",
+                "insights.fear.title1": "\"Où est passé",
+                "insights.fear.title2": "mon argent?\"",
+                "insights.fear.desc": "Les petites dépenses quotidiennes qui semblent anodines s'accumulent en centaines chaque mois. Le café à 5€, le snack à 8€, le parking à 3€... invisibles jusqu'à ce que vous les suiviez.",
+                "insights.solution.label": "Monedita révèle la vérité",
+                "insights.solution.desc": "Enregistrez chaque dépense en 3 secondes. À la fin du mois, vous saurez exactement où est allé chaque euro—sans surprises.",
+                "insights.alert.title": "🚨 Dépenses Cachées Détectées",
+                "insights.alert.subtitle": "Dépenses inférieures à 10€ ce mois",
+                "insights.reveal.purchases": "petits achats",
+                "insights.reveal.thismonth": "ce mois seulement",
+                "insights.small.coffee": "Café et snacks",
+                "insights.small.rides": "Trajets courts",
+                "insights.small.misc": "Petits achats",
+                "insights.projection.label": "📊 À ce rythme, vous dépenserez:",
+                "insights.projection.year": "/an",
+                "insights.projection.could": "pour des choses dont vous ne vous souvenez même pas",
                 "pricing.title": "Tarification Simple",
                 "pricing.perMonth": "/mois",
                 "pricing.popular": "Populaire",
