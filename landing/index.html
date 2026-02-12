@@ -391,23 +391,26 @@
                                 </div>
 
                                 <!-- Mode indicators -->
-                                <div class="flex justify-center gap-2 py-3 bg-white/50">
-                                    <button class="mode-indicator px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600" data-mode="text">
-                                        <span class="mr-1">💬</span><span data-i18n="mode.text">Text</span>
-                                    </button>
-                                    <button class="mode-indicator px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600" data-mode="voice">
-                                        <span class="mr-1">🎤</span><span data-i18n="mode.voice">Voice</span>
-                                    </button>
-                                    <button class="mode-indicator px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600" data-mode="photo">
-                                        <span class="mr-1">📷</span><span data-i18n="mode.photo">Photo</span>
-                                    </button>
+                                <div class="bg-white/50 pt-3 pb-2">
+                                    <div class="flex justify-center gap-2">
+                                        <button class="mode-indicator px-3 py-1.5 rounded-full text-xs font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition cursor-pointer" data-mode="text">
+                                            <span class="mr-1">💬</span><span data-i18n="mode.text">Text</span>
+                                        </button>
+                                        <button class="mode-indicator px-3 py-1.5 rounded-full text-xs font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition cursor-pointer" data-mode="voice">
+                                            <span class="mr-1">🎤</span><span data-i18n="mode.voice">Voice</span>
+                                        </button>
+                                        <button class="mode-indicator px-3 py-1.5 rounded-full text-xs font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition cursor-pointer" data-mode="photo">
+                                            <span class="mr-1">📷</span><span data-i18n="mode.photo">Photo</span>
+                                        </button>
+                                    </div>
+                                    <p class="text-center text-[10px] text-gray-400 mt-1.5 animate-pulse" data-i18n="mode.hint">👆 Tap to try each mode</p>
                                 </div>
 
                                 <!-- Demo scenes container -->
-                                <div id="demo-container" class="relative h-[calc(100%-180px)] p-4">
+                                <div id="demo-container" class="relative h-[calc(100%-190px)] p-4">
                                     <!-- Scene 1: Text Message -->
                                     <div class="demo-scene active" data-scene="text">
-                                        <div class="flex flex-col h-full justify-end space-y-3 pb-4">
+                                        <div class="flex flex-col h-full justify-end space-y-3 pb-14">
                                             <div id="text-user-msg" class="flex justify-end opacity-0">
                                                 <div class="bg-whatsapp-light text-gray-800 text-sm px-3 py-2 rounded-lg rounded-br-none max-w-[75%]">
                                                     <span data-i18n="demo.text.user">Lunch $15 🍔</span>
@@ -428,7 +431,7 @@
 
                                     <!-- Scene 2: Voice Message -->
                                     <div class="demo-scene" data-scene="voice">
-                                        <div class="flex flex-col h-full justify-end space-y-3 pb-4">
+                                        <div class="flex flex-col h-full justify-end space-y-3 pb-14">
                                             <div id="voice-user-msg" class="flex justify-end opacity-0">
                                                 <div class="bg-whatsapp-light text-gray-800 px-3 py-2 rounded-lg rounded-br-none flex items-center space-x-2">
                                                     <div class="w-8 h-8 bg-whatsapp rounded-full flex items-center justify-center">
@@ -463,7 +466,7 @@
 
                                     <!-- Scene 3: Photo/Receipt -->
                                     <div class="demo-scene" data-scene="photo">
-                                        <div class="flex flex-col h-full justify-end space-y-3 pb-4">
+                                        <div class="flex flex-col h-full justify-end space-y-3 pb-14">
                                             <div id="photo-user-msg" class="flex justify-end opacity-0">
                                                 <div class="bg-whatsapp-light rounded-lg rounded-br-none overflow-hidden shadow-sm">
                                                     <div class="w-32 h-40 bg-white relative p-2">
@@ -703,6 +706,7 @@
                 "mode.text": "Text",
                 "mode.voice": "Voice",
                 "mode.photo": "Photo",
+                "mode.hint": "👆 Tap to try each mode",
                 "demo.text.user": "Lunch $15 🍔",
                 "demo.text.bot": "Saved! $15 → Food",
                 "demo.voice.transcription": "\"Uber eight dollars\"",
@@ -757,6 +761,7 @@
                 "mode.text": "Texto",
                 "mode.voice": "Voz",
                 "mode.photo": "Foto",
+                "mode.hint": "👆 Toca para probar cada modo",
                 "demo.text.user": "Almuerzo $15 🍔",
                 "demo.text.bot": "¡Guardado! $15 → Comida",
                 "demo.voice.transcription": "\"Uber ocho dólares\"",
@@ -811,6 +816,7 @@
                 "mode.text": "Texto",
                 "mode.voice": "Voz",
                 "mode.photo": "Foto",
+                "mode.hint": "👆 Toque para testar cada modo",
                 "demo.text.user": "Almoço R$15 🍔",
                 "demo.text.bot": "Salvo! R$15 → Comida",
                 "demo.voice.transcription": "\"Uber oito reais\"",
@@ -865,6 +871,7 @@
                 "mode.text": "Texte",
                 "mode.voice": "Voix",
                 "mode.photo": "Photo",
+                "mode.hint": "👆 Appuyez pour essayer chaque mode",
                 "demo.text.user": "Déjeuner 15€ 🍔",
                 "demo.text.bot": "Enregistré! 15€ → Alimentation",
                 "demo.voice.transcription": "\"Uber huit euros\"",
