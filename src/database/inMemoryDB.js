@@ -103,6 +103,8 @@ export const UserDB = {
   }
 };
 
+import { getDayKey, getWeekKey, getMonthKey } from '../utils/dateUtils.js';
+
 /**
  * Expense operations
  */
@@ -182,7 +184,7 @@ export const ExpenseDB = {
   getCategorySummary(phone, startDate, endDate) {
     const userExpenses = this.getByDateRange(phone, startDate, endDate);
     const summary = {};
-    
+
     userExpenses.forEach(e => {
       if (!summary[e.category]) {
         summary[e.category] = { total: 0, count: 0 };
@@ -190,8 +192,186 @@ export const ExpenseDB = {
       summary[e.category].total += e.amount;
       summary[e.category].count += 1;
     });
-    
+
     return summary;
+  },
+
+  /**
+   * Advanced filtering method for expenses
+   * @param {string} phone - User's phone number
+   * @param {object} filters - Filter criteria
+   * @param {Date|null} filters.startDate - Start date filter
+   * @param {Date|null} filters.endDate - End date filter
+   * @param {string|null} filters.category - Single category filter
+   * @param {string[]|null} filters.categories - Multiple categories filter (OR)
+   * @param {number|null} filters.minAmount - Minimum amount filter
+   * @param {number|null} filters.maxAmount - Maximum amount filter
+   * @param {string|null} filters.searchText - Text search in description
+   * @param {object} options - Query options
+   * @param {string} options.sortBy - Sort field: 'date', 'amount', 'category' (default: 'date')
+   * @param {string} options.sortOrder - Sort order: 'asc', 'desc' (default: 'desc')
+   * @param {number} options.limit - Max results (default: 50, max: 100)
+   * @param {number} options.offset - Skip first N results (default: 0)
+   * @param {boolean} options.aggregate - Return summary instead of list (default: false)
+   * @param {string|null} options.groupBy - Group by: 'category', 'day', 'week', 'month'
+   * @returns {object} { expenses, total, hasMore } or { summary, byGroup } if aggregate
+   */
+  getByFilter(phone, filters = {}, options = {}) {
+    let userExpenses = expenses.get(phone) || [];
+
+    // Apply filters
+    const {
+      startDate = null,
+      endDate = null,
+      category = null,
+      categories = null,
+      minAmount = null,
+      maxAmount = null,
+      searchText = null
+    } = filters;
+
+    // Date filter
+    if (startDate) {
+      userExpenses = userExpenses.filter(e => new Date(e.date) >= startDate);
+    }
+    if (endDate) {
+      userExpenses = userExpenses.filter(e => new Date(e.date) <= endDate);
+    }
+
+    // Category filter
+    if (category) {
+      const catLower = category.toLowerCase();
+      userExpenses = userExpenses.filter(e => e.category.toLowerCase() === catLower);
+    } else if (categories && categories.length > 0) {
+      const catsLower = categories.map(c => c.toLowerCase());
+      userExpenses = userExpenses.filter(e => catsLower.includes(e.category.toLowerCase()));
+    }
+
+    // Amount filter
+    if (minAmount !== null) {
+      userExpenses = userExpenses.filter(e => e.amount >= minAmount);
+    }
+    if (maxAmount !== null) {
+      userExpenses = userExpenses.filter(e => e.amount <= maxAmount);
+    }
+
+    // Text search in description
+    if (searchText) {
+      const searchLower = searchText.toLowerCase();
+      userExpenses = userExpenses.filter(e =>
+        (e.description && e.description.toLowerCase().includes(searchLower)) ||
+        (e.category && e.category.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Parse options
+    const {
+      sortBy = 'date',
+      sortOrder = 'desc',
+      limit = 50,
+      offset = 0,
+      aggregate = false,
+      groupBy = null
+    } = options;
+
+    // If aggregate mode, compute summary
+    if (aggregate) {
+      return this._computeAggregate(userExpenses, groupBy);
+    }
+
+    // Sort
+    const sortedExpenses = [...userExpenses].sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'amount':
+          comparison = a.amount - b.amount;
+          break;
+        case 'category':
+          comparison = a.category.localeCompare(b.category);
+          break;
+        case 'date':
+        default:
+          comparison = new Date(a.date) - new Date(b.date);
+          break;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+    // Pagination
+    const effectiveLimit = Math.min(limit, 100);
+    const paginatedExpenses = sortedExpenses.slice(offset, offset + effectiveLimit);
+
+    return {
+      expenses: paginatedExpenses,
+      total: sortedExpenses.length,
+      hasMore: offset + effectiveLimit < sortedExpenses.length
+    };
+  },
+
+  /**
+   * Compute aggregation for expenses
+   * @private
+   */
+  _computeAggregate(expenses, groupBy) {
+    if (expenses.length === 0) {
+      return {
+        summary: { total: 0, count: 0, average: 0, max: 0, min: 0 },
+        byGroup: null
+      };
+    }
+
+    // Overall summary
+    const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const count = expenses.length;
+    const amounts = expenses.map(e => e.amount);
+
+    const summary = {
+      total,
+      count,
+      average: total / count,
+      max: Math.max(...amounts),
+      min: Math.min(...amounts)
+    };
+
+    // Group if requested
+    if (!groupBy) {
+      return { summary, byGroup: null };
+    }
+
+    const groups = {};
+    for (const expense of expenses) {
+      let key;
+      switch (groupBy) {
+        case 'category':
+          key = expense.category;
+          break;
+        case 'day':
+          key = getDayKey(new Date(expense.date));
+          break;
+        case 'week':
+          key = getWeekKey(new Date(expense.date));
+          break;
+        case 'month':
+          key = getMonthKey(new Date(expense.date));
+          break;
+        default:
+          key = 'unknown';
+      }
+
+      if (!groups[key]) {
+        groups[key] = { total: 0, count: 0, expenses: [] };
+      }
+      groups[key].total += expense.amount;
+      groups[key].count += 1;
+      groups[key].expenses.push(expense);
+    }
+
+    // Calculate average for each group
+    for (const key of Object.keys(groups)) {
+      groups[key].average = groups[key].total / groups[key].count;
+    }
+
+    return { summary, byGroup: groups };
   }
 };
 

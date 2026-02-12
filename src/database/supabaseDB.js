@@ -12,6 +12,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { getDayKey, getWeekKey, getMonthKey } from '../utils/dateUtils.js';
 
 const supabaseUrl = process.env.SUPABASE_URL;
 
@@ -305,6 +306,173 @@ export const ExpenseDB = {
     });
 
     return summary;
+  },
+
+  /**
+   * Advanced filtering method for expenses
+   * @param {string} phone - User's phone number
+   * @param {object} filters - Filter criteria
+   * @param {Date|null} filters.startDate - Start date filter
+   * @param {Date|null} filters.endDate - End date filter
+   * @param {string|null} filters.category - Single category filter
+   * @param {string[]|null} filters.categories - Multiple categories filter (OR)
+   * @param {number|null} filters.minAmount - Minimum amount filter
+   * @param {number|null} filters.maxAmount - Maximum amount filter
+   * @param {string|null} filters.searchText - Text search in description
+   * @param {object} options - Query options
+   * @param {string} options.sortBy - Sort field: 'date', 'amount', 'category' (default: 'date')
+   * @param {string} options.sortOrder - Sort order: 'asc', 'desc' (default: 'desc')
+   * @param {number} options.limit - Max results (default: 50, max: 100)
+   * @param {number} options.offset - Skip first N results (default: 0)
+   * @param {boolean} options.aggregate - Return summary instead of list (default: false)
+   * @param {string|null} options.groupBy - Group by: 'category', 'day', 'week', 'month'
+   * @returns {Promise<object>} { expenses, total, hasMore } or { summary, byGroup } if aggregate
+   */
+  async getByFilter(phone, filters = {}, options = {}) {
+    const {
+      startDate = null,
+      endDate = null,
+      category = null,
+      categories = null,
+      minAmount = null,
+      maxAmount = null,
+      searchText = null
+    } = filters;
+
+    const {
+      sortBy = 'date',
+      sortOrder = 'desc',
+      limit = 50,
+      offset = 0,
+      aggregate = false,
+      groupBy = null
+    } = options;
+
+    // Build query
+    let query = supabase
+      .from("expenses")
+      .select("*", { count: 'exact' })
+      .eq("phone", phone);
+
+    // Date filters
+    if (startDate) {
+      query = query.gte("date", startDate.toISOString());
+    }
+    if (endDate) {
+      query = query.lte("date", endDate.toISOString());
+    }
+
+    // Category filter
+    if (category) {
+      query = query.ilike("category", category);
+    } else if (categories && categories.length > 0) {
+      query = query.in("category", categories.map(c => c.toLowerCase()));
+    }
+
+    // Amount filters
+    if (minAmount !== null) {
+      query = query.gte("amount", minAmount);
+    }
+    if (maxAmount !== null) {
+      query = query.lte("amount", maxAmount);
+    }
+
+    // Text search in description (ilike for case-insensitive)
+    if (searchText) {
+      // Search in both description and category
+      query = query.or(`description.ilike.%${searchText}%,category.ilike.%${searchText}%`);
+    }
+
+    // If aggregate mode, we need all matching expenses for computation
+    if (aggregate) {
+      const { data, error } = await query.order("date", { ascending: false });
+      if (error) throw error;
+      return this._computeAggregate(data || [], groupBy);
+    }
+
+    // Sorting
+    const sortColumn = sortBy === 'date' ? 'date' : sortBy === 'amount' ? 'amount' : 'category';
+    query = query.order(sortColumn, { ascending: sortOrder === 'asc' });
+
+    // Pagination
+    const effectiveLimit = Math.min(limit, 100);
+    query = query.range(offset, offset + effectiveLimit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    return {
+      expenses: data || [],
+      total: count || 0,
+      hasMore: (count || 0) > offset + effectiveLimit
+    };
+  },
+
+  /**
+   * Compute aggregation for expenses
+   * @private
+   */
+  _computeAggregate(expenses, groupBy) {
+    if (expenses.length === 0) {
+      return {
+        summary: { total: 0, count: 0, average: 0, max: 0, min: 0 },
+        byGroup: null
+      };
+    }
+
+    // Overall summary
+    const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+    const count = expenses.length;
+    const amounts = expenses.map(e => parseFloat(e.amount));
+
+    const summary = {
+      total,
+      count,
+      average: total / count,
+      max: Math.max(...amounts),
+      min: Math.min(...amounts)
+    };
+
+    // Group if requested
+    if (!groupBy) {
+      return { summary, byGroup: null };
+    }
+
+    const groups = {};
+    for (const expense of expenses) {
+      let key;
+      switch (groupBy) {
+        case 'category':
+          key = expense.category;
+          break;
+        case 'day':
+          key = getDayKey(new Date(expense.date));
+          break;
+        case 'week':
+          key = getWeekKey(new Date(expense.date));
+          break;
+        case 'month':
+          key = getMonthKey(new Date(expense.date));
+          break;
+        default:
+          key = 'unknown';
+      }
+
+      if (!groups[key]) {
+        groups[key] = { total: 0, count: 0, expenses: [] };
+      }
+      groups[key].total += parseFloat(expense.amount);
+      groups[key].count += 1;
+      groups[key].expenses.push(expense);
+    }
+
+    // Calculate average for each group
+    for (const key of Object.keys(groups)) {
+      groups[key].average = groups[key].total / groups[key].count;
+    }
+
+    return { summary, byGroup: groups };
   },
 };
 

@@ -31,15 +31,6 @@ import {
 } from "../utils/languageUtils.js";
 import { getUserCategories } from "../utils/categoryUtils.js";
 import {
-  isInTutorial,
-  startTutorial,
-  processTutorialResponse,
-  advanceToStep,
-  simulateExpenseResponse,
-  simulateSummaryResponse,
-  simulateBudgetResponse,
-} from "../services/onboardingService.js";
-import {
   checkLimit,
   trackUsage,
   getSubscriptionStatus,
@@ -90,62 +81,12 @@ export async function handleIncomingMessage(message, phone) {
 
     const lang = user.language || 'en';
 
-    // Start tutorial for new users
+    // For new users, send welcome message and process their first message normally
     if (isNewUser) {
-      if (clearIndicator) await clearIndicator();
-      const tutorialMsg = await startTutorial(phone, lang);
-      await sendTextMessage(phone, tutorialMsg);
-      return;
-    }
-
-    // Handle tutorial mode for text messages (don't batch during tutorial)
-    if (message.type === "text") {
-      const messageText = message.text.body;
-      const lowerMsg = messageText.toLowerCase().trim();
-
-      // Handle "tutorial" command to restart tutorial
-      if (lowerMsg === "tutorial") {
-        if (clearIndicator) await clearIndicator();
-        const tutorialMsg = await startTutorial(phone, lang);
-        await sendTextMessage(phone, tutorialMsg);
-        return;
-      }
-
-      // Check if in tutorial and process response (no batching in tutorial)
-      if (await isInTutorial(phone)) {
-        const tutorialResult = await processTutorialResponse(phone, messageText, lang);
-
-        if (tutorialResult) {
-          if (tutorialResult.advance) {
-            const userCurrency = user.currency || 'USD';
-
-            if (clearIndicator) await clearIndicator();
-            if (tutorialResult.processExpense) {
-              const expenseResponse = simulateExpenseResponse(phone, messageText, userCurrency, lang);
-              await sendTextMessage(phone, expenseResponse);
-              const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
-              if (nextStepMsg) await sendTextMessage(phone, nextStepMsg);
-              return;
-            } else if (tutorialResult.processSummary) {
-              const summaryResponse = simulateSummaryResponse(phone, userCurrency, lang);
-              await sendTextMessage(phone, summaryResponse);
-              const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
-              if (nextStepMsg) await sendTextMessage(phone, nextStepMsg);
-              return;
-            } else if (tutorialResult.processBudget) {
-              const budgetResponse = simulateBudgetResponse(messageText, userCurrency, lang);
-              await sendTextMessage(phone, budgetResponse);
-              const nextStepMsg = await advanceToStep(phone, tutorialResult.nextStep, lang);
-              if (nextStepMsg) await sendTextMessage(phone, nextStepMsg);
-              return;
-            }
-          } else {
-            if (clearIndicator) await clearIndicator();
-            await sendTextMessage(phone, tutorialResult);
-            return;
-          }
-        }
-      }
+      // Send a brief welcome, then process their message
+      const welcomeMsg = getWelcomeMessage(lang);
+      await sendTextMessage(phone, welcomeMsg);
+      // Continue processing their message below (don't return)
     }
 
     // For text messages, use batching (10-second window)
@@ -223,6 +164,30 @@ export async function handleIncomingMessage(message, phone) {
     const errorLang = user?.language || 'en';
     await sendTextMessage(phone, getMessage('error_generic', errorLang));
   }
+}
+
+/**
+ * Get welcome message for new users
+ */
+function getWelcomeMessage(lang) {
+  const messages = {
+    en: `👋 Welcome to Monedita!
+
+I'm your AI expense assistant. Just tell me what you spent and I'll track it for you.
+
+Try it now: "Spent 20 on coffee" or send a receipt photo!`,
+    es: `👋 ¡Bienvenido a Monedita!
+
+Soy tu asistente de gastos con IA. Solo dime lo que gastaste y lo registro por ti.
+
+Pruébalo: "Gasté 20000 en café" o envía una foto de recibo!`,
+    pt: `👋 Bem-vindo ao Monedita!
+
+Sou seu assistente de despesas com IA. Só me diga o que gastou e eu registro para você.
+
+Experimente: "Gastei 20 em café" ou envie uma foto do recibo!`
+  };
+  return messages[lang] || messages.en;
 }
 
 /**

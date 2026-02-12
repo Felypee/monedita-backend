@@ -8,6 +8,7 @@ import setBudget from "./setBudget.js";
 import showSummary from "./showSummary.js";
 import showBudgets from "./showBudgets.js";
 import showExpenses from "./showExpenses.js";
+import searchExpenses from "./searchExpenses.js";
 import exportExpenses from "./exportExpenses.js";
 import renameCategory from "./renameCategory.js";
 import setCurrency from "./setCurrency.js";
@@ -25,6 +26,7 @@ const tools = {
   show_summary: showSummary,
   show_budgets: showBudgets,
   show_expenses: showExpenses,
+  search_expenses: searchExpenses,
   export_expenses: exportExpenses,
   rename_category: renameCategory,
   set_currency: setCurrency,
