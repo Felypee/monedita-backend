@@ -593,48 +593,45 @@
         </div>
     </section>
 
-    <!-- Benefits Section - Psychology/Neuroscience Based -->
+    <!-- Benefits Section - Science-Backed Data -->
     <section id="features" class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-3xl sm:text-4xl font-bold mb-4">
-                    <span data-i18n="benefits.title">When you control your money</span>
+                    <span data-i18n="benefits.title">People who track their expenses:</span>
                 </h2>
-                <p class="text-lg text-gray-600" data-i18n="benefits.subtitle">Your mind and body feel it</p>
             </div>
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Benefit 1: Sleep/Stress -->
-                <div class="feature-card bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 text-center hover:shadow-lg transition border border-indigo-100">
-                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-indigo-100 rounded-2xl flex items-center justify-center">
-                        <span class="text-2xl">😴</span>
-                    </div>
-                    <h3 class="font-semibold mb-2" data-i18n="benefits.sleep.title">Sleep peacefully</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="benefits.sleep.desc">No more 3am anxiety wondering where your money went</p>
+                <!-- Stat 1: Savings -->
+                <div class="feature-card bg-white rounded-2xl p-6 text-center hover:shadow-xl transition border-2 border-gray-100 hover:border-green-200">
+                    <p class="text-5xl font-black text-green-500 mb-2">20%</p>
+                    <p class="text-gray-800 font-semibold mb-1" data-i18n="benefits.save.title">more savings</p>
+                    <p class="text-gray-500 text-xs" data-i18n="benefits.save.source">Journal of Consumer Research</p>
                 </div>
-                <!-- Benefit 2: Mental Freedom -->
-                <div class="feature-card bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 text-center hover:shadow-lg transition border border-emerald-100">
-                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-emerald-100 rounded-2xl flex items-center justify-center">
-                        <span class="text-2xl">🧠</span>
-                    </div>
-                    <h3 class="font-semibold mb-2" data-i18n="benefits.mind.title">Free your mind</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="benefits.mind.desc">Stop doing mental math. Your brain wasn't made to be a calculator</p>
+                <!-- Stat 2: Stress -->
+                <div class="feature-card bg-white rounded-2xl p-6 text-center hover:shadow-xl transition border-2 border-gray-100 hover:border-indigo-200">
+                    <p class="text-5xl font-black text-indigo-500 mb-2">65%</p>
+                    <p class="text-gray-800 font-semibold mb-1" data-i18n="benefits.stress.title">less financial stress</p>
+                    <p class="text-gray-500 text-xs" data-i18n="benefits.stress.source">American Psychological Association</p>
                 </div>
-                <!-- Benefit 3: Control/Dopamine -->
-                <div class="feature-card bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 text-center hover:shadow-lg transition border border-amber-100">
-                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-amber-100 rounded-2xl flex items-center justify-center">
-                        <span class="text-2xl">💪</span>
-                    </div>
-                    <h3 class="font-semibold mb-2" data-i18n="benefits.control.title">Feel in control</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="benefits.control.desc">That powerful feeling when you know exactly where every dollar goes</p>
+                <!-- Stat 3: Goals -->
+                <div class="feature-card bg-white rounded-2xl p-6 text-center hover:shadow-xl transition border-2 border-gray-100 hover:border-amber-200">
+                    <p class="text-5xl font-black text-amber-500 mb-2">3x</p>
+                    <p class="text-gray-800 font-semibold mb-1" data-i18n="benefits.goals.title">more likely to reach goals</p>
+                    <p class="text-gray-500 text-xs" data-i18n="benefits.goals.source">Financial Health Network</p>
                 </div>
-                <!-- Benefit 4: Future/Goals -->
-                <div class="feature-card bg-gradient-to-br from-sky-50 to-blue-50 rounded-2xl p-6 text-center hover:shadow-lg transition border border-sky-100">
-                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-sky-100 rounded-2xl flex items-center justify-center">
-                        <span class="text-2xl">🎯</span>
-                    </div>
-                    <h3 class="font-semibold mb-2" data-i18n="benefits.goals.title">Achieve your dreams</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="benefits.goals.desc">Small savings today become that trip, that car, that freedom tomorrow</p>
+                <!-- Stat 4: Debt -->
+                <div class="feature-card bg-white rounded-2xl p-6 text-center hover:shadow-xl transition border-2 border-gray-100 hover:border-red-200">
+                    <p class="text-5xl font-black text-red-500 mb-2">50%</p>
+                    <p class="text-gray-800 font-semibold mb-1" data-i18n="benefits.debt.title">less unexpected debt</p>
+                    <p class="text-gray-500 text-xs" data-i18n="benefits.debt.source">National Endowment for Financial Education</p>
                 </div>
+            </div>
+            <!-- Bottom message -->
+            <div class="mt-12 text-center">
+                <p class="text-gray-600 max-w-2xl mx-auto" data-i18n="benefits.conclusion">
+                    The simple act of tracking makes you <span class="font-semibold text-gray-800">aware</span>. And awareness changes behavior.
+                </p>
             </div>
         </div>
     </section>
@@ -897,16 +894,16 @@
                 "demo.voice.bot": "Saved! $8 → Transport",
                 "demo.photo.scanning": "Scanning receipt...",
                 "demo.photo.bot": "Saved! $42 → Shopping",
-                "benefits.title": "When you control your money",
-                "benefits.subtitle": "Your mind and body feel it",
-                "benefits.sleep.title": "Sleep peacefully",
-                "benefits.sleep.desc": "No more 3am anxiety wondering where your money went",
-                "benefits.mind.title": "Free your mind",
-                "benefits.mind.desc": "Stop doing mental math. Your brain wasn't made to be a calculator",
-                "benefits.control.title": "Feel in control",
-                "benefits.control.desc": "That powerful feeling when you know exactly where every dollar goes",
-                "benefits.goals.title": "Achieve your dreams",
-                "benefits.goals.desc": "Small savings today become that trip, that car, that freedom tomorrow",
+                "benefits.title": "People who track their expenses:",
+                "benefits.save.title": "more savings",
+                "benefits.save.source": "Journal of Consumer Research",
+                "benefits.stress.title": "less financial stress",
+                "benefits.stress.source": "American Psychological Association",
+                "benefits.goals.title": "more likely to reach goals",
+                "benefits.goals.source": "Financial Health Network",
+                "benefits.debt.title": "less unexpected debt",
+                "benefits.debt.source": "National Endowment for Financial Education",
+                "benefits.conclusion": "The simple act of tracking makes you <span class=\"font-semibold text-gray-800\">aware</span>. And awareness changes behavior.",
                 "story.label": "End of month. Every month.",
                 "story.title": "\"I thought I had more money...\"",
                 "story.people": "7 of 10 people feel this",
@@ -975,16 +972,16 @@
                 "demo.voice.bot": "¡Guardado! $8 → Transporte",
                 "demo.photo.scanning": "Escaneando recibo...",
                 "demo.photo.bot": "¡Guardado! $42 → Compras",
-                "benefits.title": "Cuando controlas tu dinero",
-                "benefits.subtitle": "Tu mente y cuerpo lo sienten",
-                "benefits.sleep.title": "Duerme tranquilo",
-                "benefits.sleep.desc": "No más ansiedad a las 3am preguntándote a dónde se fue tu dinero",
-                "benefits.mind.title": "Libera tu mente",
-                "benefits.mind.desc": "Deja de hacer cuentas mentales. Tu cerebro no fue hecho para ser calculadora",
-                "benefits.control.title": "Siente el control",
-                "benefits.control.desc": "Esa sensación poderosa de saber exactamente a dónde va cada peso",
-                "benefits.goals.title": "Logra tus sueños",
-                "benefits.goals.desc": "Pequeños ahorros hoy se convierten en ese viaje, ese carro, esa libertad mañana",
+                "benefits.title": "Las personas que registran sus gastos:",
+                "benefits.save.title": "más ahorro",
+                "benefits.save.source": "Journal of Consumer Research",
+                "benefits.stress.title": "menos estrés financiero",
+                "benefits.stress.source": "American Psychological Association",
+                "benefits.goals.title": "más probabilidad de lograr metas",
+                "benefits.goals.source": "Financial Health Network",
+                "benefits.debt.title": "menos deudas inesperadas",
+                "benefits.debt.source": "National Endowment for Financial Education",
+                "benefits.conclusion": "El simple acto de registrar te hace <span class=\"font-semibold text-gray-800\">consciente</span>. Y la consciencia cambia el comportamiento.",
                 "story.label": "Fin de mes. Todos los meses.",
                 "story.title": "\"Pensé que tenía más plata...\"",
                 "story.people": "7 de cada 10 personas sienten esto",
@@ -1053,16 +1050,16 @@
                 "demo.voice.bot": "Salvo! R$8 → Transporte",
                 "demo.photo.scanning": "Escaneando recibo...",
                 "demo.photo.bot": "Salvo! R$42 → Compras",
-                "benefits.title": "Quando você controla seu dinheiro",
-                "benefits.subtitle": "Sua mente e corpo sentem",
-                "benefits.sleep.title": "Durma tranquilo",
-                "benefits.sleep.desc": "Chega de ansiedade às 3h da manhã se perguntando para onde foi seu dinheiro",
-                "benefits.mind.title": "Libere sua mente",
-                "benefits.mind.desc": "Pare de fazer contas mentais. Seu cérebro não foi feito para ser calculadora",
-                "benefits.control.title": "Sinta o controle",
-                "benefits.control.desc": "Aquela sensação poderosa de saber exatamente para onde vai cada real",
-                "benefits.goals.title": "Realize seus sonhos",
-                "benefits.goals.desc": "Pequenas economias hoje se tornam aquela viagem, aquele carro, aquela liberdade amanhã",
+                "benefits.title": "Pessoas que registram seus gastos:",
+                "benefits.save.title": "mais economia",
+                "benefits.save.source": "Journal of Consumer Research",
+                "benefits.stress.title": "menos estresse financeiro",
+                "benefits.stress.source": "American Psychological Association",
+                "benefits.goals.title": "mais chances de atingir metas",
+                "benefits.goals.source": "Financial Health Network",
+                "benefits.debt.title": "menos dívidas inesperadas",
+                "benefits.debt.source": "National Endowment for Financial Education",
+                "benefits.conclusion": "O simples ato de registrar te torna <span class=\"font-semibold text-gray-800\">consciente</span>. E consciência muda comportamento.",
                 "story.label": "Fim do mês. Todo mês.",
                 "story.title": "\"Achei que tinha mais dinheiro...\"",
                 "story.people": "7 de cada 10 pessoas sentem isso",
@@ -1131,16 +1128,16 @@
                 "demo.voice.bot": "Enregistré! 8€ → Transport",
                 "demo.photo.scanning": "Scan du reçu...",
                 "demo.photo.bot": "Enregistré! 42€ → Achats",
-                "benefits.title": "Quand vous contrôlez votre argent",
-                "benefits.subtitle": "Votre esprit et votre corps le ressentent",
-                "benefits.sleep.title": "Dormez paisiblement",
-                "benefits.sleep.desc": "Plus d'anxiété à 3h du matin en vous demandant où est passé votre argent",
-                "benefits.mind.title": "Libérez votre esprit",
-                "benefits.mind.desc": "Arrêtez le calcul mental. Votre cerveau n'a pas été conçu pour être une calculatrice",
-                "benefits.control.title": "Sentez le contrôle",
-                "benefits.control.desc": "Ce sentiment puissant de savoir exactement où va chaque euro",
-                "benefits.goals.title": "Réalisez vos rêves",
-                "benefits.goals.desc": "Petites économies aujourd'hui deviennent ce voyage, cette voiture, cette liberté demain",
+                "benefits.title": "Les personnes qui suivent leurs dépenses:",
+                "benefits.save.title": "plus d'économies",
+                "benefits.save.source": "Journal of Consumer Research",
+                "benefits.stress.title": "moins de stress financier",
+                "benefits.stress.source": "American Psychological Association",
+                "benefits.goals.title": "plus susceptibles d'atteindre leurs objectifs",
+                "benefits.goals.source": "Financial Health Network",
+                "benefits.debt.title": "moins de dettes imprévues",
+                "benefits.debt.source": "National Endowment for Financial Education",
+                "benefits.conclusion": "Le simple fait de suivre vous rend <span class=\"font-semibold text-gray-800\">conscient</span>. Et la conscience change le comportement.",
                 "story.label": "Fin du mois. Chaque mois.",
                 "story.title": "\"Je pensais avoir plus d'argent...\"",
                 "story.people": "7 personnes sur 10 ressentent ça",
