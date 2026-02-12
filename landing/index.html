@@ -25,9 +25,12 @@
                     },
                     animation: {
                         'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
                         'float': 'float 6s ease-in-out infinite',
                         'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
                         'typing': 'typing 1.4s infinite',
+                        'waveform': 'waveform 0.8s ease-in-out infinite',
+                        'scan': 'scan 1.5s ease-in-out infinite',
                     }
                 }
             }
@@ -37,6 +40,10 @@
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
@@ -50,27 +57,24 @@
             0%, 60%, 100% { opacity: 0.3; }
             30% { opacity: 1; }
         }
-        .chat-bubble { opacity: 0; }
-        .chat-bubble.visible { animation: fadeInUp 0.4s ease-out forwards; }
+        @keyframes waveform {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.4); }
+        }
+        @keyframes scan {
+            0% { top: 10%; opacity: 1; }
+            50% { top: 80%; opacity: 1; }
+            51% { opacity: 0; }
+            100% { top: 10%; opacity: 0; }
+        }
         .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .app-gradient-text {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         .phone-shadow {
             box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25),
@@ -88,20 +92,6 @@
         }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
-        }
-        .pricing-card:hover {
-            transform: scale(1.02);
-        }
-        .pricing-card.popular {
-            transform: scale(1.05);
-            border: 2px solid #667eea;
-        }
-        .pricing-card.popular:hover {
-            transform: scale(1.07);
-        }
         .lang-dropdown {
             position: relative;
         }
@@ -141,181 +131,69 @@
             background: #ede9fe;
             color: #7c3aed;
         }
-        .lang-flag {
-            width: 24px;
-            height: 18px;
-            margin-right: 0.75rem;
-            border-radius: 2px;
-            object-fit: cover;
-        }
 
-        /* Feature Animations */
-        @keyframes waveform {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(0.5); }
+        /* Demo Scene Styles */
+        .demo-scene {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
         }
-
-        @keyframes scanLine {
-            0% { top: 0; opacity: 1; }
-            50% { top: 100%; opacity: 1; }
-            51% { opacity: 0; }
-            100% { top: 0; opacity: 0; }
+        .demo-scene.active {
+            opacity: 1;
         }
-
-        @keyframes downloadBounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(5px); }
+        .demo-badge {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 10px;
+            z-index: 10;
         }
-
-        @keyframes messageSlide {
-            0% { opacity: 0; transform: translateX(20px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes messageSlideLeft {
-            0% { opacity: 0; transform: translateX(-20px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes scaleIn {
-            0% { opacity: 0; transform: scale(0); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes fileSlide {
-            0% { opacity: 0; transform: translateY(-20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
         .waveform-bar {
+            animation: waveform 0.8s ease-in-out infinite;
             transform-origin: center;
         }
-
         .scan-line {
-            animation: scanLine 2s ease-in-out infinite;
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #22c55e, transparent);
+            animation: scan 1.5s ease-in-out infinite;
         }
 
-        .scan-check {
-            animation: scaleIn 0.5s ease-out 1s forwards;
-            opacity: 0;
+        /* Mode Indicators */
+        .mode-indicator {
+            transition: all 0.3s ease;
+        }
+        .mode-indicator.active {
+            background: #667eea;
+            color: white;
         }
 
-        .scan-total {
-            animation: scaleIn 0.3s ease-out 1.2s forwards;
-            opacity: 0;
-            transform: scale(0);
+        /* Pricing Styles */
+        .pricing-card:hover {
+            transform: scale(1.02);
         }
-
-        .feature-msg-1 {
-            animation: messageSlide 0.5s ease-out 0.3s forwards;
-            opacity: 0;
+        .pricing-card.popular {
+            transform: scale(1.05);
+            border: 2px solid #667eea;
         }
-
-        .feature-msg-2 {
-            animation: messageSlideLeft 0.5s ease-out 1s forwards;
-            opacity: 0;
+        .pricing-card.popular:hover {
+            transform: scale(1.07);
         }
-
-        .download-arrow {
-            animation: downloadBounce 1s ease-in-out infinite;
-        }
-
-        .export-file-1 {
-            animation: fileSlide 0.5s ease-out 0.2s forwards;
-            opacity: 0;
-        }
-
-        .export-file-2 {
-            animation: fileSlide 0.5s ease-out 0.4s forwards;
-            opacity: 0;
-        }
-
-        .receipt-card {
-            animation: scaleIn 0.5s ease-out forwards;
-        }
-
-        /* Intersection Observer animations */
-        .feature-card.in-view .budget-bar-1 {
-            width: 70% !important;
-            transition: width 1s ease-out 0.2s;
-        }
-        .feature-card.in-view .budget-bar-2 {
-            width: 90% !important;
-            transition: width 1s ease-out 0.4s;
-        }
-        .feature-card.in-view .budget-bar-3 {
-            width: 100% !important;
-            transition: width 1s ease-out 0.6s;
-        }
-
-        .feature-card.in-view .chart-segment-1 {
-            stroke-dasharray: 75.4 251.2 !important;
-        }
-        .feature-card.in-view .chart-segment-2 {
-            stroke-dasharray: 50.2 251.2 !important;
-            stroke-dashoffset: -75.4;
-        }
-        .feature-card.in-view .chart-segment-3 {
-            stroke-dasharray: 37.7 251.2 !important;
-            stroke-dashoffset: -125.6;
-        }
-
-        /* Pricing Illustrations */
-        .pricing-illustration {
-            height: 140px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
-
-        @keyframes coinFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(5deg); }
-        }
-
-        @keyframes plantGrow {
-            0% { transform: scaleY(0); transform-origin: bottom; }
-            100% { transform: scaleY(1); transform-origin: bottom; }
-        }
-
-        @keyframes rocketShake {
-            0%, 100% { transform: rotate(-2deg); }
-            50% { transform: rotate(2deg); }
-        }
-
-        @keyframes starPulse {
-            0%, 100% { opacity: 0.5; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
-
-        .pricing-card:hover .pricing-coin {
-            animation: coinFloat 1s ease-in-out infinite;
-        }
-
-        .pricing-card:hover .pricing-plant {
-            animation: plantGrow 0.8s ease-out forwards;
-        }
-
-        .pricing-card:hover .pricing-rocket {
-            animation: rocketShake 0.3s ease-in-out infinite;
-        }
-
-        .pricing-card:hover .pricing-star {
-            animation: starPulse 0.8s ease-in-out infinite;
-        }
-
-        .pricing-card:hover .pricing-star:nth-child(2) { animation-delay: 0.2s; }
-        .pricing-card:hover .pricing-star:nth-child(3) { animation-delay: 0.4s; }
-
         .price-original {
             text-decoration: line-through;
             color: #9ca3af;
             font-size: 0.875rem;
             margin-right: 0.5rem;
         }
-
         .savings-badge {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
@@ -326,11 +204,19 @@
             display: inline-block;
             margin-top: 0.5rem;
         }
+
+        /* Feature card animation */
+        .feature-icon {
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900">
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-filter backdrop-blur-md border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-2">
@@ -440,59 +326,48 @@
         <div class="absolute inset-0 overflow-hidden">
             <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float"></div>
             <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float" style="animation-delay: 2s;"></div>
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-float" style="animation-delay: 4s;"></div>
         </div>
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-6rem)]">
-                <!-- Left content -->
+                <!-- Left content - Simplified -->
                 <div class="text-center lg:text-left">
-                    <div class="inline-flex items-center px-4 py-2 bg-purple-100 rounded-full text-purple-700 text-sm font-medium mb-6">
-                        <span class="w-2 h-2 bg-purple-500 rounded-full mr-2 animate-pulse"></span>
-                        <span data-i18n="hero.badge">AI-Powered Finance Assistant</span>
-                    </div>
                     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                        <span data-i18n="hero.title1">Track Expenses</span><br>
-                        <span class="gradient-text" data-i18n="hero.title2">Through WhatsApp</span>
+                        <span data-i18n="hero.title1">Track expenses</span><br>
+                        <span class="gradient-text" data-i18n="hero.title2">via WhatsApp</span>
                     </h1>
-                    <p class="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0" data-i18n="hero.subtitle">
-                        Simply message your expenses, snap receipts, or send voice notes. Our AI understands and organizes everything for you.
+                    <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto lg:mx-0" data-i18n="hero.subtitle">
+                        Text, voice, or photo. AI does the rest.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                         <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta inline-flex items-center justify-center px-8 py-4 bg-whatsapp hover:bg-whatsapp-dark text-white rounded-full font-semibold text-lg transition shadow-lg shadow-green-500/30 hover:shadow-green-500/50">
                             <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                             </svg>
-                            <span data-i18n="hero.ctaPrimary">Start Free on WhatsApp</span>
+                            <span data-i18n="hero.cta">Try Free</span>
                         </a>
                     </div>
-                    <div class="mt-8 flex items-center justify-center lg:justify-start space-x-6 text-sm text-gray-500">
+                    <div class="mt-8 flex items-center justify-center lg:justify-start space-x-4 text-sm text-gray-500">
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-green-500 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-5 h-5 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
-                            <span data-i18n="hero.benefit1">No app download</span>
+                            <span data-i18n="hero.benefit1">No app needed</span>
                         </div>
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-green-500 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-5 h-5 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
-                            <span data-i18n="hero.benefit2">Free to start</span>
-                        </div>
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-green-500 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            <span data-i18n="hero.benefit3">AI-powered</span>
+                            <span data-i18n="hero.benefit2">Free tier</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right content - Phone mockup -->
+                <!-- Right content - Phone mockup with demo scenes -->
                 <div class="relative flex justify-center lg:justify-end">
                     <div class="relative">
                         <!-- Phone frame -->
-                        <div class="relative w-[300px] sm:w-[340px] h-[620px] sm:h-[700px] bg-gray-900 rounded-[3rem] p-3 phone-shadow">
+                        <div class="relative w-[300px] sm:w-[320px] h-[600px] sm:h-[640px] bg-gray-900 rounded-[3rem] p-3 phone-shadow">
                             <!-- Phone notch -->
                             <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-7 bg-gray-900 rounded-b-2xl z-20"></div>
                             <!-- Phone screen -->
@@ -511,26 +386,138 @@
                                     </div>
                                     <div class="flex-1">
                                         <div class="text-white font-semibold">Monedita</div>
-                                        <div class="text-green-200 text-xs" data-i18n="phone.assistant">AI Assistant</div>
+                                        <div class="text-green-200 text-xs" data-i18n="phone.status">AI Assistant</div>
                                     </div>
-                                    <svg class="w-5 h-5 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-                                    </svg>
                                 </div>
 
-                                <!-- Chat messages container -->
-                                <div id="chat-container" class="p-4 space-y-3 h-[calc(100%-140px)] overflow-y-auto">
-                                    <!-- Messages will be animated here -->
+                                <!-- Mode indicators -->
+                                <div class="flex justify-center gap-2 py-3 bg-white/50">
+                                    <button class="mode-indicator px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600" data-mode="text">
+                                        <span class="mr-1">💬</span><span data-i18n="mode.text">Text</span>
+                                    </button>
+                                    <button class="mode-indicator px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600" data-mode="voice">
+                                        <span class="mr-1">🎤</span><span data-i18n="mode.voice">Voice</span>
+                                    </button>
+                                    <button class="mode-indicator px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600" data-mode="photo">
+                                        <span class="mr-1">📷</span><span data-i18n="mode.photo">Photo</span>
+                                    </button>
+                                </div>
+
+                                <!-- Demo scenes container -->
+                                <div id="demo-container" class="relative h-[calc(100%-180px)] p-4">
+                                    <!-- Scene 1: Text Message -->
+                                    <div class="demo-scene active" data-scene="text">
+                                        <div class="flex flex-col h-full justify-end space-y-3 pb-4">
+                                            <div id="text-user-msg" class="flex justify-end opacity-0">
+                                                <div class="bg-whatsapp-light text-gray-800 text-sm px-3 py-2 rounded-lg rounded-br-none max-w-[75%]">
+                                                    <span data-i18n="demo.text.user">Lunch $15 🍔</span>
+                                                </div>
+                                            </div>
+                                            <div id="text-typing" class="flex justify-start opacity-0">
+                                                <div class="bg-white px-4 py-3 rounded-lg rounded-bl-none shadow-sm typing-indicator">
+                                                    <span></span><span></span><span></span>
+                                                </div>
+                                            </div>
+                                            <div id="text-bot-msg" class="flex justify-start opacity-0">
+                                                <div class="bg-white text-gray-800 text-sm px-3 py-2 rounded-lg rounded-bl-none shadow-sm">
+                                                    <span class="text-green-500 font-medium">✓ </span><span data-i18n="demo.text.bot">Saved! $15 → Food</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Scene 2: Voice Message -->
+                                    <div class="demo-scene" data-scene="voice">
+                                        <div class="flex flex-col h-full justify-end space-y-3 pb-4">
+                                            <div id="voice-user-msg" class="flex justify-end opacity-0">
+                                                <div class="bg-whatsapp-light text-gray-800 px-3 py-2 rounded-lg rounded-br-none flex items-center space-x-2">
+                                                    <div class="w-8 h-8 bg-whatsapp rounded-full flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="flex items-center space-x-0.5 h-6">
+                                                        <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 40%;"></div>
+                                                        <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 70%; animation-delay: 0.1s;"></div>
+                                                        <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 50%; animation-delay: 0.2s;"></div>
+                                                        <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 90%; animation-delay: 0.3s;"></div>
+                                                        <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 60%; animation-delay: 0.4s;"></div>
+                                                        <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 80%; animation-delay: 0.5s;"></div>
+                                                        <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 45%; animation-delay: 0.6s;"></div>
+                                                    </div>
+                                                    <span class="text-xs text-gray-500">0:02</span>
+                                                </div>
+                                            </div>
+                                            <div id="voice-transcription" class="flex justify-start opacity-0">
+                                                <div class="bg-white/80 text-gray-500 text-xs px-3 py-1 rounded-lg italic">
+                                                    <span data-i18n="demo.voice.transcription">"Uber eight dollars"</span>
+                                                </div>
+                                            </div>
+                                            <div id="voice-bot-msg" class="flex justify-start opacity-0">
+                                                <div class="bg-white text-gray-800 text-sm px-3 py-2 rounded-lg rounded-bl-none shadow-sm">
+                                                    <span class="text-green-500 font-medium">✓ </span><span data-i18n="demo.voice.bot">Saved! $8 → Transport</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Scene 3: Photo/Receipt -->
+                                    <div class="demo-scene" data-scene="photo">
+                                        <div class="flex flex-col h-full justify-end space-y-3 pb-4">
+                                            <div id="photo-user-msg" class="flex justify-end opacity-0">
+                                                <div class="bg-whatsapp-light rounded-lg rounded-br-none overflow-hidden shadow-sm">
+                                                    <div class="w-32 h-40 bg-white relative p-2">
+                                                        <!-- Mini receipt -->
+                                                        <div class="h-full bg-gray-50 rounded border border-gray-200 p-2 relative overflow-hidden">
+                                                            <div class="space-y-1">
+                                                                <div class="h-1.5 bg-gray-300 rounded w-16"></div>
+                                                                <div class="h-1 bg-gray-200 rounded w-12"></div>
+                                                                <div class="border-t border-dashed border-gray-300 my-2"></div>
+                                                                <div class="flex justify-between">
+                                                                    <div class="h-1 bg-gray-200 rounded w-10"></div>
+                                                                    <div class="h-1 bg-gray-300 rounded w-6"></div>
+                                                                </div>
+                                                                <div class="flex justify-between">
+                                                                    <div class="h-1 bg-gray-200 rounded w-8"></div>
+                                                                    <div class="h-1 bg-gray-300 rounded w-5"></div>
+                                                                </div>
+                                                                <div class="border-t border-gray-300 my-2"></div>
+                                                                <div class="flex justify-between">
+                                                                    <div class="h-1.5 bg-gray-400 rounded w-8 font-bold"></div>
+                                                                    <div class="h-1.5 bg-green-500 rounded w-8"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div id="scan-line" class="scan-line"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="photo-processing" class="flex justify-start opacity-0">
+                                                <div class="bg-white/80 text-gray-500 text-xs px-3 py-1 rounded-lg flex items-center space-x-2">
+                                                    <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    <span data-i18n="demo.photo.scanning">Scanning receipt...</span>
+                                                </div>
+                                            </div>
+                                            <div id="photo-bot-msg" class="flex justify-start opacity-0">
+                                                <div class="bg-white text-gray-800 text-sm px-3 py-2 rounded-lg rounded-bl-none shadow-sm">
+                                                    <span class="text-green-500 font-medium">✓ </span><span data-i18n="demo.photo.bot">Saved! $42 → Shopping</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Input bar -->
                                 <div class="absolute bottom-0 left-0 right-0 bg-gray-100 px-2 py-2 flex items-center space-x-2">
-                                    <div class="flex-1 bg-white rounded-full px-4 py-2 text-gray-400 text-sm" data-i18n="phone.typeMessage">
+                                    <div class="flex-1 bg-white rounded-full px-4 py-2 text-gray-400 text-sm" data-i18n="phone.input">
                                         Type a message...
                                     </div>
                                     <div class="w-10 h-10 bg-whatsapp rounded-full flex items-center justify-center">
                                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"/>
+                                            <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" transform="rotate(180 10 10)"/>
                                         </svg>
                                     </div>
                                 </div>
@@ -542,502 +529,150 @@
         </div>
     </section>
 
-    <!-- Features Section -->
+    <!-- Features Section - Simplified -->
     <section id="features" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-3xl sm:text-4xl font-bold mb-4">
-                    <span data-i18n="features.title1">What you can do with</span> <span class="app-gradient-text" data-i18n="features.title2">this app</span>
+                    <span data-i18n="features.title">Simple & Powerful</span>
                 </h2>
             </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                <!-- Feature 1: Natural Language - Chat Demo -->
-                <div class="feature-card bg-gray-50 rounded-2xl p-6 transition duration-300 overflow-hidden">
-                    <!-- Visual Demo -->
-                    <div class="bg-gradient-to-br from-purple-50 to-indigo-100 rounded-xl p-4 mb-5 h-40 relative overflow-hidden">
-                        <div class="absolute inset-0 flex flex-col justify-end p-3 space-y-2">
-                            <!-- User message -->
-                            <div class="flex justify-end">
-                                <div class="bg-whatsapp-light text-gray-800 text-xs px-3 py-2 rounded-lg rounded-br-none max-w-[80%] feature-msg-1" data-i18n="features.demo.msg1">
-                                    Gasté $15 en almuerzo 🍔
-                                </div>
-                            </div>
-                            <!-- Bot response -->
-                            <div class="flex justify-start">
-                                <div class="bg-white text-gray-800 text-xs px-3 py-2 rounded-lg rounded-bl-none shadow-sm max-w-[85%] feature-msg-2" data-i18n="features.demo.msg2">
-                                    ✅ $15 → Comida
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Floating emoji -->
-                        <div class="absolute top-2 right-2 text-2xl animate-bounce" style="animation-duration: 2s;">💬</div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-gray-50 rounded-2xl p-6 text-center hover:shadow-lg transition">
+                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-purple-100 rounded-2xl flex items-center justify-center">
+                        <span class="text-2xl">💬</span>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2" data-i18n="features.natural.title">Natural Language</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="features.natural.desc">Just type "Spent $15 on lunch" or "Coffee 5 dollars" - our AI understands it all.</p>
+                    <h3 class="font-semibold mb-2" data-i18n="features.text.title">Natural Language</h3>
+                    <p class="text-gray-500 text-sm" data-i18n="features.text.desc">"Coffee $5" or "Spent 20 on lunch"</p>
                 </div>
-
-                <!-- Feature 2: Voice Messages - Waveform Animation -->
-                <div class="feature-card bg-gray-50 rounded-2xl p-6 transition duration-300 overflow-hidden">
-                    <!-- Visual Demo -->
-                    <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-4 mb-5 h-40 relative overflow-hidden flex items-center justify-center">
-                        <!-- Voice message bubble -->
-                        <div class="bg-whatsapp-light rounded-full px-4 py-3 flex items-center space-x-3 shadow-lg">
-                            <div class="w-10 h-10 bg-whatsapp rounded-full flex items-center justify-center">
-                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <!-- Waveform -->
-                            <div class="flex items-center space-x-0.5 h-8">
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 40%; animation: waveform 1s ease-in-out infinite;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 70%; animation: waveform 1s ease-in-out infinite 0.1s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 50%; animation: waveform 1s ease-in-out infinite 0.2s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 90%; animation: waveform 1s ease-in-out infinite 0.3s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 60%; animation: waveform 1s ease-in-out infinite 0.4s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 80%; animation: waveform 1s ease-in-out infinite 0.5s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 45%; animation: waveform 1s ease-in-out infinite 0.6s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 70%; animation: waveform 1s ease-in-out infinite 0.7s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 55%; animation: waveform 1s ease-in-out infinite 0.8s;"></div>
-                                <div class="w-1 bg-gray-600 rounded-full waveform-bar" style="height: 40%; animation: waveform 1s ease-in-out infinite 0.9s;"></div>
-                            </div>
-                            <span class="text-xs text-gray-500">0:03</span>
-                        </div>
-                        <!-- Floating mic -->
-                        <div class="absolute top-2 right-2 text-2xl animate-pulse">🎤</div>
+                <!-- Feature 2 -->
+                <div class="feature-card bg-gray-50 rounded-2xl p-6 text-center hover:shadow-lg transition">
+                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-green-100 rounded-2xl flex items-center justify-center">
+                        <span class="text-2xl">🎤</span>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2" data-i18n="features.voice.title">Voice Messages</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="features.voice.desc">Too busy to type? Send a voice note like "Add twenty dollars for gas" and we'll log it.</p>
+                    <h3 class="font-semibold mb-2" data-i18n="features.voice.title">Voice Notes</h3>
+                    <p class="text-gray-500 text-sm" data-i18n="features.voice.desc">Speak your expenses hands-free</p>
                 </div>
-
-                <!-- Feature 3: Receipt Scanner - Scan Animation -->
-                <div class="feature-card bg-gray-50 rounded-2xl p-6 transition duration-300 overflow-hidden">
-                    <!-- Visual Demo -->
-                    <div class="bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl p-4 mb-5 h-40 relative overflow-hidden flex items-center justify-center">
-                        <!-- Receipt -->
-                        <div class="bg-white rounded-lg shadow-lg p-3 w-24 relative receipt-card">
-                            <div class="border-b border-dashed border-gray-300 pb-2 mb-2">
-                                <div class="h-1.5 bg-gray-200 rounded w-16 mb-1"></div>
-                                <div class="h-1.5 bg-gray-200 rounded w-12"></div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <div class="flex justify-between">
-                                    <div class="h-1.5 bg-gray-200 rounded w-10"></div>
-                                    <div class="h-1.5 bg-gray-300 rounded w-6"></div>
-                                </div>
-                                <div class="flex justify-between">
-                                    <div class="h-1.5 bg-gray-200 rounded w-8"></div>
-                                    <div class="h-1.5 bg-gray-300 rounded w-5"></div>
-                                </div>
-                            </div>
-                            <div class="border-t border-dashed border-gray-300 mt-2 pt-2">
-                                <div class="flex justify-between">
-                                    <div class="h-2 bg-gray-400 rounded w-8 font-bold"></div>
-                                    <div class="h-2 bg-green-500 rounded w-8 scan-total"></div>
-                                </div>
-                            </div>
-                            <!-- Scan line -->
-                            <div class="absolute inset-x-0 h-0.5 bg-green-400 scan-line"></div>
-                        </div>
-                        <!-- Checkmark -->
-                        <div class="absolute bottom-3 right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center scan-check">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                            </svg>
-                        </div>
-                        <!-- Floating camera -->
-                        <div class="absolute top-2 right-2 text-2xl">📸</div>
+                <!-- Feature 3 -->
+                <div class="feature-card bg-gray-50 rounded-2xl p-6 text-center hover:shadow-lg transition">
+                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-orange-100 rounded-2xl flex items-center justify-center">
+                        <span class="text-2xl">📷</span>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2" data-i18n="features.receipt.title">Receipt Scanner</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="features.receipt.desc">Snap a photo of your receipt. AI extracts the total and categorizes it automatically.</p>
+                    <h3 class="font-semibold mb-2" data-i18n="features.photo.title">Receipt Scan</h3>
+                    <p class="text-gray-500 text-sm" data-i18n="features.photo.desc">Snap a photo, AI extracts data</p>
                 </div>
-
-                <!-- Feature 4: Smart Budgets - Progress Bar Animation -->
-                <div class="feature-card bg-gray-50 rounded-2xl p-6 transition duration-300 overflow-hidden">
-                    <!-- Visual Demo -->
-                    <div class="bg-gradient-to-br from-blue-50 to-cyan-100 rounded-xl p-4 mb-5 h-40 relative overflow-hidden">
-                        <div class="space-y-3">
-                            <!-- Budget item 1 -->
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="font-medium text-gray-700" data-i18n="features.demo.food">🍔 Comida</span>
-                                    <span class="text-gray-500">$280 / $400</span>
-                                </div>
-                                <div class="h-3 bg-white rounded-full overflow-hidden shadow-inner">
-                                    <div class="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full budget-bar-1" style="width: 0%;"></div>
-                                </div>
-                            </div>
-                            <!-- Budget item 2 -->
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="font-medium text-gray-700" data-i18n="features.demo.transport">🚗 Transporte</span>
-                                    <span class="text-gray-500">$180 / $200</span>
-                                </div>
-                                <div class="h-3 bg-white rounded-full overflow-hidden shadow-inner">
-                                    <div class="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full budget-bar-2" style="width: 0%;"></div>
-                                </div>
-                            </div>
-                            <!-- Budget item 3 with alert -->
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="font-medium text-gray-700" data-i18n="features.demo.shopping">🛍️ Compras</span>
-                                    <span class="text-red-500 font-semibold">$320 / $300 ⚠️</span>
-                                </div>
-                                <div class="h-3 bg-white rounded-full overflow-hidden shadow-inner">
-                                    <div class="h-full bg-gradient-to-r from-red-400 to-red-500 rounded-full budget-bar-3" style="width: 0%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Floating target -->
-                        <div class="absolute top-2 right-2 text-2xl">🎯</div>
+                <!-- Feature 4 -->
+                <div class="feature-card bg-gray-50 rounded-2xl p-6 text-center hover:shadow-lg transition">
+                    <div class="feature-icon w-14 h-14 mx-auto mb-4 bg-blue-100 rounded-2xl flex items-center justify-center">
+                        <span class="text-2xl">📊</span>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2" data-i18n="features.budgets.title">Smart Budgets</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="features.budgets.desc">Set budgets by category. Get alerts before you overspend. Stay in control.</p>
-                </div>
-
-                <!-- Feature 5: Spending Reports - Chart Animation -->
-                <div class="feature-card bg-gray-50 rounded-2xl p-6 transition duration-300 overflow-hidden">
-                    <!-- Visual Demo -->
-                    <div class="bg-gradient-to-br from-pink-50 to-rose-100 rounded-xl p-4 mb-5 h-40 relative overflow-hidden flex items-center justify-center">
-                        <!-- Donut Chart -->
-                        <div class="relative w-28 h-28">
-                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                <!-- Background circle -->
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="12"/>
-                                <!-- Food segment -->
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="12"
-                                    stroke-dasharray="0 251.2" class="chart-segment-1"
-                                    style="transition: stroke-dasharray 1s ease-out;"/>
-                                <!-- Transport segment -->
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" stroke-width="12"
-                                    stroke-dasharray="0 251.2" class="chart-segment-2"
-                                    style="transition: stroke-dasharray 1s ease-out 0.3s;"/>
-                                <!-- Shopping segment -->
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" stroke-width="12"
-                                    stroke-dasharray="0 251.2" class="chart-segment-3"
-                                    style="transition: stroke-dasharray 1s ease-out 0.6s;"/>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="text-center">
-                                    <div class="text-lg font-bold text-gray-800 chart-total">$0</div>
-                                    <div class="text-xs text-gray-500" data-i18n="features.demo.total">total</div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Legend -->
-                        <div class="absolute bottom-2 left-2 right-2 flex justify-center space-x-3 text-xs">
-                            <span class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span><span data-i18n="features.demo.legendFood">Comida</span></span>
-                            <span class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-1"></span><span data-i18n="features.demo.legendTransport">Transporte</span></span>
-                            <span class="flex items-center"><span class="w-2 h-2 bg-amber-500 rounded-full mr-1"></span><span data-i18n="features.demo.legendShop">Compras</span></span>
-                        </div>
-                        <!-- Floating chart -->
-                        <div class="absolute top-2 right-2 text-2xl">📊</div>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2" data-i18n="features.reports.title">Spending Reports</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="features.reports.desc">Ask "How much did I spend this month?" and get instant summaries with insights.</p>
-                </div>
-
-                <!-- Feature 6: Export Data - Download Animation -->
-                <div class="feature-card bg-gray-50 rounded-2xl p-6 transition duration-300 overflow-hidden">
-                    <!-- Visual Demo -->
-                    <div class="bg-gradient-to-br from-teal-50 to-cyan-100 rounded-xl p-4 mb-5 h-40 relative overflow-hidden flex items-center justify-center">
-                        <!-- File cards -->
-                        <div class="flex space-x-3">
-                            <!-- CSV file -->
-                            <div class="bg-white rounded-lg shadow-lg p-3 w-16 text-center export-file-1 transform hover:scale-105 transition">
-                                <div class="w-10 h-12 bg-green-100 rounded mx-auto mb-2 flex items-center justify-center">
-                                    <span class="text-green-600 font-bold text-xs">CSV</span>
-                                </div>
-                                <div class="h-1 bg-gray-200 rounded w-12 mx-auto mb-1"></div>
-                                <div class="h-1 bg-gray-200 rounded w-8 mx-auto"></div>
-                            </div>
-                            <!-- PDF file -->
-                            <div class="bg-white rounded-lg shadow-lg p-3 w-16 text-center export-file-2 transform hover:scale-105 transition">
-                                <div class="w-10 h-12 bg-red-100 rounded mx-auto mb-2 flex items-center justify-center">
-                                    <span class="text-red-600 font-bold text-xs">PDF</span>
-                                </div>
-                                <div class="h-1 bg-gray-200 rounded w-12 mx-auto mb-1"></div>
-                                <div class="h-1 bg-gray-200 rounded w-8 mx-auto"></div>
-                            </div>
-                        </div>
-                        <!-- Download arrow animation -->
-                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                            <div class="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center shadow-lg download-arrow">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <!-- Floating download -->
-                        <div class="absolute top-2 right-2 text-2xl">📥</div>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2" data-i18n="features.export.title">Export Data</h3>
-                    <p class="text-gray-600 text-sm" data-i18n="features.export.desc">Download your expenses as CSV or PDF. Perfect for taxes or budgeting apps.</p>
+                    <h3 class="font-semibold mb-2" data-i18n="features.insights.title">Smart Insights</h3>
+                    <p class="text-gray-500 text-sm" data-i18n="features.insights.desc">Budgets, summaries, exports</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Pricing Section -->
-    <section id="pricing" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
                 <h2 class="text-3xl sm:text-4xl font-bold mb-4">
-                    <span data-i18n="pricing.title1">Simple,</span> <span class="gradient-text" data-i18n="pricing.title2">transparent pricing</span>
+                    <span data-i18n="pricing.title">Simple Pricing</span>
                 </h2>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto" data-i18n="pricing.subtitle">
-                    Start free, upgrade when you need more. No hidden fees.
-                </p>
             </div>
-            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-6">
                 <!-- Free Plan -->
-                <div class="pricing-card bg-gray-50 rounded-2xl p-8 transition duration-300">
-                    <!-- Illustration: Person starting their journey -->
-                    <div class="pricing-illustration">
-                        <svg viewBox="0 0 120 120" class="w-28 h-28">
-                            <!-- Person with seedling - starting small -->
-                            <circle cx="60" cy="35" r="15" fill="#e0e7ff"/>
-                            <circle cx="60" cy="35" r="12" fill="#c7d2fe"/>
-                            <path d="M60 25 L60 20" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>
-                            <circle cx="60" cy="17" r="3" fill="#4f46e5"/>
-                            <!-- Body -->
-                            <path d="M60 50 L60 75" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M60 55 L45 70" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M60 55 L75 70" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M60 75 L50 95" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M60 75 L70 95" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <!-- Small plant/seedling -->
-                            <path class="pricing-plant" d="M85 100 L85 85 Q95 80 85 70 Q75 80 85 85" fill="#10b981" stroke="#059669" stroke-width="1"/>
-                            <!-- Ground -->
-                            <ellipse cx="85" cy="102" rx="10" ry="3" fill="#d1d5db"/>
-                            <!-- Coin floating -->
-                            <g class="pricing-coin">
-                                <circle cx="30" cy="50" r="12" fill="#fbbf24"/>
-                                <circle cx="30" cy="50" r="8" fill="#f59e0b"/>
-                                <text x="30" y="54" text-anchor="middle" fill="#ffffff" font-weight="bold" font-size="10">$</text>
-                            </g>
-                        </svg>
-                    </div>
-                    <div class="text-center mb-8">
-                        <h3 class="text-xl font-semibold mb-2" data-i18n="pricing.free.name">Free</h3>
+                <div class="pricing-card bg-white rounded-2xl p-6 shadow-sm transition duration-300">
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-semibold mb-2" data-i18n="pricing.free.name">Free</h3>
                         <div class="flex items-baseline justify-center">
-                            <span id="price-free" class="text-5xl font-bold">$0</span>
-                            <span class="text-gray-500 ml-2" data-i18n="pricing.perMonth">/month</span>
+                            <span id="price-free" class="text-4xl font-bold">$0</span>
+                            <span class="text-gray-500 ml-1" data-i18n="pricing.perMonth">/mo</span>
                         </div>
                     </div>
-                    <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta block w-full py-3 px-6 text-center border-2 border-gray-200 rounded-full font-semibold hover:border-gray-300 transition" data-i18n="pricing.free.cta">
-                        Get Started Free
+                    <ul class="space-y-3 mb-6 text-sm text-gray-600">
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.free.f1">30 messages/mo</span></li>
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.free.f2">5 voice/images</span></li>
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.free.f3">1 budget</span></li>
+                    </ul>
+                    <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta block w-full py-3 text-center border-2 border-gray-200 rounded-full font-medium hover:border-gray-300 transition" data-i18n="pricing.free.cta">
+                        Start Free
                     </a>
                 </div>
 
                 <!-- Basic Plan (Popular) -->
-                <div class="pricing-card popular bg-white rounded-2xl p-8 shadow-xl transition duration-300 relative">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <span class="gradient-bg text-white text-sm font-semibold px-4 py-1 rounded-full" data-i18n="pricing.popular">Most Popular</span>
+                <div class="pricing-card popular bg-white rounded-2xl p-6 shadow-xl transition duration-300 relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span class="gradient-bg text-white text-xs font-semibold px-3 py-1 rounded-full" data-i18n="pricing.popular">Popular</span>
                     </div>
-                    <!-- Illustration: Growing tree with charts -->
-                    <div class="pricing-illustration">
-                        <svg viewBox="0 0 120 120" class="w-28 h-28">
-                            <!-- Person with growing finances -->
-                            <circle cx="40" cy="40" r="12" fill="#c7d2fe"/>
-                            <circle cx="40" cy="40" r="9" fill="#a5b4fc"/>
-                            <!-- Face -->
-                            <circle cx="37" cy="38" r="1.5" fill="#4f46e5"/>
-                            <circle cx="43" cy="38" r="1.5" fill="#4f46e5"/>
-                            <path d="M37 43 Q40 46 43 43" stroke="#4f46e5" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                            <!-- Body -->
-                            <path d="M40 52 L40 72" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M40 58 L30 68" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M40 58 L55 50" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M40 72 L32 90" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <path d="M40 72 L48 90" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
-                            <!-- Chart going up -->
-                            <rect x="65" y="50" width="45" height="55" rx="5" fill="#f3f4f6" stroke="#e5e7eb"/>
-                            <path d="M72 90 L80 80 L88 85 L96 65 L104 55" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <circle cx="104" cy="55" r="4" fill="#10b981"/>
-                            <!-- Stars -->
-                            <g class="pricing-star">
-                                <path d="M85 35 L87 40 L92 40 L88 43 L90 48 L85 45 L80 48 L82 43 L78 40 L83 40 Z" fill="#fbbf24"/>
-                            </g>
-                            <g class="pricing-star" style="transform: translate(-15px, 5px) scale(0.6);">
-                                <path d="M85 35 L87 40 L92 40 L88 43 L90 48 L85 45 L80 48 L82 43 L78 40 L83 40 Z" fill="#fbbf24"/>
-                            </g>
-                            <!-- Coins stack -->
-                            <g class="pricing-coin">
-                                <ellipse cx="20" cy="95" rx="12" ry="4" fill="#f59e0b"/>
-                                <ellipse cx="20" cy="91" rx="12" ry="4" fill="#fbbf24"/>
-                                <ellipse cx="20" cy="87" rx="12" ry="4" fill="#f59e0b"/>
-                                <ellipse cx="20" cy="83" rx="12" ry="4" fill="#fbbf24"/>
-                            </g>
-                        </svg>
-                    </div>
-                    <div class="text-center mb-8">
-                        <h3 class="text-xl font-semibold mb-2" data-i18n="pricing.basic.name">Basic</h3>
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-semibold mb-2" data-i18n="pricing.basic.name">Basic</h3>
                         <div class="flex items-baseline justify-center flex-wrap">
                             <span id="price-basic-original" class="price-original hidden">$3.99</span>
-                            <span id="price-basic" class="text-5xl font-bold gradient-text">$2.99</span>
-                            <span class="text-gray-500 ml-2" data-i18n="pricing.perMonth">/month</span>
+                            <span id="price-basic" class="text-4xl font-bold gradient-text">$2.99</span>
+                            <span class="text-gray-500 ml-1" data-i18n="pricing.perMonth">/mo</span>
                         </div>
-                        <div id="savings-basic" class="savings-badge hidden" data-i18n="pricing.savings">Save 25%</div>
+                        <div id="savings-basic" class="savings-badge hidden">Save 25%</div>
                     </div>
-                    <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta block w-full py-3 px-6 text-center gradient-bg text-white rounded-full font-semibold hover:opacity-90 transition shadow-lg shadow-purple-500/25" data-i18n="pricing.basic.cta">
-                        Upgrade to Basic
+                    <ul class="space-y-3 mb-6 text-sm text-gray-600">
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.basic.f1">150 messages/mo</span></li>
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.basic.f2">30 voice, 20 images</span></li>
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.basic.f3">5 budgets + CSV export</span></li>
+                    </ul>
+                    <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta block w-full py-3 text-center gradient-bg text-white rounded-full font-medium hover:opacity-90 transition shadow-lg shadow-purple-500/25" data-i18n="pricing.basic.cta">
+                        Upgrade
                     </a>
                 </div>
 
                 <!-- Premium Plan -->
-                <div class="pricing-card bg-gray-50 rounded-2xl p-8 transition duration-300">
-                    <!-- Illustration: Rocket with money/success -->
-                    <div class="pricing-illustration">
-                        <svg viewBox="0 0 120 120" class="w-28 h-28">
-                            <!-- Rocket -->
-                            <g class="pricing-rocket">
-                                <path d="M60 15 Q60 5 60 15 L75 45 L60 40 L45 45 Z" fill="#6366f1"/>
-                                <ellipse cx="60" cy="45" rx="15" ry="8" fill="#4f46e5"/>
-                                <circle cx="60" cy="35" r="6" fill="#e0e7ff"/>
-                                <circle cx="60" cy="35" r="4" fill="#c7d2fe"/>
-                                <!-- Flames -->
-                                <path d="M52 50 Q48 60 52 70 Q56 60 52 50" fill="#f59e0b"/>
-                                <path d="M60 52 Q56 65 60 75 Q64 65 60 52" fill="#ef4444"/>
-                                <path d="M68 50 Q72 60 68 70 Q64 60 68 50" fill="#f59e0b"/>
-                            </g>
-                            <!-- Stars around -->
-                            <g class="pricing-star">
-                                <path d="M25 30 L27 35 L32 35 L28 38 L30 43 L25 40 L20 43 L22 38 L18 35 L23 35 Z" fill="#fbbf24"/>
-                            </g>
-                            <g class="pricing-star">
-                                <path d="M95 25 L97 30 L102 30 L98 33 L100 38 L95 35 L90 38 L92 33 L88 30 L93 30 Z" fill="#fbbf24"/>
-                            </g>
-                            <g class="pricing-star">
-                                <path d="M15 60 L17 65 L22 65 L18 68 L20 73 L15 70 L10 73 L12 68 L8 65 L13 65 Z" fill="#fbbf24"/>
-                            </g>
-                            <!-- Money bag -->
-                            <g transform="translate(75, 55)">
-                                <ellipse cx="20" cy="35" rx="18" ry="20" fill="#10b981"/>
-                                <path d="M10 20 Q20 10 30 20" stroke="#059669" stroke-width="3" fill="none"/>
-                                <text x="20" y="40" text-anchor="middle" fill="#ffffff" font-weight="bold" font-size="16">$</text>
-                            </g>
-                            <!-- Crown -->
-                            <g transform="translate(0, 75)">
-                                <path d="M10 30 L15 15 L25 25 L35 10 L45 25 L55 15 L60 30 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
-                                <circle cx="15" cy="15" r="3" fill="#ef4444"/>
-                                <circle cx="35" cy="10" r="3" fill="#ef4444"/>
-                                <circle cx="55" cy="15" r="3" fill="#ef4444"/>
-                            </g>
-                        </svg>
-                    </div>
-                    <div class="text-center mb-8">
-                        <h3 class="text-xl font-semibold mb-2" data-i18n="pricing.premium.name">Premium</h3>
+                <div class="pricing-card bg-white rounded-2xl p-6 shadow-sm transition duration-300">
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-semibold mb-2" data-i18n="pricing.premium.name">Premium</h3>
                         <div class="flex items-baseline justify-center flex-wrap">
                             <span id="price-premium-original" class="price-original hidden">$9.99</span>
-                            <span id="price-premium" class="text-5xl font-bold">$7.99</span>
-                            <span class="text-gray-500 ml-2" data-i18n="pricing.perMonth">/month</span>
+                            <span id="price-premium" class="text-4xl font-bold">$7.99</span>
+                            <span class="text-gray-500 ml-1" data-i18n="pricing.perMonth">/mo</span>
                         </div>
-                        <div id="savings-premium" class="savings-badge hidden" data-i18n="pricing.savings">Save 20%</div>
+                        <div id="savings-premium" class="savings-badge hidden">Save 20%</div>
                     </div>
-                    <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta block w-full py-3 px-6 text-center border-2 border-gray-200 rounded-full font-semibold hover:border-gray-300 transition" data-i18n="pricing.premium.cta">
+                    <ul class="space-y-3 mb-6 text-sm text-gray-600">
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.premium.f1">Unlimited messages</span></li>
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.premium.f2">100 voice, 50 images</span></li>
+                        <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pricing.premium.f3">Unlimited budgets + PDF</span></li>
+                    </ul>
+                    <a href="https://wa.me/573222490201" target="_blank" class="wa-link wa-cta block w-full py-3 text-center border-2 border-gray-200 rounded-full font-medium hover:border-gray-300 transition" data-i18n="pricing.premium.cta">
                         Go Premium
                     </a>
-                </div>
-            </div>
-            <!-- Compare plans link -->
-            <div class="text-center mt-8">
-                <button id="compare-plans-btn" class="text-purple-600 hover:text-purple-800 font-medium underline underline-offset-4 transition" data-i18n="pricing.comparePlans">
-                    See differences between plans
-                </button>
-            </div>
-            <!-- Comparison Modal -->
-            <div id="compare-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto p-6 relative">
-                    <button id="close-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                    <h3 class="text-2xl font-bold mb-6 text-center" data-i18n="pricing.compareTitle">Plan Comparison</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="text-left py-3 px-2" data-i18n="pricing.feature">Feature</th>
-                                    <th class="text-center py-3 px-2" data-i18n="pricing.free.name">Free</th>
-                                    <th class="text-center py-3 px-2 gradient-text font-bold" data-i18n="pricing.basic.name">Basic</th>
-                                    <th class="text-center py-3 px-2" data-i18n="pricing.premium.name">Premium</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y">
-                                <tr>
-                                    <td class="py-3 px-2" data-i18n="pricing.compare.textMessages">Text messages</td>
-                                    <td class="text-center py-3 px-2">30/mo</td>
-                                    <td class="text-center py-3 px-2">150/mo</td>
-                                    <td class="text-center py-3 px-2" data-i18n="pricing.unlimited">Unlimited</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3 px-2" data-i18n="pricing.compare.voiceMessages">Voice messages</td>
-                                    <td class="text-center py-3 px-2">5/mo</td>
-                                    <td class="text-center py-3 px-2">30/mo</td>
-                                    <td class="text-center py-3 px-2">100/mo</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3 px-2" data-i18n="pricing.compare.imageScans">Image scans</td>
-                                    <td class="text-center py-3 px-2">5/mo</td>
-                                    <td class="text-center py-3 px-2">20/mo</td>
-                                    <td class="text-center py-3 px-2">50/mo</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3 px-2" data-i18n="pricing.compare.budgets">Budgets</td>
-                                    <td class="text-center py-3 px-2">1</td>
-                                    <td class="text-center py-3 px-2">5</td>
-                                    <td class="text-center py-3 px-2" data-i18n="pricing.unlimited">Unlimited</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3 px-2" data-i18n="pricing.compare.csvExport">CSV Export</td>
-                                    <td class="text-center py-3 px-2 text-red-500">&#10005;</td>
-                                    <td class="text-center py-3 px-2 text-green-500">&#10003;</td>
-                                    <td class="text-center py-3 px-2 text-green-500">&#10003;</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3 px-2" data-i18n="pricing.compare.pdfExport">PDF Export</td>
-                                    <td class="text-center py-3 px-2 text-red-500">&#10005;</td>
-                                    <td class="text-center py-3 px-2 text-red-500">&#10005;</td>
-                                    <td class="text-center py-3 px-2 text-green-500">&#10003;</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12">
+    <footer class="bg-gray-900 text-gray-400 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="flex items-center space-x-2 mb-4 md:mb-0">
-                    <div class="w-10 h-10">
+                    <div class="w-8 h-8">
                         <svg viewBox="0 0 100 100" class="w-full h-full">
                             <circle cx="50" cy="50" r="42" fill="#FFD93D"/>
-                            <circle cx="50" cy="50" r="38" fill="none" stroke="#FFC107" stroke-width="3"/>
                             <ellipse cx="38" cy="45" rx="5" ry="6" fill="#5D4037"/>
                             <ellipse cx="62" cy="45" rx="5" ry="6" fill="#5D4037"/>
-                            <circle cx="36" cy="43" r="2" fill="#FFFFFF"/>
-                            <circle cx="60" cy="43" r="2" fill="#FFFFFF"/>
-                            <ellipse cx="28" cy="55" rx="6" ry="4" fill="#FF8A80" opacity="0.6"/>
-                            <ellipse cx="72" cy="55" rx="6" ry="4" fill="#FF8A80" opacity="0.6"/>
                             <path d="M 32 58 Q 50 75 68 58" fill="none" stroke="#5D4037" stroke-width="4" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <span class="text-xl font-bold text-amber-400">Monedita</span>
+                    <span class="text-lg font-bold text-amber-400">Monedita</span>
                 </div>
                 <div class="flex space-x-6 text-sm">
-                    <a href="privacy.html" class="hover:text-white transition" data-i18n="footer.privacy">Privacy Policy</a>
-                    <a href="terms.html" class="hover:text-white transition" data-i18n="footer.terms">Terms of Service</a>
+                    <a href="privacy.html" class="hover:text-white transition" data-i18n="footer.privacy">Privacy</a>
+                    <a href="terms.html" class="hover:text-white transition" data-i18n="footer.terms">Terms</a>
                     <a href="https://wa.me/573114740716" target="_blank" class="hover:text-white transition" data-i18n="footer.contact">Contact</a>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
-                <p data-i18n="footer.copyright">&copy; 2025 Monedita. All rights reserved.</p>
+            <div class="mt-6 pt-6 border-t border-gray-800 text-center text-xs">
+                <p data-i18n="footer.copyright">© 2025 Monedita. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -1053,504 +688,220 @@
         // Translations
         const translations = {
             en: {
-                // WhatsApp pre-filled message
                 "wa.message": "Hi! I want to track my first expense",
-
-                // Nav
                 "nav.features": "Features",
-                "nav.howItWorks": "How it Works",
                 "nav.pricing": "Pricing",
                 "nav.startFree": "Start Free",
-
-                // Hero
-                "hero.badge": "AI-Powered Finance Assistant",
-                "hero.title1": "Track Expenses",
-                "hero.title2": "Through WhatsApp",
-                "hero.subtitle": "Simply message your expenses, snap receipts, or send voice notes. Our AI understands and organizes everything for you.",
-                "hero.ctaPrimary": "Start Free on WhatsApp",
-                "hero.ctaSecondary": "See How It Works",
-                "hero.benefit1": "No app download",
-                "hero.benefit2": "Free to start",
-                "hero.benefit3": "AI-powered",
-
-                // Phone
-                "phone.assistant": "AI Assistant",
-                "phone.typeMessage": "Type a message...",
-
-                // Badges
-                "badge.budget": "Budget tracking",
-                "badge.voice": "Voice notes",
-                "badge.receipts": "Scan receipts",
-
-                // Features
-                "features.title1": "What you can do with",
-                "features.title2": "this app",
-                "features.natural.title": "Write your expenses",
-                "features.natural.desc": "Just type \"Spent $15 on lunch\" or \"Coffee 5 dollars\" - our AI understands it all.",
-                "features.voice.title": "Voice Messages",
-                "features.voice.desc": "Too busy to type? Send a voice note like \"Add twenty dollars for gas\" and we'll log it.",
-                "features.receipt.title": "Receipt Scanner",
-                "features.receipt.desc": "Snap a photo of your receipt. AI extracts the total and categorizes it automatically.",
-                "features.budgets.title": "Smart Budgets",
-                "features.budgets.desc": "Set budgets by category. Get alerts before you overspend. Stay in control.",
-                "features.reports.title": "Spending Reports",
-                "features.reports.desc": "Ask \"How much did I spend this month?\" and get instant summaries with insights.",
-                "features.export.title": "Export Data",
-                "features.export.desc": "Download your expenses as CSV or PDF. Perfect for taxes or budgeting apps.",
-
-                // Feature demos
-                "features.demo.msg1": "Spent $15 on lunch 🍔",
-                "features.demo.msg2": "✅ $15 → Food",
-                "features.demo.food": "🍔 Food",
-                "features.demo.transport": "🚗 Transport",
-                "features.demo.shopping": "🛍️ Shopping",
-                "features.demo.total": "total",
-                "features.demo.legendFood": "Food",
-                "features.demo.legendTransport": "Transport",
-                "features.demo.legendShop": "Shop",
-
-                // How it works
-                "howItWorks.title1": "How it",
-                "howItWorks.title2": "works",
-                "howItWorks.subtitle": "Get started in 30 seconds. No sign-up forms, no passwords.",
-                "howItWorks.step1.title": "Message Us",
-                "howItWorks.step1.desc": "Click the WhatsApp button and send \"Hi\" to start. That's it!",
-                "howItWorks.step2.title": "Log Expenses",
-                "howItWorks.step2.desc": "Type, speak, or snap photos of your expenses. Our AI handles the rest.",
-                "howItWorks.step3.title": "Get Insights",
-                "howItWorks.step3.desc": "Ask questions about your spending. Set budgets. Take control.",
-
-                // Pricing
-                "pricing.title1": "Simple,",
-                "pricing.title2": "transparent pricing",
-                "pricing.subtitle": "Start free, upgrade when you need more. No hidden fees.",
-                "pricing.perMonth": "/month",
-                "pricing.popular": "Most Popular",
-                "pricing.unlimited": "Unlimited",
+                "hero.title1": "Track expenses",
+                "hero.title2": "via WhatsApp",
+                "hero.subtitle": "Text, voice, or photo. AI does the rest.",
+                "hero.cta": "Try Free",
+                "hero.benefit1": "No app needed",
+                "hero.benefit2": "Free tier",
+                "phone.status": "AI Assistant",
+                "phone.input": "Type a message...",
+                "mode.text": "Text",
+                "mode.voice": "Voice",
+                "mode.photo": "Photo",
+                "demo.text.user": "Lunch $15 🍔",
+                "demo.text.bot": "Saved! $15 → Food",
+                "demo.voice.transcription": "\"Uber eight dollars\"",
+                "demo.voice.bot": "Saved! $8 → Transport",
+                "demo.photo.scanning": "Scanning receipt...",
+                "demo.photo.bot": "Saved! $42 → Shopping",
+                "features.title": "Simple & Powerful",
+                "features.text.title": "Natural Language",
+                "features.text.desc": "\"Coffee $5\" or \"Spent 20 on lunch\"",
+                "features.voice.title": "Voice Notes",
+                "features.voice.desc": "Speak your expenses hands-free",
+                "features.photo.title": "Receipt Scan",
+                "features.photo.desc": "Snap a photo, AI extracts data",
+                "features.insights.title": "Smart Insights",
+                "features.insights.desc": "Budgets, summaries, exports",
+                "pricing.title": "Simple Pricing",
+                "pricing.perMonth": "/mo",
+                "pricing.popular": "Popular",
                 "pricing.free.name": "Free",
-                "pricing.free.desc": "Perfect to try it out",
-                "pricing.free.feature1": "Track ~1 expense per day",
-                "pricing.free.feature2": "Try voice notes",
-                "pricing.free.feature3": "Try receipt scanning",
-                "pricing.free.feature4": "1 budget category",
-                "pricing.free.feature5": "No data export",
-                "pricing.free.cta": "Get Started Free",
+                "pricing.free.f1": "30 messages/mo",
+                "pricing.free.f2": "5 voice/images",
+                "pricing.free.f3": "1 budget",
+                "pricing.free.cta": "Start Free",
                 "pricing.basic.name": "Basic",
-                "pricing.basic.desc": "For daily tracking",
-                "pricing.basic.feature1": "Track 5+ expenses daily",
-                "pricing.basic.feature2": "Voice notes every day",
-                "pricing.basic.feature3": "Scan receipts weekly",
-                "pricing.basic.feature4": "5 budget categories",
-                "pricing.basic.feature5": "Export to spreadsheet",
-                "pricing.basic.cta": "Upgrade to Basic",
+                "pricing.basic.f1": "150 messages/mo",
+                "pricing.basic.f2": "30 voice, 20 images",
+                "pricing.basic.f3": "5 budgets + CSV export",
+                "pricing.basic.cta": "Upgrade",
                 "pricing.premium.name": "Premium",
-                "pricing.premium.desc": "For full control",
-                "pricing.premium.feature1": "Unlimited expense tracking",
-                "pricing.premium.feature2": "Voice notes anytime",
-                "pricing.premium.feature3": "Scan all your receipts",
-                "pricing.premium.feature4": "Unlimited budget categories",
-                "pricing.premium.feature5": "Full reports (CSV + PDF)",
+                "pricing.premium.f1": "Unlimited messages",
+                "pricing.premium.f2": "100 voice, 50 images",
+                "pricing.premium.f3": "Unlimited budgets + PDF",
                 "pricing.premium.cta": "Go Premium",
-                "pricing.comparePlans": "See differences between plans",
-                "pricing.compareTitle": "Plan Comparison",
-                "pricing.feature": "Feature",
-                "pricing.compare.textMessages": "Text messages",
-                "pricing.compare.voiceMessages": "Voice messages",
-                "pricing.compare.imageScans": "Image scans",
-                "pricing.compare.budgets": "Budgets",
-                "pricing.compare.csvExport": "CSV Export",
-                "pricing.compare.pdfExport": "PDF Export",
-
-                // Footer
-                "footer.privacy": "Privacy Policy",
-                "footer.terms": "Terms of Service",
+                "footer.privacy": "Privacy",
+                "footer.terms": "Terms",
                 "footer.contact": "Contact",
-                "footer.copyright": "© 2025 Monedita. All rights reserved.",
-
-                // Chat messages
-                "chat": [
-                    { type: 'user', text: 'Lunch $12 🍔' },
-                    { type: 'bot', text: "✅ $12 → Food" },
-                    { type: 'user', text: 'Uber $8' },
-                    { type: 'bot', text: "✅ $8 → Transport" },
-                    { type: 'user', text: 'Summary?' },
-                    { type: 'bot', text: "📊 This month:\nFood: $142\nTransport: $85\nTotal: $227" },
-                ]
+                "footer.copyright": "© 2025 Monedita. All rights reserved."
             },
             es: {
-                // WhatsApp pre-filled message
                 "wa.message": "Hola! Quiero registrar mi primer gasto",
-
-                // Nav
                 "nav.features": "Funciones",
-                "nav.howItWorks": "Cómo Funciona",
                 "nav.pricing": "Precios",
                 "nav.startFree": "Empezar Gratis",
-
-                // Hero
-                "hero.badge": "Asistente Financiero con IA",
-                "hero.title1": "Controla tus Gastos",
-                "hero.title2": "Por WhatsApp",
-                "hero.subtitle": "Simplemente envía tus gastos, fotos de recibos o notas de voz. Nuestra IA entiende y organiza todo por ti.",
-                "hero.ctaPrimary": "Empezar Gratis en WhatsApp",
-                "hero.ctaSecondary": "Ver Cómo Funciona",
+                "hero.title1": "Registra gastos",
+                "hero.title2": "por WhatsApp",
+                "hero.subtitle": "Texto, voz o foto. La IA hace el resto.",
+                "hero.cta": "Probar Gratis",
                 "hero.benefit1": "Sin descargar app",
-                "hero.benefit2": "Gratis para empezar",
-                "hero.benefit3": "Potenciado por IA",
-
-                // Phone
-                "phone.assistant": "Asistente IA",
-                "phone.typeMessage": "Escribe un mensaje...",
-
-                // Badges
-                "badge.budget": "Control de presupuesto",
-                "badge.voice": "Notas de voz",
-                "badge.receipts": "Escanea recibos",
-
-                // Features
-                "features.title1": "Lo que puedes hacer con",
-                "features.title2": "esta app",
-                "features.natural.title": "Escribe los gastos",
-                "features.natural.desc": "Solo escribe \"Gasté $15 en almuerzo\" o \"Café 5 dólares\" - nuestra IA lo entiende todo.",
-                "features.voice.title": "Mensajes de Voz",
-                "features.voice.desc": "¿Muy ocupado para escribir? Envía una nota de voz como \"Agrega veinte dólares de gasolina\" y lo registramos.",
-                "features.receipt.title": "Escáner de Recibos",
-                "features.receipt.desc": "Toma una foto de tu recibo. La IA extrae el total y lo categoriza automáticamente.",
-                "features.budgets.title": "Presupuestos Inteligentes",
-                "features.budgets.desc": "Establece presupuestos por categoría. Recibe alertas antes de gastar de más. Mantén el control.",
-                "features.reports.title": "Reportes de Gastos",
-                "features.reports.desc": "Pregunta \"¿Cuánto gasté este mes?\" y obtén resúmenes instantáneos con análisis.",
-                "features.export.title": "Exportar Datos",
-                "features.export.desc": "Descarga tus gastos en CSV o PDF. Perfecto para impuestos o apps de presupuesto.",
-
-                // Feature demos
-                "features.demo.msg1": "Gasté $15 en almuerzo 🍔",
-                "features.demo.msg2": "✅ $15 → Comida",
-                "features.demo.food": "🍔 Comida",
-                "features.demo.transport": "🚗 Transporte",
-                "features.demo.shopping": "🛍️ Compras",
-                "features.demo.total": "total",
-                "features.demo.legendFood": "Comida",
-                "features.demo.legendTransport": "Transporte",
-                "features.demo.legendShop": "Compras",
-
-                // How it works
-                "howItWorks.title1": "Cómo",
-                "howItWorks.title2": "funciona",
-                "howItWorks.subtitle": "Empieza en 30 segundos. Sin formularios, sin contraseñas.",
-                "howItWorks.step1.title": "Escríbenos",
-                "howItWorks.step1.desc": "Haz clic en el botón de WhatsApp y envía \"Hola\" para comenzar. ¡Eso es todo!",
-                "howItWorks.step2.title": "Registra Gastos",
-                "howItWorks.step2.desc": "Escribe, habla o toma fotos de tus gastos. Nuestra IA hace el resto.",
-                "howItWorks.step3.title": "Obtén Insights",
-                "howItWorks.step3.desc": "Pregunta sobre tus gastos. Establece presupuestos. Toma el control.",
-
-                // Pricing
-                "pricing.title1": "Precios",
-                "pricing.title2": "simples y transparentes",
-                "pricing.subtitle": "Empieza gratis, mejora cuando necesites más. Sin costos ocultos.",
+                "hero.benefit2": "Plan gratuito",
+                "phone.status": "Asistente IA",
+                "phone.input": "Escribe un mensaje...",
+                "mode.text": "Texto",
+                "mode.voice": "Voz",
+                "mode.photo": "Foto",
+                "demo.text.user": "Almuerzo $15 🍔",
+                "demo.text.bot": "¡Guardado! $15 → Comida",
+                "demo.voice.transcription": "\"Uber ocho dólares\"",
+                "demo.voice.bot": "¡Guardado! $8 → Transporte",
+                "demo.photo.scanning": "Escaneando recibo...",
+                "demo.photo.bot": "¡Guardado! $42 → Compras",
+                "features.title": "Simple y Poderoso",
+                "features.text.title": "Lenguaje Natural",
+                "features.text.desc": "\"Café $5\" o \"Gasté 20 en almuerzo\"",
+                "features.voice.title": "Notas de Voz",
+                "features.voice.desc": "Dicta tus gastos sin usar las manos",
+                "features.photo.title": "Escaneo de Recibos",
+                "features.photo.desc": "Toma una foto, la IA extrae los datos",
+                "features.insights.title": "Insights Inteligentes",
+                "features.insights.desc": "Presupuestos, resúmenes, exportar",
+                "pricing.title": "Precios Simples",
                 "pricing.perMonth": "/mes",
-                "pricing.popular": "Más Popular",
-                "pricing.unlimited": "Ilimitados",
+                "pricing.popular": "Popular",
                 "pricing.free.name": "Gratis",
-                "pricing.free.desc": "Perfecto para probarlo",
-                "pricing.free.feature1": "Registra ~1 gasto por día",
-                "pricing.free.feature2": "Prueba notas de voz",
-                "pricing.free.feature3": "Prueba escaneo de recibos",
-                "pricing.free.feature4": "1 categoría de presupuesto",
-                "pricing.free.feature5": "Sin exportar datos",
+                "pricing.free.f1": "30 mensajes/mes",
+                "pricing.free.f2": "5 voz/imágenes",
+                "pricing.free.f3": "1 presupuesto",
                 "pricing.free.cta": "Empezar Gratis",
                 "pricing.basic.name": "Básico",
-                "pricing.basic.desc": "Para uso diario",
-                "pricing.basic.feature1": "Registra 5+ gastos al día",
-                "pricing.basic.feature2": "Notas de voz cada día",
-                "pricing.basic.feature3": "Escanea recibos semanalmente",
-                "pricing.basic.feature4": "5 categorías de presupuesto",
-                "pricing.basic.feature5": "Exportar a hoja de cálculo",
-                "pricing.basic.cta": "Mejorar a Básico",
+                "pricing.basic.f1": "150 mensajes/mes",
+                "pricing.basic.f2": "30 voz, 20 imágenes",
+                "pricing.basic.f3": "5 presupuestos + CSV",
+                "pricing.basic.cta": "Mejorar",
                 "pricing.premium.name": "Premium",
-                "pricing.premium.desc": "Control total",
-                "pricing.premium.feature1": "Gastos ilimitados",
-                "pricing.premium.feature2": "Notas de voz cuando quieras",
-                "pricing.premium.feature3": "Escanea todos tus recibos",
-                "pricing.premium.feature4": "Categorías ilimitadas",
-                "pricing.premium.feature5": "Reportes completos (CSV + PDF)",
+                "pricing.premium.f1": "Mensajes ilimitados",
+                "pricing.premium.f2": "100 voz, 50 imágenes",
+                "pricing.premium.f3": "Presupuestos ilimitados + PDF",
                 "pricing.premium.cta": "Ir a Premium",
-                "pricing.comparePlans": "Ver diferencias entre planes",
-                "pricing.compareTitle": "Comparación de Planes",
-                "pricing.feature": "Característica",
-                "pricing.compare.textMessages": "Mensajes de texto",
-                "pricing.compare.voiceMessages": "Mensajes de voz",
-                "pricing.compare.imageScans": "Escaneo de imágenes",
-                "pricing.compare.budgets": "Presupuestos",
-                "pricing.compare.csvExport": "Exportar CSV",
-                "pricing.compare.pdfExport": "Exportar PDF",
-
-                // Footer
-                "footer.privacy": "Política de Privacidad",
-                "footer.terms": "Términos de Servicio",
+                "footer.privacy": "Privacidad",
+                "footer.terms": "Términos",
                 "footer.contact": "Contacto",
-                "footer.copyright": "© 2025 Monedita. Todos los derechos reservados.",
-
-                // Chat messages
-                "chat": [
-                    { type: 'user', text: 'Almuerzo $12 🍔' },
-                    { type: 'bot', text: "✅ $12 → Comida" },
-                    { type: 'user', text: 'Uber $8' },
-                    { type: 'bot', text: "✅ $8 → Transporte" },
-                    { type: 'user', text: 'Resumen?' },
-                    { type: 'bot', text: "📊 Este mes:\nComida: $142\nTransporte: $85\nTotal: $227" },
-                ]
+                "footer.copyright": "© 2025 Monedita. Todos los derechos reservados."
             },
             pt: {
-                // WhatsApp pre-filled message
                 "wa.message": "Oi! Quero registrar minha primeira despesa",
-
-                // Nav
                 "nav.features": "Recursos",
-                "nav.howItWorks": "Como Funciona",
                 "nav.pricing": "Preços",
                 "nav.startFree": "Começar Grátis",
-
-                // Hero
-                "hero.badge": "Assistente Financeiro com IA",
-                "hero.title1": "Controle seus Gastos",
-                "hero.title2": "Pelo WhatsApp",
-                "hero.subtitle": "Simplesmente envie seus gastos, fotos de recibos ou notas de voz. Nossa IA entende e organiza tudo para você.",
-                "hero.ctaPrimary": "Começar Grátis no WhatsApp",
-                "hero.ctaSecondary": "Ver Como Funciona",
+                "hero.title1": "Registre gastos",
+                "hero.title2": "pelo WhatsApp",
+                "hero.subtitle": "Texto, voz ou foto. A IA faz o resto.",
+                "hero.cta": "Testar Grátis",
                 "hero.benefit1": "Sem baixar app",
-                "hero.benefit2": "Grátis para começar",
-                "hero.benefit3": "Potenciado por IA",
-
-                // Phone
-                "phone.assistant": "Assistente IA",
-                "phone.typeMessage": "Digite uma mensagem...",
-
-                // Badges
-                "badge.budget": "Controle de orçamento",
-                "badge.voice": "Notas de voz",
-                "badge.receipts": "Escanear recibos",
-
-                // Features
-                "features.title1": "O que você pode fazer com",
-                "features.title2": "este app",
-                "features.natural.title": "Escreva seus gastos",
-                "features.natural.desc": "Apenas digite \"Gastei R$15 no almoço\" ou \"Café 5 reais\" - nossa IA entende tudo.",
-                "features.voice.title": "Mensagens de Voz",
-                "features.voice.desc": "Muito ocupado para digitar? Envie uma nota de voz como \"Adicione vinte reais de gasolina\" e registramos.",
-                "features.receipt.title": "Scanner de Recibos",
-                "features.receipt.desc": "Tire uma foto do seu recibo. A IA extrai o total e categoriza automaticamente.",
-                "features.budgets.title": "Orçamentos Inteligentes",
-                "features.budgets.desc": "Defina orçamentos por categoria. Receba alertas antes de gastar demais. Mantenha o controle.",
-                "features.reports.title": "Relatórios de Gastos",
-                "features.reports.desc": "Pergunte \"Quanto gastei este mês?\" e obtenha resumos instantâneos com insights.",
-                "features.export.title": "Exportar Dados",
-                "features.export.desc": "Baixe seus gastos em CSV ou PDF. Perfeito para impostos ou apps de orçamento.",
-
-                // Feature demos
-                "features.demo.msg1": "Gastei R$15 no almoço 🍔",
-                "features.demo.msg2": "✅ R$15 → Comida",
-                "features.demo.food": "🍔 Comida",
-                "features.demo.transport": "🚗 Transporte",
-                "features.demo.shopping": "🛍️ Compras",
-                "features.demo.total": "total",
-                "features.demo.legendFood": "Comida",
-                "features.demo.legendTransport": "Transporte",
-                "features.demo.legendShop": "Compras",
-
-                // How it works
-                "howItWorks.title1": "Como",
-                "howItWorks.title2": "funciona",
-                "howItWorks.subtitle": "Comece em 30 segundos. Sem formulários, sem senhas.",
-                "howItWorks.step1.title": "Nos Envie Mensagem",
-                "howItWorks.step1.desc": "Clique no botão do WhatsApp e envie \"Olá\" para começar. É só isso!",
-                "howItWorks.step2.title": "Registre Gastos",
-                "howItWorks.step2.desc": "Digite, fale ou tire fotos dos seus gastos. Nossa IA faz o resto.",
-                "howItWorks.step3.title": "Obtenha Insights",
-                "howItWorks.step3.desc": "Pergunte sobre seus gastos. Defina orçamentos. Assuma o controle.",
-
-                // Pricing
-                "pricing.title1": "Preços",
-                "pricing.title2": "simples e transparentes",
-                "pricing.subtitle": "Comece grátis, faça upgrade quando precisar de mais. Sem taxas ocultas.",
+                "hero.benefit2": "Plano gratuito",
+                "phone.status": "Assistente IA",
+                "phone.input": "Digite uma mensagem...",
+                "mode.text": "Texto",
+                "mode.voice": "Voz",
+                "mode.photo": "Foto",
+                "demo.text.user": "Almoço R$15 🍔",
+                "demo.text.bot": "Salvo! R$15 → Comida",
+                "demo.voice.transcription": "\"Uber oito reais\"",
+                "demo.voice.bot": "Salvo! R$8 → Transporte",
+                "demo.photo.scanning": "Escaneando recibo...",
+                "demo.photo.bot": "Salvo! R$42 → Compras",
+                "features.title": "Simples e Poderoso",
+                "features.text.title": "Linguagem Natural",
+                "features.text.desc": "\"Café R$5\" ou \"Gastei 20 no almoço\"",
+                "features.voice.title": "Notas de Voz",
+                "features.voice.desc": "Fale seus gastos sem usar as mãos",
+                "features.photo.title": "Scan de Recibos",
+                "features.photo.desc": "Tire uma foto, a IA extrai os dados",
+                "features.insights.title": "Insights Inteligentes",
+                "features.insights.desc": "Orçamentos, resumos, exportar",
+                "pricing.title": "Preços Simples",
                 "pricing.perMonth": "/mês",
-                "pricing.popular": "Mais Popular",
-                "pricing.unlimited": "Ilimitadas",
+                "pricing.popular": "Popular",
                 "pricing.free.name": "Grátis",
-                "pricing.free.desc": "Perfeito para testar",
-                "pricing.free.feature1": "Registre ~1 gasto por dia",
-                "pricing.free.feature2": "Teste notas de voz",
-                "pricing.free.feature3": "Teste scan de recibos",
-                "pricing.free.feature4": "1 categoria de orçamento",
-                "pricing.free.feature5": "Sem exportar dados",
+                "pricing.free.f1": "30 mensagens/mês",
+                "pricing.free.f2": "5 voz/imagens",
+                "pricing.free.f3": "1 orçamento",
                 "pricing.free.cta": "Começar Grátis",
                 "pricing.basic.name": "Básico",
-                "pricing.basic.desc": "Para uso diário",
-                "pricing.basic.feature1": "Registre 5+ gastos por dia",
-                "pricing.basic.feature2": "Notas de voz todo dia",
-                "pricing.basic.feature3": "Escaneie recibos semanalmente",
-                "pricing.basic.feature4": "5 categorias de orçamento",
-                "pricing.basic.feature5": "Exportar para planilha",
-                "pricing.basic.cta": "Upgrade para Básico",
+                "pricing.basic.f1": "150 mensagens/mês",
+                "pricing.basic.f2": "30 voz, 20 imagens",
+                "pricing.basic.f3": "5 orçamentos + CSV",
+                "pricing.basic.cta": "Upgrade",
                 "pricing.premium.name": "Premium",
-                "pricing.premium.desc": "Controle total",
-                "pricing.premium.feature1": "Gastos ilimitados",
-                "pricing.premium.feature2": "Notas de voz a qualquer hora",
-                "pricing.premium.feature3": "Escaneie todos os recibos",
-                "pricing.premium.feature4": "Categorias ilimitadas",
-                "pricing.premium.feature5": "Relatórios completos (CSV + PDF)",
+                "pricing.premium.f1": "Mensagens ilimitadas",
+                "pricing.premium.f2": "100 voz, 50 imagens",
+                "pricing.premium.f3": "Orçamentos ilimitados + PDF",
                 "pricing.premium.cta": "Ir para Premium",
-                "pricing.comparePlans": "Ver diferenças entre planos",
-                "pricing.compareTitle": "Comparação de Planos",
-                "pricing.feature": "Recurso",
-                "pricing.compare.textMessages": "Mensagens de texto",
-                "pricing.compare.voiceMessages": "Mensagens de voz",
-                "pricing.compare.imageScans": "Scans de imagem",
-                "pricing.compare.budgets": "Orçamentos",
-                "pricing.compare.csvExport": "Exportar CSV",
-                "pricing.compare.pdfExport": "Exportar PDF",
-
-                // Footer
-                "footer.privacy": "Política de Privacidade",
-                "footer.terms": "Termos de Serviço",
+                "footer.privacy": "Privacidade",
+                "footer.terms": "Termos",
                 "footer.contact": "Contato",
-                "footer.copyright": "© 2025 Monedita. Todos os direitos reservados.",
-
-                // Chat messages
-                "chat": [
-                    { type: 'user', text: 'Almoço R$12 🍔' },
-                    { type: 'bot', text: "✅ R$12 → Comida" },
-                    { type: 'user', text: 'Uber R$8' },
-                    { type: 'bot', text: "✅ R$8 → Transporte" },
-                    { type: 'user', text: 'Resumo?' },
-                    { type: 'bot', text: "📊 Este mês:\nComida: R$142\nTransporte: R$85\nTotal: R$227" },
-                ]
+                "footer.copyright": "© 2025 Monedita. Todos os direitos reservados."
             },
             fr: {
-                // WhatsApp pre-filled message
                 "wa.message": "Bonjour! Je veux enregistrer ma première dépense",
-
-                // Nav
                 "nav.features": "Fonctionnalités",
-                "nav.howItWorks": "Comment ça marche",
                 "nav.pricing": "Tarifs",
-                "nav.startFree": "Commencer Gratuit",
-
-                // Hero
-                "hero.badge": "Assistant Financier IA",
-                "hero.title1": "Suivez vos Dépenses",
-                "hero.title2": "Via WhatsApp",
-                "hero.subtitle": "Envoyez simplement vos dépenses, photos de reçus ou notes vocales. Notre IA comprend et organise tout pour vous.",
-                "hero.ctaPrimary": "Commencer Gratuit sur WhatsApp",
-                "hero.ctaSecondary": "Voir Comment ça Marche",
-                "hero.benefit1": "Sans télécharger d'app",
-                "hero.benefit2": "Gratuit pour commencer",
-                "hero.benefit3": "Propulsé par l'IA",
-
-                // Phone
-                "phone.assistant": "Assistant IA",
-                "phone.typeMessage": "Tapez un message...",
-
-                // Badges
-                "badge.budget": "Suivi du budget",
-                "badge.voice": "Notes vocales",
-                "badge.receipts": "Scanner les reçus",
-
-                // Features
-                "features.title1": "Ce que vous pouvez faire avec",
-                "features.title2": "cette app",
-                "features.natural.title": "Écrivez vos dépenses",
-                "features.natural.desc": "Tapez simplement \"Dépensé 15€ pour le déjeuner\" ou \"Café 5 euros\" - notre IA comprend tout.",
-                "features.voice.title": "Messages Vocaux",
-                "features.voice.desc": "Trop occupé pour taper? Envoyez une note vocale comme \"Ajoute vingt euros d'essence\" et nous l'enregistrons.",
-                "features.receipt.title": "Scanner de Reçus",
-                "features.receipt.desc": "Prenez une photo de votre reçu. L'IA extrait le total et le catégorise automatiquement.",
-                "features.budgets.title": "Budgets Intelligents",
-                "features.budgets.desc": "Définissez des budgets par catégorie. Recevez des alertes avant de trop dépenser. Gardez le contrôle.",
-                "features.reports.title": "Rapports de Dépenses",
-                "features.reports.desc": "Demandez \"Combien ai-je dépensé ce mois?\" et obtenez des résumés instantanés avec analyses.",
-                "features.export.title": "Exporter les Données",
-                "features.export.desc": "Téléchargez vos dépenses en CSV ou PDF. Parfait pour les impôts ou apps de budget.",
-
-                // Feature demos
-                "features.demo.msg1": "Dépensé 15€ pour le déjeuner 🍔",
-                "features.demo.msg2": "✅ 15€ → Alimentation",
-                "features.demo.food": "🍔 Alimentation",
-                "features.demo.transport": "🚗 Transport",
-                "features.demo.shopping": "🛍️ Achats",
-                "features.demo.total": "total",
-                "features.demo.legendFood": "Alim.",
-                "features.demo.legendTransport": "Transport",
-                "features.demo.legendShop": "Achats",
-
-                // How it works
-                "howItWorks.title1": "Comment ça",
-                "howItWorks.title2": "marche",
-                "howItWorks.subtitle": "Commencez en 30 secondes. Sans formulaires, sans mots de passe.",
-                "howItWorks.step1.title": "Envoyez-nous un Message",
-                "howItWorks.step1.desc": "Cliquez sur le bouton WhatsApp et envoyez \"Bonjour\" pour commencer. C'est tout!",
-                "howItWorks.step2.title": "Enregistrez les Dépenses",
-                "howItWorks.step2.desc": "Tapez, parlez ou prenez des photos de vos dépenses. Notre IA fait le reste.",
-                "howItWorks.step3.title": "Obtenez des Insights",
-                "howItWorks.step3.desc": "Posez des questions sur vos dépenses. Définissez des budgets. Prenez le contrôle.",
-
-                // Pricing
-                "pricing.title1": "Tarification",
-                "pricing.title2": "simple et transparente",
-                "pricing.subtitle": "Commencez gratuit, passez à la version supérieure quand vous en avez besoin. Sans frais cachés.",
+                "nav.startFree": "Essai Gratuit",
+                "hero.title1": "Suivez vos dépenses",
+                "hero.title2": "via WhatsApp",
+                "hero.subtitle": "Texte, voix ou photo. L'IA fait le reste.",
+                "hero.cta": "Essayer Gratuit",
+                "hero.benefit1": "Sans télécharger",
+                "hero.benefit2": "Offre gratuite",
+                "phone.status": "Assistant IA",
+                "phone.input": "Tapez un message...",
+                "mode.text": "Texte",
+                "mode.voice": "Voix",
+                "mode.photo": "Photo",
+                "demo.text.user": "Déjeuner 15€ 🍔",
+                "demo.text.bot": "Enregistré! 15€ → Alimentation",
+                "demo.voice.transcription": "\"Uber huit euros\"",
+                "demo.voice.bot": "Enregistré! 8€ → Transport",
+                "demo.photo.scanning": "Scan du reçu...",
+                "demo.photo.bot": "Enregistré! 42€ → Achats",
+                "features.title": "Simple et Puissant",
+                "features.text.title": "Langage Naturel",
+                "features.text.desc": "\"Café 5€\" ou \"Dépensé 20 au déjeuner\"",
+                "features.voice.title": "Notes Vocales",
+                "features.voice.desc": "Dictez vos dépenses mains libres",
+                "features.photo.title": "Scan de Reçus",
+                "features.photo.desc": "Prenez une photo, l'IA extrait les données",
+                "features.insights.title": "Insights Intelligents",
+                "features.insights.desc": "Budgets, résumés, exports",
+                "pricing.title": "Tarification Simple",
                 "pricing.perMonth": "/mois",
-                "pricing.popular": "Le Plus Populaire",
-                "pricing.unlimited": "Illimités",
+                "pricing.popular": "Populaire",
                 "pricing.free.name": "Gratuit",
-                "pricing.free.desc": "Parfait pour essayer",
-                "pricing.free.feature1": "Suivez ~1 dépense par jour",
-                "pricing.free.feature2": "Essayez les notes vocales",
-                "pricing.free.feature3": "Essayez le scan de reçus",
-                "pricing.free.feature4": "1 catégorie de budget",
-                "pricing.free.feature5": "Pas d'export de données",
+                "pricing.free.f1": "30 messages/mois",
+                "pricing.free.f2": "5 voix/images",
+                "pricing.free.f3": "1 budget",
                 "pricing.free.cta": "Commencer Gratuit",
                 "pricing.basic.name": "Basic",
-                "pricing.basic.desc": "Pour un usage quotidien",
-                "pricing.basic.feature1": "Suivez 5+ dépenses par jour",
-                "pricing.basic.feature2": "Notes vocales chaque jour",
-                "pricing.basic.feature3": "Scannez vos reçus chaque semaine",
-                "pricing.basic.feature4": "5 catégories de budget",
-                "pricing.basic.feature5": "Exporter vers tableur",
+                "pricing.basic.f1": "150 messages/mois",
+                "pricing.basic.f2": "30 voix, 20 images",
+                "pricing.basic.f3": "5 budgets + CSV",
                 "pricing.basic.cta": "Passer à Basic",
                 "pricing.premium.name": "Premium",
-                "pricing.premium.desc": "Contrôle total",
-                "pricing.premium.feature1": "Suivi de dépenses illimité",
-                "pricing.premium.feature2": "Notes vocales à tout moment",
-                "pricing.premium.feature3": "Scannez tous vos reçus",
-                "pricing.premium.feature4": "Catégories illimitées",
-                "pricing.premium.feature5": "Rapports complets (CSV + PDF)",
+                "pricing.premium.f1": "Messages illimités",
+                "pricing.premium.f2": "100 voix, 50 images",
+                "pricing.premium.f3": "Budgets illimités + PDF",
                 "pricing.premium.cta": "Passer à Premium",
-                "pricing.comparePlans": "Voir les différences entre les plans",
-                "pricing.compareTitle": "Comparaison des Plans",
-                "pricing.feature": "Fonctionnalité",
-                "pricing.compare.textMessages": "Messages texte",
-                "pricing.compare.voiceMessages": "Messages vocaux",
-                "pricing.compare.imageScans": "Scans d'images",
-                "pricing.compare.budgets": "Budgets",
-                "pricing.compare.csvExport": "Export CSV",
-                "pricing.compare.pdfExport": "Export PDF",
-
-                // Footer
-                "footer.privacy": "Politique de Confidentialité",
-                "footer.terms": "Conditions d'Utilisation",
+                "footer.privacy": "Confidentialité",
+                "footer.terms": "Conditions",
                 "footer.contact": "Contact",
-                "footer.copyright": "© 2025 Monedita. Tous droits réservés.",
-
-                // Chat messages
-                "chat": [
-                    { type: 'user', text: 'Déjeuner 12€ 🍔' },
-                    { type: 'bot', text: "✅ 12€ → Alimentation" },
-                    { type: 'user', text: 'Uber 8€' },
-                    { type: 'bot', text: "✅ 8€ → Transport" },
-                    { type: 'user', text: 'Résumé?' },
-                    { type: 'bot', text: "📊 Ce mois:\nAlimentation: 142€\nTransport: 85€\nTotal: 227€" },
-                ]
+                "footer.copyright": "© 2025 Monedita. Tous droits réservés."
             }
         };
 
@@ -1561,449 +912,217 @@
             fr: { flag: '🇫🇷', name: 'FR' }
         };
 
-        // Localized pricing by country/region
+        // Localized pricing
         const pricingData = {
-            USD: {
-                symbol: '$',
-                free: '0',
-                basic: '2.99',
-                premium: '7.99',
-                basicOriginal: null,
-                premiumOriginal: null,
-                savings: null
-            },
-            COP: {
-                symbol: '$',
-                free: '0',
-                basic: '12,900',
-                premium: '32,900',
-                basicOriginal: '14,900',
-                premiumOriginal: '39,900',
-                savings: { basic: '13%', premium: '17%' }
-            },
-            MXN: {
-                symbol: '$',
-                free: '0',
-                basic: '49',
-                premium: '129',
-                basicOriginal: '59',
-                premiumOriginal: '159',
-                savings: { basic: '17%', premium: '19%' }
-            },
-            BRL: {
-                symbol: 'R$',
-                free: '0',
-                basic: '14,90',
-                premium: '39,90',
-                basicOriginal: '19,90',
-                premiumOriginal: '49,90',
-                savings: { basic: '25%', premium: '20%' }
-            },
-            EUR: {
-                symbol: '€',
-                free: '0',
-                basic: '2,79',
-                premium: '7,49',
-                basicOriginal: null,
-                premiumOriginal: null,
-                savings: null
-            },
-            ARS: {
-                symbol: '$',
-                free: '0',
-                basic: '2.990',
-                premium: '7.990',
-                basicOriginal: '3.990',
-                premiumOriginal: '9.990',
-                savings: { basic: '25%', premium: '20%' }
-            },
-            CLP: {
-                symbol: '$',
-                free: '0',
-                basic: '2.490',
-                premium: '6.490',
-                basicOriginal: '2.990',
-                premiumOriginal: '7.990',
-                savings: { basic: '17%', premium: '19%' }
-            },
-            PEN: {
-                symbol: 'S/',
-                free: '0',
-                basic: '9.90',
-                premium: '29.90',
-                basicOriginal: '12.90',
-                premiumOriginal: '34.90',
-                savings: { basic: '23%', premium: '14%' }
-            }
+            USD: { symbol: '$', free: '0', basic: '2.99', premium: '7.99', basicOriginal: null, premiumOriginal: null },
+            COP: { symbol: '$', free: '0', basic: '12,900', premium: '32,900', basicOriginal: '14,900', premiumOriginal: '39,900', savings: { basic: '13%', premium: '17%' } },
+            MXN: { symbol: '$', free: '0', basic: '49', premium: '129', basicOriginal: '59', premiumOriginal: '159', savings: { basic: '17%', premium: '19%' } },
+            BRL: { symbol: 'R$', free: '0', basic: '14,90', premium: '39,90', basicOriginal: '19,90', premiumOriginal: '49,90', savings: { basic: '25%', premium: '20%' } },
+            EUR: { symbol: '€', free: '0', basic: '2,79', premium: '7,49', basicOriginal: null, premiumOriginal: null }
         };
 
-        // Map timezones to currencies
         const timezoneToCurrency = {
-            'America/Bogota': 'COP',
-            'America/Medellin': 'COP',
-            'America/Mexico_City': 'MXN',
-            'America/Cancun': 'MXN',
-            'America/Monterrey': 'MXN',
-            'America/Tijuana': 'MXN',
-            'America/Sao_Paulo': 'BRL',
-            'America/Rio_Branco': 'BRL',
-            'America/Manaus': 'BRL',
-            'America/Fortaleza': 'BRL',
-            'America/Recife': 'BRL',
-            'America/Buenos_Aires': 'ARS',
-            'America/Argentina/Buenos_Aires': 'ARS',
-            'America/Cordoba': 'ARS',
-            'America/Santiago': 'CLP',
-            'America/Lima': 'PEN',
-            'Europe/Paris': 'EUR',
-            'Europe/Madrid': 'EUR',
-            'Europe/Berlin': 'EUR',
-            'Europe/Rome': 'EUR',
-            'Europe/Amsterdam': 'EUR',
-            'Europe/Brussels': 'EUR',
-            'Europe/Lisbon': 'EUR',
+            'America/Bogota': 'COP', 'America/Mexico_City': 'MXN', 'America/Sao_Paulo': 'BRL',
+            'America/Buenos_Aires': 'ARS', 'Europe/Paris': 'EUR', 'Europe/Madrid': 'EUR'
         };
 
-        // Savings badge translations
-        const savingsText = {
-            en: 'Save',
-            es: 'Ahorra',
-            pt: 'Economize',
-            fr: 'Économisez'
-        };
+        const savingsText = { en: 'Save', es: 'Ahorra', pt: 'Economize', fr: 'Économisez' };
 
         let currentLang = 'en';
-        let chatMessages = translations.en.chat;
         let detectedCurrency = 'USD';
+        let currentScene = 0;
+        const scenes = ['text', 'voice', 'photo'];
+        let demoInterval = null;
 
-        // Detect country/currency from timezone
         function detectCurrency() {
             try {
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                return timezoneToCurrency[timezone] || 'USD';
-            } catch (e) {
-                return 'USD';
-            }
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                return timezoneToCurrency[tz] || 'USD';
+            } catch (e) { return 'USD'; }
         }
 
-        // Update pricing display
         function updatePricing(currency) {
-            const pricing = pricingData[currency] || pricingData.USD;
+            const p = pricingData[currency] || pricingData.USD;
+            document.getElementById('price-free').textContent = p.symbol + p.free;
+            document.getElementById('price-basic').textContent = p.symbol + p.basic;
+            document.getElementById('price-premium').textContent = p.symbol + p.premium;
 
-            // Update price displays
-            document.getElementById('price-free').textContent = pricing.symbol + pricing.free;
-            document.getElementById('price-basic').textContent = pricing.symbol + pricing.basic;
-            document.getElementById('price-premium').textContent = pricing.symbol + pricing.premium;
+            const basicOrigEl = document.getElementById('price-basic-original');
+            const premOrigEl = document.getElementById('price-premium-original');
+            const savBasicEl = document.getElementById('savings-basic');
+            const savPremEl = document.getElementById('savings-premium');
 
-            // Show original prices and savings if available
-            const basicOriginalEl = document.getElementById('price-basic-original');
-            const premiumOriginalEl = document.getElementById('price-premium-original');
-            const savingsBasicEl = document.getElementById('savings-basic');
-            const savingsPremiumEl = document.getElementById('savings-premium');
-
-            if (pricing.basicOriginal) {
-                basicOriginalEl.textContent = pricing.symbol + pricing.basicOriginal;
-                basicOriginalEl.classList.remove('hidden');
-                savingsBasicEl.textContent = savingsText[currentLang] + ' ' + pricing.savings.basic;
-                savingsBasicEl.classList.remove('hidden');
+            if (p.basicOriginal) {
+                basicOrigEl.textContent = p.symbol + p.basicOriginal;
+                basicOrigEl.classList.remove('hidden');
+                savBasicEl.textContent = savingsText[currentLang] + ' ' + p.savings.basic;
+                savBasicEl.classList.remove('hidden');
             } else {
-                basicOriginalEl.classList.add('hidden');
-                savingsBasicEl.classList.add('hidden');
+                basicOrigEl.classList.add('hidden');
+                savBasicEl.classList.add('hidden');
             }
-
-            if (pricing.premiumOriginal) {
-                premiumOriginalEl.textContent = pricing.symbol + pricing.premiumOriginal;
-                premiumOriginalEl.classList.remove('hidden');
-                savingsPremiumEl.textContent = savingsText[currentLang] + ' ' + pricing.savings.premium;
-                savingsPremiumEl.classList.remove('hidden');
+            if (p.premiumOriginal) {
+                premOrigEl.textContent = p.symbol + p.premiumOriginal;
+                premOrigEl.classList.remove('hidden');
+                savPremEl.textContent = savingsText[currentLang] + ' ' + p.savings.premium;
+                savPremEl.classList.remove('hidden');
             } else {
-                premiumOriginalEl.classList.add('hidden');
-                savingsPremiumEl.classList.add('hidden');
+                premOrigEl.classList.add('hidden');
+                savPremEl.classList.add('hidden');
             }
         }
 
-        // Detect browser/system language
         function detectLanguage() {
-            const savedLang = localStorage.getItem('monedita-lang');
-            if (savedLang && translations[savedLang]) {
-                return savedLang;
-            }
-
-            const browserLang = navigator.language || navigator.userLanguage;
-            const langCode = browserLang.split('-')[0].toLowerCase();
-
-            if (translations[langCode]) {
-                return langCode;
-            }
-
-            return 'en';
+            const saved = localStorage.getItem('monedita-lang');
+            if (saved && translations[saved]) return saved;
+            const browser = (navigator.language || 'en').split('-')[0].toLowerCase();
+            return translations[browser] ? browser : 'en';
         }
 
-        // Update all text content
-        // Update WhatsApp links with pre-filled message based on language
         function updateWhatsAppLinks(lang) {
-            const t = translations[lang];
-            const message = t['wa.message'] || translations.en['wa.message'];
-            const encodedMessage = encodeURIComponent(message);
-            const baseUrl = 'https://wa.me/573222490201';
-
+            const msg = translations[lang]['wa.message'] || translations.en['wa.message'];
+            const encoded = encodeURIComponent(msg);
             document.querySelectorAll('.wa-link').forEach(link => {
-                link.href = `${baseUrl}?text=${encodedMessage}`;
+                link.href = `https://wa.me/573222490201?text=${encoded}`;
             });
         }
 
         function updateContent(lang) {
             currentLang = lang;
             const t = translations[lang];
-
-            // Update all elements with data-i18n attribute
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (t[key]) {
-                    el.textContent = t[key];
-                }
+                if (t[key]) el.textContent = t[key];
             });
-
-            // Update language button
             document.getElementById('current-flag').textContent = languageData[lang].flag;
             document.getElementById('current-lang').textContent = languageData[lang].name;
             document.getElementById('current-flag-mobile').textContent = languageData[lang].flag;
-
-            // Update active state in dropdown
             document.querySelectorAll('.lang-option').forEach(opt => {
                 opt.classList.toggle('active', opt.getAttribute('data-lang') === lang);
             });
-
-            // Update HTML lang attribute
             document.documentElement.lang = lang;
-
-            // Update chat messages
-            chatMessages = t.chat;
-
-            // Save preference
             localStorage.setItem('monedita-lang', lang);
-
-            // Restart chat animation with new language
-            restartChatAnimation();
-
-            // Update pricing text (for savings badge translations)
             updatePricing(detectedCurrency);
-
-            // Update WhatsApp links with localized message
             updateWhatsAppLinks(lang);
         }
 
-        // Language dropdown click handlers
-        document.querySelectorAll('.lang-option').forEach(option => {
-            option.addEventListener('click', () => {
-                const lang = option.getAttribute('data-lang');
-                updateContent(lang);
+        // Demo Animation
+        function runTextDemo() {
+            const userMsg = document.getElementById('text-user-msg');
+            const typing = document.getElementById('text-typing');
+            const botMsg = document.getElementById('text-bot-msg');
+
+            userMsg.style.opacity = '0';
+            typing.style.opacity = '0';
+            botMsg.style.opacity = '0';
+
+            setTimeout(() => { userMsg.style.opacity = '1'; userMsg.classList.add('animate-fade-in-up'); }, 300);
+            setTimeout(() => { typing.style.opacity = '1'; }, 800);
+            setTimeout(() => { typing.style.opacity = '0'; }, 2000);
+            setTimeout(() => { botMsg.style.opacity = '1'; botMsg.classList.add('animate-fade-in-up'); }, 2100);
+        }
+
+        function runVoiceDemo() {
+            const userMsg = document.getElementById('voice-user-msg');
+            const transcription = document.getElementById('voice-transcription');
+            const botMsg = document.getElementById('voice-bot-msg');
+
+            userMsg.style.opacity = '0';
+            transcription.style.opacity = '0';
+            botMsg.style.opacity = '0';
+
+            setTimeout(() => { userMsg.style.opacity = '1'; userMsg.classList.add('animate-fade-in-up'); }, 300);
+            setTimeout(() => { transcription.style.opacity = '1'; }, 1500);
+            setTimeout(() => { botMsg.style.opacity = '1'; botMsg.classList.add('animate-fade-in-up'); }, 2500);
+        }
+
+        function runPhotoDemo() {
+            const userMsg = document.getElementById('photo-user-msg');
+            const processing = document.getElementById('photo-processing');
+            const botMsg = document.getElementById('photo-bot-msg');
+
+            userMsg.style.opacity = '0';
+            processing.style.opacity = '0';
+            botMsg.style.opacity = '0';
+
+            setTimeout(() => { userMsg.style.opacity = '1'; userMsg.classList.add('animate-fade-in-up'); }, 300);
+            setTimeout(() => { processing.style.opacity = '1'; }, 1000);
+            setTimeout(() => { processing.style.opacity = '0'; }, 2500);
+            setTimeout(() => { botMsg.style.opacity = '1'; botMsg.classList.add('animate-fade-in-up'); }, 2600);
+        }
+
+        function showScene(index) {
+            const sceneElements = document.querySelectorAll('.demo-scene');
+            const modeIndicators = document.querySelectorAll('.mode-indicator');
+            const sceneName = scenes[index];
+
+            sceneElements.forEach(scene => {
+                scene.classList.remove('active');
+                if (scene.dataset.scene === sceneName) scene.classList.add('active');
+            });
+
+            modeIndicators.forEach(indicator => {
+                indicator.classList.remove('active');
+                if (indicator.dataset.mode === sceneName) indicator.classList.add('active');
+            });
+
+            // Run the appropriate animation
+            if (sceneName === 'text') runTextDemo();
+            else if (sceneName === 'voice') runVoiceDemo();
+            else if (sceneName === 'photo') runPhotoDemo();
+        }
+
+        function startDemoLoop() {
+            showScene(0);
+            demoInterval = setInterval(() => {
+                currentScene = (currentScene + 1) % scenes.length;
+                showScene(currentScene);
+            }, 5000);
+        }
+
+        // Mode indicator clicks
+        document.querySelectorAll('.mode-indicator').forEach((btn, idx) => {
+            btn.addEventListener('click', () => {
+                currentScene = idx;
+                clearInterval(demoInterval);
+                showScene(idx);
+                demoInterval = setInterval(() => {
+                    currentScene = (currentScene + 1) % scenes.length;
+                    showScene(currentScene);
+                }, 5000);
             });
         });
 
-        // Mobile menu toggle
+        // Language dropdown
+        document.querySelectorAll('.lang-option').forEach(option => {
+            option.addEventListener('click', () => updateContent(option.getAttribute('data-lang')));
+        });
+
+        // Mobile menu
         document.getElementById('mobile-menu-btn').addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
 
-        // Chat animation
-        const chatContainer = document.getElementById('chat-container');
-        let messageIndex = 0;
-        let chatAnimationTimeout = null;
-
-        function createMessageElement(message) {
-            const wrapper = document.createElement('div');
-            wrapper.className = `flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`;
-
-            const bubble = document.createElement('div');
-            bubble.className = `chat-bubble max-w-[80%] px-3 py-2 rounded-lg text-sm ${
-                message.type === 'user'
-                    ? 'bg-whatsapp-light text-gray-800 rounded-br-none'
-                    : 'bg-white text-gray-800 rounded-bl-none shadow-sm'
-            }`;
-            bubble.style.whiteSpace = 'pre-line';
-            bubble.textContent = message.text;
-
-            wrapper.appendChild(bubble);
-            return wrapper;
-        }
-
-        function createTypingIndicator() {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'flex justify-start';
-            wrapper.id = 'typing-indicator';
-
-            const bubble = document.createElement('div');
-            bubble.className = 'bg-white px-4 py-3 rounded-lg rounded-bl-none shadow-sm typing-indicator';
-            bubble.innerHTML = '<span></span><span></span><span></span>';
-
-            wrapper.appendChild(bubble);
-            return wrapper;
-        }
-
-        function restartChatAnimation() {
-            // Clear existing timeouts and reset
-            if (chatAnimationTimeout) {
-                clearTimeout(chatAnimationTimeout);
-            }
-            chatContainer.innerHTML = '';
-            messageIndex = 0;
-            chatAnimationTimeout = setTimeout(showNextMessage, 1000);
-        }
-
-        function showNextMessage() {
-            if (messageIndex >= chatMessages.length) {
-                // Reset and replay after a pause
-                chatAnimationTimeout = setTimeout(() => {
-                    chatContainer.innerHTML = '';
-                    messageIndex = 0;
-                    showNextMessage();
-                }, 5000);
-                return;
-            }
-
-            const message = chatMessages[messageIndex];
-            const delays = [500, 1500, 3500, 4500, 6500, 7500];
-            const currentDelay = delays[messageIndex] || 1500;
-            const nextDelay = delays[messageIndex + 1] || currentDelay + 2000;
-
-            // If it's a bot message, show typing indicator first
-            if (message.type === 'bot') {
-                const typing = createTypingIndicator();
-                chatContainer.appendChild(typing);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-
-                chatAnimationTimeout = setTimeout(() => {
-                    typing.remove();
-                    const element = createMessageElement(message);
-                    chatContainer.appendChild(element);
-                    setTimeout(() => element.querySelector('.chat-bubble').classList.add('visible'), 50);
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                    messageIndex++;
-
-                    if (messageIndex < chatMessages.length) {
-                        chatAnimationTimeout = setTimeout(showNextMessage, nextDelay - currentDelay);
-                    } else {
-                        chatAnimationTimeout = setTimeout(showNextMessage, 5000);
-                    }
-                }, 1200);
-            } else {
-                const element = createMessageElement(message);
-                chatContainer.appendChild(element);
-                setTimeout(() => element.querySelector('.chat-bubble').classList.add('visible'), 50);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                messageIndex++;
-
-                if (messageIndex < chatMessages.length) {
-                    chatAnimationTimeout = setTimeout(showNextMessage, nextDelay - currentDelay);
-                }
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            // Detect and set language
-            const detectedLang = detectLanguage();
-            updateContent(detectedLang);
-
-            // Detect and set localized pricing
-            detectedCurrency = detectCurrency();
-            updatePricing(detectedCurrency);
-        });
-
-        // Smooth scroll for anchor links
+        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    // Close mobile menu if open
                     document.getElementById('mobile-menu').classList.add('hidden');
                 }
             });
         });
 
-        // Feature card animations with Intersection Observer
-        const featureObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('in-view');
-
-                    // Animate chart total
-                    const chartTotal = entry.target.querySelector('.chart-total');
-                    if (chartTotal && !chartTotal.dataset.animated) {
-                        chartTotal.dataset.animated = 'true';
-                        animateNumber(chartTotal, 0, 423, 1500, '$');
-                    }
-                }
-            });
-        }, { threshold: 0.3 });
-
-        document.querySelectorAll('.feature-card').forEach(card => {
-            featureObserver.observe(card);
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const lang = detectLanguage();
+            updateContent(lang);
+            detectedCurrency = detectCurrency();
+            updatePricing(detectedCurrency);
+            startDemoLoop();
         });
-
-        // Number animation helper
-        function animateNumber(element, start, end, duration, prefix = '') {
-            const startTime = performance.now();
-            const update = (currentTime) => {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-                const current = Math.floor(start + (end - start) * easeProgress);
-                element.textContent = prefix + current;
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                }
-            };
-            requestAnimationFrame(update);
-        }
-
-        // Re-trigger animations on language change for feature demos
-        const originalUpdateContent = updateContent;
-        updateContent = function(lang) {
-            originalUpdateContent(lang);
-            // Reset feature animations
-            document.querySelectorAll('.feature-card').forEach(card => {
-                card.classList.remove('in-view');
-                const chartTotal = card.querySelector('.chart-total');
-                if (chartTotal) {
-                    chartTotal.dataset.animated = '';
-                    chartTotal.textContent = '$0';
-                }
-            });
-            // Re-observe
-            setTimeout(() => {
-                document.querySelectorAll('.feature-card').forEach(card => {
-                    featureObserver.observe(card);
-                });
-            }, 100);
-        };
-
-        // Compare plans modal
-        const compareBtn = document.getElementById('compare-plans-btn');
-        const compareModal = document.getElementById('compare-modal');
-        const closeModalBtn = document.getElementById('close-modal');
-
-        if (compareBtn && compareModal && closeModalBtn) {
-            compareBtn.addEventListener('click', () => {
-                compareModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            });
-
-            closeModalBtn.addEventListener('click', () => {
-                compareModal.classList.add('hidden');
-                document.body.style.overflow = '';
-            });
-
-            compareModal.addEventListener('click', (e) => {
-                if (e.target === compareModal) {
-                    compareModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                }
-            });
-        }
     </script>
 </body>
 </html>
