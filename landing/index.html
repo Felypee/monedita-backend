@@ -867,7 +867,7 @@
     </section>
 
     <!-- Section 4: Email Insights (Light background) -->
-    <section id="insights" class="relative min-h-[150vh] bg-gradient-to-br from-slate-100 via-white to-gray-100 flex items-center py-20 z-10">
+    <section id="insights" class="relative min-h-screen bg-gradient-to-br from-slate-100 via-white to-gray-100 flex items-center py-20 z-10">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="text-center mb-12">
                 <h2 class="fluid-section font-black text-gray-900 mb-4" data-i18n="insights.title">Weekly insights, delivered</h2>
@@ -1541,8 +1541,9 @@
 
             ScrollTrigger.create({
                 trigger: "#insights",
-                start: "top 80%",
-                end: "bottom 20%",
+                start: "top top",
+                end: "+=200%",
+                pin: true,
                 scrub: 1,
                 onUpdate: (self) => {
                     const progress = self.progress;
