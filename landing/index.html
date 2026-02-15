@@ -484,12 +484,14 @@
             font-size: 1.25rem;
         }
 
-        /* CTA wrapper - centered like progress dots */
+        /* CTA wrapper - centered with inset-x-0 and flex */
         .cta-wrapper {
             position: absolute;
             bottom: 3rem;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
             z-index: 20;
         }
 
@@ -867,7 +869,7 @@
     </section>
 
     <!-- Section 4: Email Insights (Light background) -->
-    <section id="insights" class="relative min-h-screen bg-gradient-to-br from-slate-100 via-white to-gray-100 flex items-center py-20 z-10">
+    <section id="insights" class="relative min-h-[150vh] bg-gradient-to-br from-slate-100 via-white to-gray-100 flex items-center py-20 z-10">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="text-center mb-12">
                 <h2 class="fluid-section font-black text-gray-900 mb-4" data-i18n="insights.title">Weekly insights, delivered</h2>
@@ -1516,12 +1518,12 @@
                         const clipAmount = outProgress * 35;
                         phone.style.clipPath = `inset(0 0 ${clipAmount}% 0)`;
 
-                        // Show CTA - only animate opacity, CSS handles positioning
+                        // Show CTA - flex handles centering, only animate opacity and Y
                         ctaWrapper.style.opacity = outProgress;
-                        ctaWrapper.style.transform = `translateX(-50%) translateY(${(1 - outProgress) * 30}px)`;
+                        ctaWrapper.style.transform = `translateY(${(1 - outProgress) * 30}px)`;
                     } else {
                         ctaWrapper.style.opacity = '0';
-                        ctaWrapper.style.transform = 'translateX(-50%) translateY(30px)';
+                        ctaWrapper.style.transform = 'translateY(30px)';
                     }
 
                     // Scroll hint
