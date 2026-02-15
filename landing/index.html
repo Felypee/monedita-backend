@@ -1717,11 +1717,12 @@
                             }
                         });
                     }
-                    // Phase 7 (80-100%): Alert tip appears
-                    else {
+                    // Phase 7 (80-90%): Alert tip appears
+                    else if (progress < 0.90) {
                         // Title stays hidden
                         titleContainer.style.opacity = '0';
                         insightsContent.style.opacity = '1';
+                        transitionOverlay.style.opacity = '1';
 
                         categoryBars.forEach(bar => {
                             bar.style.opacity = '1';
@@ -1730,9 +1731,18 @@
                             if (fill) fill.style.width = fill.dataset.width;
                         });
 
-                        const alertProgress = (progress - 0.80) / 0.20;
-                        emailAlert.style.opacity = alertProgress;
-                        emailAlert.style.transform = `translateY(${(1 - alertProgress) * 15}px)`;
+                        const alertProgress = (progress - 0.80) / 0.10;
+                        emailAlert.style.opacity = Math.min(alertProgress, 1);
+                        emailAlert.style.transform = `translateY(${(1 - Math.min(alertProgress, 1)) * 15}px)`;
+                    }
+                    // Phase 8 (90-100%): Fade out everything for next section
+                    else {
+                        const fadeOutProgress = (progress - 0.90) / 0.10;
+
+                        // Fade out overlay, content, and all elements
+                        transitionOverlay.style.opacity = 1 - fadeOutProgress;
+                        insightsContent.style.opacity = 1 - fadeOutProgress;
+                        titleContainer.style.opacity = '0';
                     }
 
                     // Reset when scrolling back up completely
