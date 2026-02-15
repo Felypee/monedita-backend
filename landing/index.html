@@ -186,21 +186,53 @@
             will-change: transform, opacity;
         }
 
-        /* CTA Glow effect */
+        /* CTA Glow effect - Exaggerated */
         .cta-glow {
             position: absolute;
-            bottom: -20px;
+            bottom: -30px;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;
-            height: 60px;
-            background: radial-gradient(ellipse at center, rgba(37, 211, 102, 0.6) 0%, transparent 70%);
-            filter: blur(20px);
+            width: 350px;
+            height: 120px;
+            background: radial-gradient(ellipse at center, rgba(37, 211, 102, 0.9) 0%, rgba(37, 211, 102, 0.5) 30%, transparent 70%);
+            filter: blur(30px);
             animation: ctaGlowPulse 2s ease-in-out infinite;
         }
+        .cta-glow-outer {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 180px;
+            background: radial-gradient(ellipse at center, rgba(37, 211, 102, 0.4) 0%, rgba(16, 185, 129, 0.2) 40%, transparent 70%);
+            filter: blur(50px);
+            animation: ctaGlowPulseOuter 3s ease-in-out infinite;
+        }
+        .cta-glow-ring {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 0 60px 20px rgba(37, 211, 102, 0.6),
+                        0 0 100px 40px rgba(37, 211, 102, 0.3),
+                        0 0 140px 60px rgba(37, 211, 102, 0.1);
+            animation: ctaGlowRing 2s ease-in-out infinite;
+        }
         @keyframes ctaGlowPulse {
-            0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-            50% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+            0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.3); }
+        }
+        @keyframes ctaGlowPulseOuter {
+            0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+            50% { opacity: 0.8; transform: translateX(-50%) scale(1.2); }
+        }
+        @keyframes ctaGlowRing {
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(0.9); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
         }
 
         /* Phone mockup shadow */
@@ -796,15 +828,19 @@
                 </div>
             </div>
 
-            <!-- CTA Button with glow -->
-            <div id="chat-cta-wrapper" class="absolute bottom-20 left-1/2 -translate-x-1/2 opacity-0">
-                <div class="cta-glow"></div>
-                <a href="https://wa.me/573222490201" target="_blank" id="chat-cta" class="wa-link wa-cta relative inline-flex items-center justify-center px-8 py-4 bg-whatsapp hover:bg-whatsapp-dark text-white rounded-full font-bold text-lg transition shadow-lg shadow-green-500/40 hover:shadow-green-500/60 hover:scale-105 transform">
+            <!-- CTA Button with exaggerated glow -->
+            <div id="chat-cta-wrapper" class="absolute bottom-16 left-0 right-0 flex justify-center opacity-0">
+                <div class="relative">
+                    <div class="cta-glow-outer"></div>
+                    <div class="cta-glow"></div>
+                    <div class="cta-glow-ring"></div>
+                    <a href="https://wa.me/573222490201" target="_blank" id="chat-cta" class="wa-link wa-cta relative inline-flex items-center justify-center px-10 py-5 bg-whatsapp hover:bg-whatsapp-dark text-white rounded-full font-bold text-xl transition shadow-lg shadow-green-500/50 hover:shadow-green-500/70 hover:scale-105 transform z-10">
                     <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                     </svg>
                     <span data-i18n="hero.cta">Try Free</span>
                 </a>
+                </div>
             </div>
 
             <!-- Progress Dots -->
@@ -1359,52 +1395,54 @@
             });
 
             // Phone starts hidden - use GSAP for smoother control
-            gsap.set(phone, { opacity: 0, scale: 0.8, y: 0 });
-            gsap.set(ctaWrapper, { opacity: 0, y: 30 });
+            gsap.set(phone, { opacity: 0, scale: 0.9, y: 0 });
+            // CTA starts hidden below
+            ctaWrapper.style.opacity = '0';
+            ctaWrapper.style.transform = 'translateY(40px)';
 
             // Create smooth setters for fluid animation (quickTo provides interpolation)
-            const setPhoneScale = gsap.quickTo(phone, "scale", { duration: 0.5, ease: "power2.out" });
-            const setPhoneY = gsap.quickTo(phone, "y", { duration: 0.5, ease: "power2.out" });
-            const setPhoneOpacity = gsap.quickTo(phone, "opacity", { duration: 0.4, ease: "power2.out" });
+            const setPhoneScale = gsap.quickTo(phone, "scale", { duration: 0.6, ease: "power2.out" });
+            const setPhoneY = gsap.quickTo(phone, "y", { duration: 0.6, ease: "power2.out" });
+            const setPhoneOpacity = gsap.quickTo(phone, "opacity", { duration: 0.5, ease: "power2.out" });
 
             // Scroll-driven animation with smoother scrub
             ScrollTrigger.create({
                 trigger: section,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 1.5,
+                scrub: 2,
                 onUpdate: (self) => {
                     const progress = self.progress;
 
-                    // Phase 1: 0-12% - Headline visible, phone hidden
-                    // Phase 2: 12-20% - Headline fades, phone appears with logo
-                    // Phase 3: 20-28% - Logo fades, chat appears
-                    // Phase 4: 28-85% - Messages appear with zoom following each message
-                    // Phase 5: 85-100% - Zoom out, clip phone, show CTA
+                    // Phase 1: 0-10% - Headline visible, phone hidden
+                    // Phase 2: 10-18% - Headline fades, phone appears with logo
+                    // Phase 3: 18-24% - Logo fades, chat appears
+                    // Phase 4: 24-88% - Messages appear with zoom following each message (LONGER)
+                    // Phase 5: 88-100% - Zoom out completely, show CTA with glow
 
-                    // Headline fade and phone appear (12-20%)
-                    if (progress < 0.12) {
+                    // Headline fade and phone appear (10-18%)
+                    if (progress < 0.10) {
                         heroHeadline.style.opacity = '1';
                         heroHeadline.style.transform = 'translateY(0)';
                         setPhoneOpacity(0);
-                        setPhoneScale(0.8);
-                    } else if (progress < 0.20) {
-                        const fadeProgress = (progress - 0.12) / 0.08;
+                        setPhoneScale(0.9);
+                    } else if (progress < 0.18) {
+                        const fadeProgress = (progress - 0.10) / 0.08;
                         heroHeadline.style.opacity = 1 - fadeProgress;
                         heroHeadline.style.transform = `translateY(${-fadeProgress * 50}px)`;
                         setPhoneOpacity(fadeProgress);
-                        setPhoneScale(0.8 + (0.2 * fadeProgress));
+                        setPhoneScale(0.9 + (0.5 * fadeProgress)); // Start at 1.4
                     } else {
                         heroHeadline.style.opacity = '0';
                         setPhoneOpacity(1);
                     }
 
-                    // Logo to chat transition (20-28%)
-                    if (progress < 0.20) {
+                    // Logo to chat transition (18-24%)
+                    if (progress < 0.18) {
                         phoneLogo.style.opacity = '1';
                         phoneChat.style.opacity = '0';
-                    } else if (progress < 0.28) {
-                        const transitionProgress = (progress - 0.20) / 0.08;
+                    } else if (progress < 0.24) {
+                        const transitionProgress = (progress - 0.18) / 0.06;
                         phoneLogo.style.opacity = 1 - transitionProgress;
                         phoneChat.style.opacity = transitionProgress;
                     } else {
@@ -1412,9 +1450,9 @@
                         phoneChat.style.opacity = '1';
                     }
 
-                    // Messages and zoom (28-85%)
-                    if (progress >= 0.28 && progress < 0.85) {
-                        const chatProgress = (progress - 0.28) / 0.57;
+                    // Messages and zoom (24-88%) - EXTENDED for slower experience
+                    if (progress >= 0.24 && progress < 0.88) {
+                        const chatProgress = (progress - 0.24) / 0.64; // Longer duration
                         const totalSteps = 7;
                         const currentStep = Math.floor(chatProgress * totalSteps) + 1;
 
@@ -1441,15 +1479,15 @@
                             msg.classList.toggle('visible', step <= currentStep);
                         });
 
-                        // Smooth zoom effect using quickTo for fluid interpolation
-                        const targetScale = 1.2 + (chatProgress * 0.4);
-                        const targetY = currentStep >= 2 ? -((currentStep - 1) * 18) : 0;
+                        // More dramatic zoom: 1.4 → 2.2
+                        const targetScale = 1.4 + (chatProgress * 0.8);
+                        const targetY = currentStep >= 2 ? -((currentStep - 1) * 22) : 0;
 
-                        setPhoneScale(Math.min(targetScale, 1.6));
+                        setPhoneScale(Math.min(targetScale, 2.2));
                         setPhoneY(targetY);
                         phone.style.clipPath = 'none';
 
-                    } else if (progress < 0.28) {
+                    } else if (progress < 0.24) {
                         // Before chat starts
                         modeLabels.forEach(label => label.classList.remove('visible'));
                         messages.forEach(msg => msg.classList.remove('visible'));
@@ -1457,31 +1495,28 @@
                         setPhoneY(0);
                     }
 
-                    // Zoom out and clip phone for CTA (85-100%)
-                    if (progress >= 0.85) {
-                        const outProgress = (progress - 0.85) / 0.15;
+                    // Zoom out completely and show CTA (88-100%)
+                    if (progress >= 0.88) {
+                        const outProgress = (progress - 0.88) / 0.12;
 
-                        // Smooth zoom out from 1.6 to 1
-                        const targetScale = 1.6 - (0.6 * outProgress);
-                        // Move phone up to clip bottom and show CTA
-                        const targetY = -100 - (outProgress * 60);
+                        // Zoom out from 2.2 to 0.85 (smaller than start)
+                        const targetScale = 2.2 - (1.35 * outProgress);
+                        // Move phone up significantly to make room for CTA
+                        const targetY = -130 - (outProgress * 120);
 
-                        setPhoneScale(targetScale);
+                        setPhoneScale(Math.max(targetScale, 0.85));
                         setPhoneY(targetY);
 
-                        // Clip bottom of phone
-                        const clipAmount = outProgress * 20;
+                        // Clip more of the phone bottom
+                        const clipAmount = outProgress * 35;
                         phone.style.clipPath = `inset(0 0 ${clipAmount}% 0)`;
 
-                        // Show CTA with smooth fade
-                        gsap.to(ctaWrapper, {
-                            opacity: outProgress,
-                            y: (1 - outProgress) * 30,
-                            duration: 0.3,
-                            overwrite: 'auto'
-                        });
+                        // Show CTA with smooth fade (no transform that affects centering)
+                        ctaWrapper.style.opacity = outProgress;
+                        ctaWrapper.style.transform = `translateY(${(1 - outProgress) * 40}px)`;
                     } else {
-                        gsap.to(ctaWrapper, { opacity: 0, y: 30, duration: 0.3, overwrite: 'auto' });
+                        ctaWrapper.style.opacity = '0';
+                        ctaWrapper.style.transform = 'translateY(40px)';
                     }
 
                     // Scroll hint
