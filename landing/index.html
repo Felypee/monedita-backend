@@ -315,6 +315,7 @@
             opacity: 0;
             will-change: transform, opacity;
             transition: none;
+            transform-origin: center center;
         }
         #phone-logo, #phone-chat {
             transition: opacity 0.3s ease;
@@ -1563,22 +1564,22 @@
                             msg.classList.toggle('visible', step <= currentStep);
                         });
 
-                        // Quick zoom in at start (20-28%) - phone overflows viewport
+                        // Quick zoom in at start (20-28%) - phone fills viewport
                         let targetScale;
                         if (progress < 0.28) {
-                            // Quick zoom from 1.4 to 3.0 - phone exceeds viewport
+                            // Quick zoom from 1.4 to 4.5 - phone nearly fills viewport
                             const quickZoom = (progress - 0.20) / 0.08;
-                            targetScale = 1.4 + (quickZoom * 1.6); // 1.4 → 3.0
+                            targetScale = 1.4 + (quickZoom * 3.1); // 1.4 → 4.5
                         } else {
-                            // Slow zoom from 3.0 to 3.3 for rest
+                            // Slow zoom from 4.5 to 5.0 for rest
                             const slowZoom = (progress - 0.28) / 0.64;
-                            targetScale = 3.0 + (slowZoom * 0.3); // 3.0 → 3.3
+                            targetScale = 4.5 + (slowZoom * 0.5); // 4.5 → 5.0
                         }
 
-                        // Smooth Y: gradually move up as messages appear (max -150px)
-                        const targetY = -(chatProgress * 150);
+                        // Smooth Y: gradually move up as messages appear (max -200px)
+                        const targetY = -(chatProgress * 200);
 
-                        setPhoneScale(Math.min(targetScale, 3.3));
+                        setPhoneScale(Math.min(targetScale, 5.0));
                         setPhoneY(targetY);
                         phone.style.clipPath = 'none';
 
@@ -1593,8 +1594,8 @@
                     // End phase (92-100%) - phone stays STATIC, white overlay handles fade
                     if (progress >= 0.92) {
                         // Keep phone at final position - don't move it
-                        setPhoneScale(3.3);
-                        setPhoneY(-150);
+                        setPhoneScale(5.0);
+                        setPhoneY(-200);
                         phone.style.opacity = '1';
                     }
 
