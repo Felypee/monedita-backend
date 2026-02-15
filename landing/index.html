@@ -1953,11 +1953,9 @@
                             targetScale = 4.5 + (slowZoom * 0.5); // 4.5 → 5.0
                         }
 
-                        // Smooth Y: gradually move up as messages appear (max -200px)
-                        const targetY = -(chatProgress * 200);
-
+                        // Phone stays fixed in position while messages appear
                         setPhoneScale(Math.min(targetScale, 5.0));
-                        setPhoneY(targetY);
+                        setPhoneY(0);
                         phone.style.clipPath = 'none';
 
                     } else if (progress < 0.20) {
@@ -1972,7 +1970,7 @@
                     if (progress >= 0.92) {
                         // Keep phone at final position - don't move it
                         setPhoneScale(5.0);
-                        setPhoneY(-200);
+                        setPhoneY(0);
                         phone.style.opacity = '1';
                     }
 
