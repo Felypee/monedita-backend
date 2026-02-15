@@ -605,6 +605,26 @@
         /* Counter animation */
         .counter { font-variant-numeric: tabular-nums; }
 
+        /* Transition overlay styles */
+        #transition-overlay {
+            will-change: opacity;
+        }
+        #insights-title-container {
+            will-change: transform, opacity;
+        }
+        #insights-title {
+            will-change: transform, opacity;
+            transition: none;
+        }
+        #insights-subtitle {
+            will-change: transform, opacity;
+            transition: none;
+        }
+        #insights-content {
+            will-change: opacity;
+            overflow-y: auto;
+        }
+
         /* 3D tilt effect for email */
         .email-tilt {
             transform-style: preserve-3d;
@@ -853,16 +873,30 @@
         </div>
     </section>
 
-    <!-- Section: Email Insights (Light background) -->
-    <section id="insights" class="relative min-h-[200vh] bg-gradient-to-br from-slate-100 via-white to-gray-100 z-10">
-        <div class="sticky top-0 min-h-screen flex items-center py-20">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div class="text-center mb-12">
-                <h2 class="fluid-section font-black text-gray-900 mb-4" data-i18n="insights.title">Weekly insights, delivered</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto" data-i18n="insights.subtitle">
-                    Direct to your inbox, showing exactly where your money went.
-                </p>
-            </div>
+    <!-- Section: Transition + Email Insights -->
+    <section id="insights-transition" class="relative min-h-[400vh]" style="z-index: 50;">
+        <!-- White overlay that fades in -->
+        <div id="transition-overlay" class="fixed inset-0 bg-white opacity-0 pointer-events-none" style="z-index: 51;"></div>
+
+        <!-- Centered title that appears first -->
+        <div id="insights-title-container" class="fixed inset-0 flex flex-col items-center justify-center pointer-events-none opacity-0" style="z-index: 53;">
+            <h2 id="insights-title" class="fluid-section font-black text-gray-900 text-center px-4" data-i18n="insights.title">Weekly insights, delivered</h2>
+            <p id="insights-subtitle" class="text-xl text-gray-600 max-w-2xl mx-auto text-center px-4 mt-4 opacity-0" data-i18n="insights.subtitle">
+                Direct to your inbox, showing exactly where your money went.
+            </p>
+        </div>
+
+        <!-- Report content (appears after title moves up) -->
+        <div id="insights-content" class="fixed inset-0 flex items-start justify-center pointer-events-none opacity-0 overflow-y-auto" style="z-index: 52; padding-top: 100px;">
+            <div class="w-full pb-20">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                    <!-- Title placeholder at top (invisible, just for spacing) -->
+                    <div id="title-at-top" class="text-center mb-8 opacity-0">
+                        <h2 class="fluid-section font-black text-gray-900 mb-2" data-i18n="insights.title">Weekly insights, delivered</h2>
+                        <p class="text-lg text-gray-600 max-w-2xl mx-auto" data-i18n="insights.subtitle">
+                            Direct to your inbox, showing exactly where your money went.
+                        </p>
+                    </div>
 
             <!-- Email Mockup - Personal email style with bar charts -->
             <div id="email-mockup" class="relative max-w-lg mx-auto email-tilt opacity-0">
@@ -974,6 +1008,7 @@
                 <div class="absolute -top-4 -right-4 w-20 h-20 bg-amber-200 rounded-full opacity-40 blur-2xl"></div>
                 <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-slate-200 rounded-full opacity-50 blur-2xl"></div>
             </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1507,92 +1542,147 @@
             });
         }
 
-        // Email section animations - scroll-driven
+        // Cinematic transition + Email section animations
         function initEmailAnimations() {
+            const transitionOverlay = document.getElementById('transition-overlay');
+            const titleContainer = document.getElementById('insights-title-container');
+            const insightsTitle = document.getElementById('insights-title');
+            const insightsSubtitle = document.getElementById('insights-subtitle');
+            const insightsContent = document.getElementById('insights-content');
+            const titleAtTop = document.getElementById('title-at-top');
             const emailMockup = document.getElementById('email-mockup');
             const emailAlert = document.getElementById('email-alert');
             const categoryBars = document.querySelectorAll('.category-bar');
-            const barFills = document.querySelectorAll('.bar-fill');
             const statTotal = document.getElementById('stat-total');
             const statTransactions = document.getElementById('stat-transactions');
+            const heroSection = document.getElementById('hero-chat');
+            const phone = document.getElementById('hero-phone');
 
             let countersAnimated = false;
 
             ScrollTrigger.create({
-                trigger: "#insights",
-                start: "top 50%",
-                end: "70% 50%",
-                scrub: 3,
+                trigger: "#insights-transition",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 2,
                 onUpdate: (self) => {
                     const progress = self.progress;
 
-                    // Email mockup fade in and slide up (0-20%)
-                    if (progress < 0.2) {
-                        const fadeProgress = progress / 0.2;
-                        emailMockup.style.opacity = fadeProgress;
-                        emailMockup.style.transform = `translateY(${(1 - fadeProgress) * 50}px)`;
-                    } else {
+                    // Phase 1 (0-12%): White overlay fades in, hero fades out
+                    if (progress < 0.12) {
+                        const fadeProgress = progress / 0.12;
+                        transitionOverlay.style.opacity = fadeProgress;
+                        transitionOverlay.style.pointerEvents = 'none';
+                        phone.style.opacity = 1 - fadeProgress;
+                        titleContainer.style.opacity = '0';
+                        insightsContent.style.opacity = '0';
+                    }
+                    // Phase 2 (12-25%): Title appears in center with scale
+                    else if (progress < 0.25) {
+                        const titleProgress = (progress - 0.12) / 0.13;
+                        transitionOverlay.style.opacity = '1';
+                        phone.style.opacity = '0';
+                        titleContainer.style.opacity = '1';
+                        insightsTitle.style.opacity = titleProgress;
+                        insightsTitle.style.transform = `scale(${0.8 + (0.2 * titleProgress)}) translateY(${(1 - titleProgress) * 30}px)`;
+                        insightsSubtitle.style.opacity = '0';
+                        insightsContent.style.opacity = '0';
+                    }
+                    // Phase 3 (25-35%): Subtitle appears
+                    else if (progress < 0.35) {
+                        const subtitleProgress = (progress - 0.25) / 0.10;
+                        titleContainer.style.opacity = '1';
+                        insightsTitle.style.opacity = '1';
+                        insightsTitle.style.transform = 'scale(1) translateY(0)';
+                        insightsSubtitle.style.opacity = subtitleProgress;
+                        insightsSubtitle.style.transform = `translateY(${(1 - subtitleProgress) * 20}px)`;
+                        insightsContent.style.opacity = '0';
+                    }
+                    // Phase 4 (35-50%): Title/subtitle move to top, content container appears
+                    else if (progress < 0.50) {
+                        const moveProgress = (progress - 0.35) / 0.15;
+                        // Move title container up
+                        const targetY = -35; // vh units
+                        titleContainer.style.transform = `translateY(${moveProgress * targetY}vh)`;
+                        titleContainer.style.opacity = 1 - (moveProgress * 0.3);
+                        insightsSubtitle.style.opacity = '1';
+                        insightsSubtitle.style.transform = 'translateY(0)';
+                        // Fade in content container
+                        insightsContent.style.opacity = moveProgress;
+                        insightsContent.style.pointerEvents = moveProgress > 0.5 ? 'auto' : 'none';
+                        // Show title at top
+                        titleAtTop.style.opacity = moveProgress;
+                        // Email mockup starts appearing
+                        emailMockup.style.opacity = moveProgress * 0.5;
+                        emailMockup.style.transform = `translateY(${(1 - moveProgress) * 80}px)`;
+                    }
+                    // Phase 5 (50-65%): Email mockup fully appears, counters animate
+                    else if (progress < 0.65) {
+                        const emailProgress = (progress - 0.50) / 0.15;
+                        titleContainer.style.opacity = '0';
+                        insightsContent.style.opacity = '1';
+                        insightsContent.style.pointerEvents = 'auto';
+                        titleAtTop.style.opacity = '1';
+                        emailMockup.style.opacity = 0.5 + (emailProgress * 0.5);
+                        emailMockup.style.transform = `translateY(${(1 - emailProgress) * 40}px)`;
+
+                        // Trigger counters once
+                        if (!countersAnimated && progress >= 0.55) {
+                            countersAnimated = true;
+                            gsap.to(statTotal, {
+                                innerHTML: 312,
+                                duration: 1.5,
+                                snap: { innerHTML: 1 },
+                                ease: "power2.out"
+                            });
+                            gsap.to(statTransactions, {
+                                innerHTML: 47,
+                                duration: 1.5,
+                                snap: { innerHTML: 1 },
+                                ease: "power2.out"
+                            });
+                        }
+                    }
+                    // Phase 6 (65-90%): Category bars appear one by one
+                    else if (progress < 0.90) {
                         emailMockup.style.opacity = '1';
                         emailMockup.style.transform = 'translateY(0)';
-                    }
 
-                    // Trigger counter animation once at 15%
-                    if (progress >= 0.15 && !countersAnimated) {
-                        countersAnimated = true;
-                        gsap.to(statTotal, {
-                            innerHTML: 312,
-                            duration: 1.5,
-                            snap: { innerHTML: 1 },
-                            ease: "power2.out"
-                        });
-                        gsap.to(statTransactions, {
-                            innerHTML: 47,
-                            duration: 1.5,
-                            snap: { innerHTML: 1 },
-                            ease: "power2.out"
-                        });
-                    }
-
-                    // Category bars (20-90%) - spread over more scroll
-                    if (progress >= 0.2 && progress < 0.9) {
-                        const barProgress = (progress - 0.2) / 0.7;
+                        const barProgress = (progress - 0.65) / 0.25;
                         const totalBars = categoryBars.length;
 
                         categoryBars.forEach((bar, i) => {
                             const barStart = i / totalBars;
-                            const barEnd = (i + 1) / totalBars;
-
                             if (barProgress >= barStart) {
                                 const localProgress = Math.min((barProgress - barStart) / (1 / totalBars), 1);
                                 bar.style.opacity = localProgress;
                                 bar.style.transform = `translateY(${(1 - localProgress) * 20}px)`;
 
-                                // Animate the bar fill
                                 const fill = bar.querySelector('.bar-fill');
                                 if (fill) {
-                                    const targetWidth = fill.dataset.width;
-                                    const widthNum = parseFloat(targetWidth);
+                                    const widthNum = parseFloat(fill.dataset.width);
                                     fill.style.width = `${localProgress * widthNum}%`;
                                 }
                             }
                         });
-                    } else if (progress >= 0.9) {
+                    }
+                    // Phase 7 (90-100%): Alert tip appears
+                    else {
                         categoryBars.forEach(bar => {
                             bar.style.opacity = '1';
                             bar.style.transform = 'translateY(0)';
                             const fill = bar.querySelector('.bar-fill');
                             if (fill) fill.style.width = fill.dataset.width;
                         });
-                    }
 
-                    // Alert tip (90-100%)
-                    if (progress >= 0.9) {
-                        const alertProgress = (progress - 0.9) / 0.1;
+                        const alertProgress = (progress - 0.90) / 0.10;
                         emailAlert.style.opacity = alertProgress;
                         emailAlert.style.transform = `translateY(${(1 - alertProgress) * 15}px)`;
-                    } else {
-                        emailAlert.style.opacity = '0';
-                        emailAlert.style.transform = 'translateY(15px)';
+                    }
+
+                    // Reset overlay when scrolling back up completely
+                    if (progress < 0.05) {
+                        transitionOverlay.style.opacity = progress / 0.05;
                     }
                 }
             });
