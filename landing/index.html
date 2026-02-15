@@ -856,13 +856,6 @@
                 </a>
             </div>
 
-            <!-- Progress Dots -->
-            <div class="progress-dots">
-                <div class="progress-dot active" data-mode="1"></div>
-                <div class="progress-dot" data-mode="2"></div>
-                <div class="progress-dot" data-mode="3"></div>
-            </div>
-
             <!-- Scroll Hint -->
             <div class="scroll-hint" id="chat-scroll-hint">
                 <span data-i18n="hero.scroll">Scroll to explore</span>
@@ -1537,7 +1530,7 @@
             });
         }
 
-        // Email section animations
+        // Email section animations - scroll-driven
         function initEmailAnimations() {
             const emailMockup = document.getElementById('email-mockup');
             const emailAlert = document.getElementById('email-alert');
@@ -1546,51 +1539,84 @@
             const statTotal = document.getElementById('stat-total');
             const statTransactions = document.getElementById('stat-transactions');
 
+            let countersAnimated = false;
+
             ScrollTrigger.create({
                 trigger: "#insights",
-                start: "top 60%",
-                onEnter: () => {
-                    gsap.to(emailMockup, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" });
+                start: "top 80%",
+                end: "bottom 20%",
+                scrub: 1,
+                onUpdate: (self) => {
+                    const progress = self.progress;
 
-                    // Counter animations
-                    gsap.to(statTotal, {
-                        innerHTML: 312,
-                        duration: 1.5,
-                        delay: 0.5,
-                        snap: { innerHTML: 1 },
-                        ease: "power2.out"
-                    });
-                    gsap.to(statTransactions, {
-                        innerHTML: 47,
-                        duration: 1.5,
-                        delay: 0.5,
-                        snap: { innerHTML: 1 },
-                        ease: "power2.out"
-                    });
+                    // Email mockup fade in and slide up (0-30%)
+                    if (progress < 0.3) {
+                        const fadeProgress = progress / 0.3;
+                        emailMockup.style.opacity = fadeProgress;
+                        emailMockup.style.transform = `translateY(${(1 - fadeProgress) * 50}px)`;
+                    } else {
+                        emailMockup.style.opacity = '1';
+                        emailMockup.style.transform = 'translateY(0)';
+                    }
 
-                    // Category bars reveal with stagger
-                    gsap.to(categoryBars, {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.5,
-                        stagger: 0.15,
-                        delay: 0.8,
-                        ease: "power2.out"
-                    });
-
-                    // Animate bar fills with stagger
-                    barFills.forEach((bar, i) => {
-                        const targetWidth = bar.dataset.width;
-                        gsap.to(bar, {
-                            width: targetWidth,
-                            duration: 1,
-                            delay: 1 + (i * 0.15),
+                    // Trigger counter animation once at 20%
+                    if (progress >= 0.2 && !countersAnimated) {
+                        countersAnimated = true;
+                        gsap.to(statTotal, {
+                            innerHTML: 312,
+                            duration: 1.5,
+                            snap: { innerHTML: 1 },
                             ease: "power2.out"
                         });
-                    });
+                        gsap.to(statTransactions, {
+                            innerHTML: 47,
+                            duration: 1.5,
+                            snap: { innerHTML: 1 },
+                            ease: "power2.out"
+                        });
+                    }
 
-                    // Alert reveal at the end
-                    gsap.to(emailAlert, { opacity: 1, y: 0, duration: 0.6, delay: 1.8 });
+                    // Category bars (30-80%)
+                    if (progress >= 0.3 && progress < 0.8) {
+                        const barProgress = (progress - 0.3) / 0.5;
+                        const totalBars = categoryBars.length;
+
+                        categoryBars.forEach((bar, i) => {
+                            const barStart = i / totalBars;
+                            const barEnd = (i + 1) / totalBars;
+
+                            if (barProgress >= barStart) {
+                                const localProgress = Math.min((barProgress - barStart) / (1 / totalBars), 1);
+                                bar.style.opacity = localProgress;
+                                bar.style.transform = `translateY(${(1 - localProgress) * 20}px)`;
+
+                                // Animate the bar fill
+                                const fill = bar.querySelector('.bar-fill');
+                                if (fill) {
+                                    const targetWidth = fill.dataset.width;
+                                    const widthNum = parseFloat(targetWidth);
+                                    fill.style.width = `${localProgress * widthNum}%`;
+                                }
+                            }
+                        });
+                    } else if (progress >= 0.8) {
+                        categoryBars.forEach(bar => {
+                            bar.style.opacity = '1';
+                            bar.style.transform = 'translateY(0)';
+                            const fill = bar.querySelector('.bar-fill');
+                            if (fill) fill.style.width = fill.dataset.width;
+                        });
+                    }
+
+                    // Alert tip (80-100%)
+                    if (progress >= 0.8) {
+                        const alertProgress = (progress - 0.8) / 0.2;
+                        emailAlert.style.opacity = alertProgress;
+                        emailAlert.style.transform = `translateY(${(1 - alertProgress) * 15}px)`;
+                    } else {
+                        emailAlert.style.opacity = '0';
+                        emailAlert.style.transform = 'translateY(15px)';
+                    }
                 }
             });
         }
