@@ -1470,7 +1470,7 @@
 
                     // Messages and zoom (20-92%) - EXTRA SLOW experience
                     if (progress >= 0.20 && progress < 0.92) {
-                        const chatProgress = (progress - 0.20) / 0.72; // Even longer duration (72% of scroll)
+                        const chatProgress = (progress - 0.20) / 0.72;
                         const totalSteps = 7;
                         const currentStep = Math.floor(chatProgress * totalSteps) + 1;
 
@@ -1497,9 +1497,10 @@
                             msg.classList.toggle('visible', step <= currentStep);
                         });
 
-                        // More dramatic zoom: 1.4 → 2.2
+                        // Smooth zoom and Y movement (continuous, not step-based)
                         const targetScale = 1.4 + (chatProgress * 0.8);
-                        const targetY = currentStep >= 2 ? -((currentStep - 1) * 22) : 0;
+                        // Smooth Y: gradually move up as messages appear (max -120px)
+                        const targetY = -(chatProgress * 120);
 
                         setPhoneScale(Math.min(targetScale, 2.2));
                         setPhoneY(targetY);
@@ -1513,15 +1514,17 @@
                         setPhoneY(0);
                     }
 
-                    // Zoom out at the end (92-100%) - keep phone visible for transition
+                    // Smooth transition at end (92-100%) - gradually return to center
                     if (progress >= 0.92) {
                         const outProgress = (progress - 0.92) / 0.08;
 
                         // Zoom out from 2.2 to 1.0
                         const targetScale = 2.2 - (1.2 * outProgress);
+                        // Smoothly return Y from -120 to 0
+                        const targetY = -120 * (1 - outProgress);
 
                         setPhoneScale(Math.max(targetScale, 1));
-                        setPhoneY(0);
+                        setPhoneY(targetY);
 
                         // Keep phone visible - transition section will fade it
                         phone.style.opacity = '1';
