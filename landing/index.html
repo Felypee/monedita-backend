@@ -117,24 +117,46 @@
             75% { transform: translate(20px, 30px) scale(1.02); }
         }
 
-        /* Floating icons animations */
-        .floating-icon, .budget-icon, .insights-icon {
-            transition: transform 0.3s ease-out, opacity 0.5s ease-out;
+        /* Global floating icons system */
+        #global-floating-icons {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+        .icon-slot {
+            position: absolute;
+            transition: transform 0.3s ease-out;
+        }
+        .slot-icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-out;
         }
         @keyframes iconFloat {
             0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(5deg); }
+            50% { transform: translateY(-12px) rotate(3deg); }
         }
         @keyframes iconFloatAlt {
             0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(-3deg); }
         }
-        .floating-icon.animated { animation: iconFloat 4s ease-in-out infinite; }
-        .floating-icon.animated-alt { animation: iconFloatAlt 5s ease-in-out infinite; }
-        .budget-icon.animated { animation: iconFloat 3.5s ease-in-out infinite; }
-        .budget-icon.animated-alt { animation: iconFloatAlt 4.5s ease-in-out infinite; }
-        .insights-icon.animated { animation: iconFloat 4.2s ease-in-out infinite; }
-        .insights-icon.animated-alt { animation: iconFloatAlt 3.8s ease-in-out infinite; }
+        .icon-slot:nth-child(odd) { animation: iconFloat 5s ease-in-out infinite; }
+        .icon-slot:nth-child(even) { animation: iconFloatAlt 6s ease-in-out infinite; }
+
+        /* Mobile: hide icons or make them smaller and further from center */
+        @media (max-width: 768px) {
+            #global-floating-icons {
+                display: none;
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .icon-slot { transform: scale(0.7); }
+            .icon-slot[style*="left: 8%"] { left: 2% !important; }
+            .icon-slot[style*="left: 5%"] { left: 1% !important; }
+            .icon-slot[style*="left: 12%"] { left: 3% !important; }
+            .icon-slot[style*="right: 8%"] { right: 2% !important; }
+            .icon-slot[style*="right: 10%"] { right: 3% !important; }
+        }
 
         /* Grid pattern overlay */
         .grid-pattern {
@@ -839,82 +861,157 @@
         </div>
     </nav>
 
+    <!-- Global Floating Icons - Transversal across all sections -->
+    <div id="global-floating-icons" class="fixed inset-0 pointer-events-none overflow-hidden" style="z-index: 100;">
+        <!-- Position 1: Top Left -->
+        <div class="icon-slot" style="position: absolute; top: 15%; left: 8%;">
+            <div class="slot-icon phase-hero" data-phase="hero">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="22" fill="url(#coinG1)" stroke="#D97706" stroke-width="2"/>
+                    <text x="24" y="30" text-anchor="middle" fill="#92400E" font-weight="bold" font-size="20">$</text>
+                    <defs><linearGradient id="coinG1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="slot-icon phase-budget opacity-0" data-phase="budget">
+                <svg width="56" height="48" viewBox="0 0 56 48" fill="none">
+                    <ellipse cx="28" cy="28" rx="20" ry="16" fill="url(#piggyG)"/>
+                    <circle cx="12" cy="24" r="4" fill="#F9A8D4"/>
+                    <ellipse cx="28" cy="12" rx="4" ry="3" fill="#FBCFE8"/>
+                    <circle cx="36" cy="22" r="2" fill="#831843"/>
+                    <ellipse cx="42" cy="26" rx="3" ry="2" fill="#F9A8D4"/>
+                    <rect x="24" y="6" width="8" height="4" rx="2" fill="#10B981"/>
+                    <defs><linearGradient id="piggyG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBCFE8"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="slot-icon phase-insights opacity-0" data-phase="insights">
+                <svg width="40" height="52" viewBox="0 0 40 52" fill="none">
+                    <path d="M20 4C10 4 4 12 4 20C4 28 10 32 12 36H28C30 32 36 28 36 20C36 12 30 4 20 4Z" fill="url(#bulbG)"/>
+                    <rect x="14" y="38" width="12" height="4" rx="1" fill="#9CA3AF"/>
+                    <rect x="14" y="44" width="12" height="4" rx="2" fill="#6B7280"/>
+                    <defs><linearGradient id="bulbG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="100%" stop-color="#FCD34D"/></linearGradient></defs>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Position 2: Top Right -->
+        <div class="icon-slot" style="position: absolute; top: 20%; right: 10%;">
+            <div class="slot-icon phase-hero" data-phase="hero">
+                <svg width="48" height="32" viewBox="0 0 48 32" fill="none">
+                    <rect width="48" height="32" rx="4" fill="url(#cardG1)"/>
+                    <rect x="0" y="8" width="48" height="6" fill="#1E293B"/>
+                    <rect x="4" y="20" width="12" height="3" rx="1" fill="#CBD5E1"/>
+                    <circle cx="38" cy="16" r="5" fill="#F59E0B" opacity="0.8"/>
+                    <circle cx="42" cy="16" r="5" fill="#EF4444" opacity="0.8"/>
+                    <defs><linearGradient id="cardG1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3B82F6"/><stop offset="100%" stop-color="#1D4ED8"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="slot-icon phase-budget opacity-0" data-phase="budget">
+                <svg width="44" height="52" viewBox="0 0 44 52" fill="none">
+                    <path d="M22 2L4 10V24C4 36 22 50 22 50C22 50 40 36 40 24V10L22 2Z" fill="url(#shieldG)" stroke="#059669" stroke-width="2"/>
+                    <path d="M16 26L20 30L28 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs><linearGradient id="shieldG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#059669"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="slot-icon phase-insights opacity-0" data-phase="insights">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="20" fill="#E5E7EB"/>
+                    <path d="M24 4C35 4 44 13 44 24H24V4Z" fill="#3B82F6"/>
+                    <path d="M24 24H44C44 32 38 40 28 43L24 24Z" fill="#8B5CF6"/>
+                    <path d="M28 43C18 46 8 38 4 28L24 24L28 43Z" fill="#10B981"/>
+                    <path d="M4 28C2 18 8 8 18 5L24 24L4 28Z" fill="#F59E0B"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Position 3: Middle Left -->
+        <div class="icon-slot" style="position: absolute; top: 45%; left: 5%;">
+            <div class="slot-icon phase-hero" data-phase="hero">
+                <svg width="32" height="40" viewBox="0 0 32 40" fill="none">
+                    <path d="M4 4C4 2 5.5 0 8 0H24C26.5 0 28 2 28 4V36L24 33L20 36L16 33L12 36L8 33L4 36V4Z" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                    <rect x="8" y="8" width="16" height="2" rx="1" fill="#D1D5DB"/>
+                    <rect x="8" y="14" width="12" height="2" rx="1" fill="#D1D5DB"/>
+                    <rect x="8" y="20" width="14" height="2" rx="1" fill="#D1D5DB"/>
+                    <rect x="8" y="26" width="10" height="2" rx="1" fill="#10B981"/>
+                </svg>
+            </div>
+            <div class="slot-icon phase-budget opacity-0" data-phase="budget">
+                <svg width="40" height="44" viewBox="0 0 40 44" fill="none">
+                    <path d="M20 4C12 4 6 10 6 18V28L2 34H38L34 28V18C34 10 28 4 20 4Z" fill="url(#bellG)"/>
+                    <circle cx="20" cy="40" r="4" fill="#F59E0B"/>
+                    <circle cx="20" cy="4" r="2" fill="#F59E0B"/>
+                    <defs><linearGradient id="bellG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="slot-icon phase-insights opacity-0" data-phase="insights">
+                <svg width="56" height="40" viewBox="0 0 56 40" fill="none">
+                    <rect x="2" y="2" width="52" height="36" rx="4" fill="white" stroke="#E5E7EB"/>
+                    <path d="M8 28L18 20L28 24L38 12L48 16" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="8" cy="28" r="2" fill="#3B82F6"/>
+                    <circle cx="18" cy="20" r="2" fill="#3B82F6"/>
+                    <circle cx="28" cy="24" r="2" fill="#3B82F6"/>
+                    <circle cx="38" cy="12" r="2" fill="#3B82F6"/>
+                    <circle cx="48" cy="16" r="2" fill="#3B82F6"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Position 4: Middle Right -->
+        <div class="icon-slot" style="position: absolute; top: 50%; right: 8%;">
+            <div class="slot-icon phase-hero" data-phase="hero">
+                <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="22" fill="url(#coinG2)" stroke="#D97706" stroke-width="2"/>
+                    <text x="24" y="30" text-anchor="middle" fill="#92400E" font-weight="bold" font-size="20">$</text>
+                    <defs><linearGradient id="coinG2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="slot-icon phase-budget opacity-0" data-phase="budget">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="20" stroke="#EF4444" stroke-width="3" fill="none"/>
+                    <circle cx="24" cy="24" r="14" stroke="#EF4444" stroke-width="3" fill="none"/>
+                    <circle cx="24" cy="24" r="8" stroke="#EF4444" stroke-width="3" fill="none"/>
+                    <circle cx="24" cy="24" r="3" fill="#EF4444"/>
+                </svg>
+            </div>
+            <div class="slot-icon phase-insights opacity-0" data-phase="insights">
+                <svg width="48" height="36" viewBox="0 0 48 36" fill="none">
+                    <rect x="2" y="2" width="44" height="32" rx="4" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+                    <path d="M4 6L24 20L44 6" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="40" cy="8" r="6" fill="#EF4444"/>
+                    <text x="40" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold">3</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Position 5: Bottom Left -->
+        <div class="icon-slot" style="position: absolute; top: 70%; left: 12%;">
+            <div class="slot-icon phase-hero" data-phase="hero">
+                <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="22" fill="url(#coinG3)" stroke="#D97706" stroke-width="2"/>
+                    <text x="24" y="30" text-anchor="middle" fill="#92400E" font-weight="bold" font-size="20">$</text>
+                    <defs><linearGradient id="coinG3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="slot-icon phase-budget opacity-0" data-phase="budget">
+                <svg width="44" height="40" viewBox="0 0 44 40" fill="none">
+                    <rect x="2" y="24" width="8" height="14" rx="2" fill="#3B82F6"/>
+                    <rect x="14" y="16" width="8" height="22" rx="2" fill="#8B5CF6"/>
+                    <rect x="26" y="8" width="8" height="30" rx="2" fill="#10B981"/>
+                    <rect x="38" y="2" width="4" height="36" rx="2" fill="#F59E0B"/>
+                </svg>
+            </div>
+            <div class="slot-icon phase-insights opacity-0" data-phase="insights">
+                <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                    <circle cx="18" cy="18" r="14" fill="white" stroke="#6B7280" stroke-width="3"/>
+                    <line x1="28" y1="28" x2="40" y2="40" stroke="#6B7280" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M12 18H24M18 12V24" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
     <!-- Section 1: Hero + Chat Demo (Unified Scroll Experience) -->
     <section id="hero-chat" class="chat-scroll-section relative z-10">
         <div class="chat-container">
-            <!-- Floating animated icons -->
-            <div id="floating-icons" class="fixed inset-0 pointer-events-none overflow-hidden" style="z-index: 5;">
-                <!-- Coins -->
-                <div class="floating-icon coin-1 opacity-0" style="position: absolute; top: 15%; left: 10%;">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="22" fill="url(#coinGrad1)" stroke="#D97706" stroke-width="2"/>
-                        <text x="24" y="30" text-anchor="middle" fill="#92400E" font-weight="bold" font-size="20">$</text>
-                        <defs><linearGradient id="coinGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
-                    </svg>
-                </div>
-                <div class="floating-icon coin-2 opacity-0" style="position: absolute; top: 25%; right: 12%;">
-                    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="22" fill="url(#coinGrad2)" stroke="#D97706" stroke-width="2"/>
-                        <text x="24" y="30" text-anchor="middle" fill="#92400E" font-weight="bold" font-size="20">$</text>
-                        <defs><linearGradient id="coinGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
-                    </svg>
-                </div>
-                <div class="floating-icon coin-3 opacity-0" style="position: absolute; top: 60%; left: 8%;">
-                    <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="22" fill="url(#coinGrad3)" stroke="#D97706" stroke-width="2"/>
-                        <text x="24" y="30" text-anchor="middle" fill="#92400E" font-weight="bold" font-size="20">$</text>
-                        <defs><linearGradient id="coinGrad3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
-                    </svg>
-                </div>
-                <div class="floating-icon coin-4 opacity-0" style="position: absolute; top: 70%; right: 15%;">
-                    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="22" fill="url(#coinGrad4)" stroke="#D97706" stroke-width="2"/>
-                        <text x="24" y="30" text-anchor="middle" fill="#92400E" font-weight="bold" font-size="20">$</text>
-                        <defs><linearGradient id="coinGrad4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
-                    </svg>
-                </div>
-                <!-- Receipt icons -->
-                <div class="floating-icon receipt-1 opacity-0" style="position: absolute; top: 35%; left: 5%;">
-                    <svg width="32" height="40" viewBox="0 0 32 40" fill="none">
-                        <path d="M4 4C4 2 5.5 0 8 0H24C26.5 0 28 2 28 4V36L24 33L20 36L16 33L12 36L8 33L4 36V4Z" fill="white" stroke="#E5E7EB" stroke-width="1"/>
-                        <rect x="8" y="8" width="16" height="2" rx="1" fill="#D1D5DB"/>
-                        <rect x="8" y="14" width="12" height="2" rx="1" fill="#D1D5DB"/>
-                        <rect x="8" y="20" width="14" height="2" rx="1" fill="#D1D5DB"/>
-                        <rect x="8" y="26" width="10" height="2" rx="1" fill="#10B981"/>
-                    </svg>
-                </div>
-                <div class="floating-icon receipt-2 opacity-0" style="position: absolute; top: 45%; right: 8%;">
-                    <svg width="28" height="35" viewBox="0 0 32 40" fill="none">
-                        <path d="M4 4C4 2 5.5 0 8 0H24C26.5 0 28 2 28 4V36L24 33L20 36L16 33L12 36L8 33L4 36V4Z" fill="white" stroke="#E5E7EB" stroke-width="1"/>
-                        <rect x="8" y="8" width="16" height="2" rx="1" fill="#D1D5DB"/>
-                        <rect x="8" y="14" width="12" height="2" rx="1" fill="#D1D5DB"/>
-                        <rect x="8" y="20" width="14" height="2" rx="1" fill="#D1D5DB"/>
-                        <rect x="8" y="26" width="10" height="2" rx="1" fill="#10B981"/>
-                    </svg>
-                </div>
-                <!-- Credit card -->
-                <div class="floating-icon card-1 opacity-0" style="position: absolute; top: 20%; left: 18%;">
-                    <svg width="48" height="32" viewBox="0 0 48 32" fill="none">
-                        <rect width="48" height="32" rx="4" fill="url(#cardGrad)"/>
-                        <rect x="0" y="8" width="48" height="6" fill="#1E293B"/>
-                        <rect x="4" y="20" width="12" height="3" rx="1" fill="#CBD5E1"/>
-                        <rect x="4" y="25" width="8" height="2" rx="1" fill="#94A3B8"/>
-                        <circle cx="38" cy="16" r="5" fill="#F59E0B" opacity="0.8"/>
-                        <circle cx="42" cy="16" r="5" fill="#EF4444" opacity="0.8"/>
-                        <defs><linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3B82F6"/><stop offset="100%" stop-color="#1D4ED8"/></linearGradient></defs>
-                    </svg>
-                </div>
-                <div class="floating-icon card-2 opacity-0" style="position: absolute; top: 55%; right: 20%;">
-                    <svg width="40" height="27" viewBox="0 0 48 32" fill="none">
-                        <rect width="48" height="32" rx="4" fill="url(#cardGrad2)"/>
-                        <rect x="0" y="8" width="48" height="6" fill="#1E293B"/>
-                        <rect x="4" y="20" width="12" height="3" rx="1" fill="#CBD5E1"/>
-                        <rect x="4" y="25" width="8" height="2" rx="1" fill="#94A3B8"/>
-                        <defs><linearGradient id="cardGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#6D28D9"/></linearGradient></defs>
-                    </svg>
-                </div>
-            </div>
-
             <!-- Hero headline - fades out on scroll -->
             <div id="hero-content" class="absolute inset-0 flex flex-col items-center justify-center px-4 pointer-events-none">
                 <h1 id="hero-headline" class="fluid-hero font-black text-center max-w-4xl mb-8 px-4">
@@ -1050,59 +1147,6 @@
             <div class="absolute w-64 h-64 bg-gradient-to-br from-violet-200/30 to-purple-200/30 rounded-full blur-3xl top-1/2 left-1/3 animate-float-slow" style="animation-delay: -10s;"></div>
         </div>
 
-        <!-- Floating budget icons -->
-        <div id="budget-floating-icons" class="fixed inset-0 pointer-events-none overflow-hidden opacity-0" style="z-index: 44;">
-            <!-- Piggy Bank -->
-            <div class="budget-icon piggy-1 opacity-0" style="position: absolute; top: 20%; left: 8%;">
-                <svg width="56" height="48" viewBox="0 0 56 48" fill="none">
-                    <ellipse cx="28" cy="28" rx="20" ry="16" fill="url(#piggyGrad)"/>
-                    <circle cx="12" cy="24" r="4" fill="#F9A8D4"/>
-                    <ellipse cx="28" cy="12" rx="4" ry="3" fill="#FBCFE8"/>
-                    <circle cx="36" cy="22" r="2" fill="#831843"/>
-                    <ellipse cx="42" cy="26" rx="3" ry="2" fill="#F9A8D4"/>
-                    <rect x="20" y="38" width="4" height="6" rx="2" fill="#EC4899"/>
-                    <rect x="32" y="38" width="4" height="6" rx="2" fill="#EC4899"/>
-                    <rect x="24" y="6" width="8" height="4" rx="2" fill="#10B981"/>
-                    <defs><linearGradient id="piggyGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBCFE8"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs>
-                </svg>
-            </div>
-            <!-- Shield -->
-            <div class="budget-icon shield-1 opacity-0" style="position: absolute; top: 30%; right: 10%;">
-                <svg width="44" height="52" viewBox="0 0 44 52" fill="none">
-                    <path d="M22 2L4 10V24C4 36 22 50 22 50C22 50 40 36 40 24V10L22 2Z" fill="url(#shieldGrad)" stroke="#059669" stroke-width="2"/>
-                    <path d="M16 26L20 30L28 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    <defs><linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#059669"/></linearGradient></defs>
-                </svg>
-            </div>
-            <!-- Bell -->
-            <div class="budget-icon bell-1 opacity-0" style="position: absolute; top: 60%; left: 12%;">
-                <svg width="40" height="44" viewBox="0 0 40 44" fill="none">
-                    <path d="M20 4C12 4 6 10 6 18V28L2 34H38L34 28V18C34 10 28 4 20 4Z" fill="url(#bellGrad)"/>
-                    <circle cx="20" cy="40" r="4" fill="#F59E0B"/>
-                    <circle cx="20" cy="4" r="2" fill="#F59E0B"/>
-                    <defs><linearGradient id="bellGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
-                </svg>
-            </div>
-            <!-- Target -->
-            <div class="budget-icon target-1 opacity-0" style="position: absolute; top: 50%; right: 15%;">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <circle cx="24" cy="24" r="20" stroke="#EF4444" stroke-width="3" fill="none"/>
-                    <circle cx="24" cy="24" r="14" stroke="#EF4444" stroke-width="3" fill="none"/>
-                    <circle cx="24" cy="24" r="8" stroke="#EF4444" stroke-width="3" fill="none"/>
-                    <circle cx="24" cy="24" r="3" fill="#EF4444"/>
-                </svg>
-            </div>
-            <!-- Chart bars -->
-            <div class="budget-icon chart-1 opacity-0" style="position: absolute; top: 70%; right: 8%;">
-                <svg width="44" height="40" viewBox="0 0 44 40" fill="none">
-                    <rect x="2" y="24" width="8" height="14" rx="2" fill="#3B82F6"/>
-                    <rect x="14" y="16" width="8" height="22" rx="2" fill="#8B5CF6"/>
-                    <rect x="26" y="8" width="8" height="30" rx="2" fill="#10B981"/>
-                    <rect x="38" y="2" width="4" height="36" rx="2" fill="#F59E0B"/>
-                </svg>
-            </div>
-        </div>
-
         <!-- Title 1: Smart Alerts (centered, appears first) -->
         <div id="budget-title-1" class="fixed inset-0 flex flex-col items-center justify-center pointer-events-none opacity-0" style="z-index: 46;">
             <h2 class="fluid-section font-black text-gray-900 text-center px-4" data-i18n="budget.title1">Never overspend again</h2>
@@ -1218,59 +1262,6 @@
             <div class="white-blob blob-2"></div>
             <div class="white-blob blob-3"></div>
             <div class="white-blob blob-4"></div>
-
-            <!-- Floating insights icons -->
-            <div id="insights-floating-icons" class="absolute inset-0 pointer-events-none">
-                <!-- Light bulb -->
-                <div class="insights-icon bulb-1 opacity-0" style="position: absolute; top: 15%; left: 10%;">
-                    <svg width="40" height="52" viewBox="0 0 40 52" fill="none">
-                        <path d="M20 4C10 4 4 12 4 20C4 28 10 32 12 36H28C30 32 36 28 36 20C36 12 30 4 20 4Z" fill="url(#bulbGrad)"/>
-                        <rect x="14" y="38" width="12" height="4" rx="1" fill="#9CA3AF"/>
-                        <rect x="14" y="44" width="12" height="4" rx="2" fill="#6B7280"/>
-                        <path d="M14 20H26M20 14V26" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-                        <defs><linearGradient id="bulbGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="100%" stop-color="#FCD34D"/></linearGradient></defs>
-                    </svg>
-                </div>
-                <!-- Pie chart -->
-                <div class="insights-icon pie-1 opacity-0" style="position: absolute; top: 25%; right: 12%;">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="20" fill="#E5E7EB"/>
-                        <path d="M24 4C35 4 44 13 44 24H24V4Z" fill="#3B82F6"/>
-                        <path d="M24 24H44C44 32 38 40 28 43L24 24Z" fill="#8B5CF6"/>
-                        <path d="M28 43C18 46 8 38 4 28L24 24L28 43Z" fill="#10B981"/>
-                        <path d="M4 28C2 18 8 8 18 5L24 24L4 28Z" fill="#F59E0B"/>
-                    </svg>
-                </div>
-                <!-- Line chart -->
-                <div class="insights-icon line-1 opacity-0" style="position: absolute; top: 60%; left: 8%;">
-                    <svg width="56" height="40" viewBox="0 0 56 40" fill="none">
-                        <rect x="2" y="2" width="52" height="36" rx="4" fill="white" stroke="#E5E7EB"/>
-                        <path d="M8 28L18 20L28 24L38 12L48 16" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="8" cy="28" r="2" fill="#3B82F6"/>
-                        <circle cx="18" cy="20" r="2" fill="#3B82F6"/>
-                        <circle cx="28" cy="24" r="2" fill="#3B82F6"/>
-                        <circle cx="38" cy="12" r="2" fill="#3B82F6"/>
-                        <circle cx="48" cy="16" r="2" fill="#3B82F6"/>
-                    </svg>
-                </div>
-                <!-- Email/envelope -->
-                <div class="insights-icon email-1 opacity-0" style="position: absolute; top: 70%; right: 15%;">
-                    <svg width="48" height="36" viewBox="0 0 48 36" fill="none">
-                        <rect x="2" y="2" width="44" height="32" rx="4" fill="white" stroke="#E5E7EB" stroke-width="2"/>
-                        <path d="M4 6L24 20L44 6" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="40" cy="8" r="6" fill="#EF4444"/>
-                        <text x="40" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold">3</text>
-                    </svg>
-                </div>
-                <!-- Magnifying glass -->
-                <div class="insights-icon mag-1 opacity-0" style="position: absolute; top: 40%; left: 15%;">
-                    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-                        <circle cx="18" cy="18" r="14" fill="white" stroke="#6B7280" stroke-width="3"/>
-                        <line x1="28" y1="28" x2="40" y2="40" stroke="#6B7280" stroke-width="4" stroke-linecap="round"/>
-                        <path d="M12 18H24M18 12V24" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </div>
-            </div>
         </div>
 
         <!-- Centered title that appears first -->
@@ -1847,10 +1838,6 @@
             const modeLabels = document.querySelectorAll('.mode-label');
             const progressDots = document.querySelectorAll('.progress-dot');
             const scrollHint = document.getElementById('chat-scroll-hint');
-            const floatingIcons = document.getElementById('floating-icons');
-            const coins = document.querySelectorAll('.floating-icon[class*="coin"]');
-            const receipts = document.querySelectorAll('.floating-icon[class*="receipt"]');
-            const cards = document.querySelectorAll('.floating-icon[class*="card"]');
 
             // Initial animations (on page load) - only show headline, phone hidden
             gsap.to(words, {
@@ -1884,39 +1871,6 @@
                     // Phase 3: 15-20% - Logo fades, chat appears
                     // Phase 4: 20-92% - Messages appear with zoom (EXTRA SLOW)
                     // Phase 5: 92-100% - Zoom out completely, show CTA with glow
-
-                    // Floating icons animation (8-50% visible, fade out as phone zooms)
-                    if (progress < 0.08) {
-                        floatingIcons.style.opacity = '0';
-                    } else if (progress < 0.15) {
-                        // Icons appear as phone appears
-                        const iconProgress = (progress - 0.08) / 0.07;
-                        floatingIcons.style.opacity = iconProgress;
-                        coins.forEach((coin, i) => {
-                            coin.style.opacity = iconProgress;
-                            coin.style.transform = `translateY(${(1 - iconProgress) * 30}px) rotate(${iconProgress * 10 * (i % 2 ? 1 : -1)}deg)`;
-                            if (iconProgress > 0.5) coin.classList.add('animated');
-                        });
-                        receipts.forEach((receipt, i) => {
-                            receipt.style.opacity = iconProgress * 0.9;
-                            receipt.style.transform = `translateY(${(1 - iconProgress) * 40}px) rotate(${iconProgress * 5 * (i % 2 ? -1 : 1)}deg)`;
-                            if (iconProgress > 0.5) receipt.classList.add('animated-alt');
-                        });
-                        cards.forEach((card, i) => {
-                            card.style.opacity = iconProgress * 0.85;
-                            card.style.transform = `translateY(${(1 - iconProgress) * 35}px) rotate(${iconProgress * -8 * (i % 2 ? 1 : -1)}deg)`;
-                            if (iconProgress > 0.5) card.classList.add('animated');
-                        });
-                    } else if (progress < 0.50) {
-                        // Icons visible and floating
-                        floatingIcons.style.opacity = '1';
-                    } else if (progress < 0.65) {
-                        // Icons fade out as phone zooms in
-                        const fadeOut = 1 - ((progress - 0.50) / 0.15);
-                        floatingIcons.style.opacity = fadeOut;
-                    } else {
-                        floatingIcons.style.opacity = '0';
-                    }
 
                     // Headline fade and phone appear (8-15%)
                     if (progress < 0.08) {
@@ -2035,8 +1989,6 @@
             const statTotal = document.getElementById('stat-total');
             const statTransactions = document.getElementById('stat-transactions');
             const phone = document.getElementById('hero-phone');
-            const insightsFloatingIcons = document.getElementById('insights-floating-icons');
-            const insightsIcons = document.querySelectorAll('.insights-icon');
 
             let countersAnimated = false;
 
@@ -2047,24 +1999,6 @@
                 scrub: 2,
                 onUpdate: (self) => {
                     const progress = self.progress;
-
-                    // Floating icons animation for insights
-                    if (progress < 0.15) {
-                        insightsFloatingIcons.style.opacity = '0';
-                    } else if (progress < 0.25) {
-                        const iconProgress = (progress - 0.15) / 0.10;
-                        insightsFloatingIcons.style.opacity = iconProgress;
-                        insightsIcons.forEach((icon, i) => {
-                            icon.style.opacity = iconProgress;
-                            icon.style.transform = `translateY(${(1 - iconProgress) * 35}px) rotate(${iconProgress * 6 * (i % 2 ? 1 : -1)}deg)`;
-                            if (iconProgress > 0.5) icon.classList.add(i % 2 ? 'animated' : 'animated-alt');
-                        });
-                    } else if (progress < 0.85) {
-                        insightsFloatingIcons.style.opacity = '1';
-                    } else {
-                        const fadeOut = 1 - ((progress - 0.85) / 0.15);
-                        insightsFloatingIcons.style.opacity = fadeOut;
-                    }
 
                     // Phase 1 (0-10%): White overlay fades in while phone fades out
                     if (progress < 0.10) {
@@ -2219,8 +2153,6 @@
             const budgetMsg1 = document.getElementById('budget-msg-1');
             const budgetMsg2 = document.getElementById('budget-msg-2');
             const budgetMsg3 = document.getElementById('budget-msg-3');
-            const budgetFloatingIcons = document.getElementById('budget-floating-icons');
-            const budgetIcons = document.querySelectorAll('.budget-icon');
 
             let alertAnimated = false;
 
@@ -2231,24 +2163,6 @@
                 scrub: 2,
                 onUpdate: (self) => {
                     const progress = self.progress;
-
-                    // Floating icons animation
-                    if (progress < 0.05) {
-                        budgetFloatingIcons.style.opacity = '0';
-                    } else if (progress < 0.15) {
-                        const iconProgress = (progress - 0.05) / 0.10;
-                        budgetFloatingIcons.style.opacity = iconProgress;
-                        budgetIcons.forEach((icon, i) => {
-                            icon.style.opacity = iconProgress;
-                            icon.style.transform = `translateY(${(1 - iconProgress) * 40}px) rotate(${iconProgress * 8 * (i % 2 ? 1 : -1)}deg)`;
-                            if (iconProgress > 0.5) icon.classList.add(i % 2 ? 'animated' : 'animated-alt');
-                        });
-                    } else if (progress < 0.85) {
-                        budgetFloatingIcons.style.opacity = '1';
-                    } else {
-                        const fadeOut = 1 - ((progress - 0.85) / 0.15);
-                        budgetFloatingIcons.style.opacity = fadeOut;
-                    }
 
                     // Phase 1 (0-10%): Title 1 appears
                     if (progress < 0.10) {
@@ -2365,6 +2279,100 @@
             });
         }
 
+        // Global Floating Icons - Crossfade between phases
+        function initGlobalFloatingIcons() {
+            const container = document.getElementById('global-floating-icons');
+            const slots = document.querySelectorAll('.icon-slot');
+            const heroSection = document.getElementById('hero-chat');
+            const budgetSection = document.getElementById('budgets-section');
+            const insightsSection = document.getElementById('insights-transition');
+            const ctaSection = document.getElementById('final-cta');
+
+            if (!container || !heroSection) return;
+
+            // Get section positions
+            function updatePhase() {
+                const scrollY = window.scrollY;
+                const viewportHeight = window.innerHeight;
+
+                const heroStart = heroSection.offsetTop;
+                const heroEnd = heroStart + heroSection.offsetHeight;
+                const budgetStart = budgetSection ? budgetSection.offsetTop : heroEnd;
+                const budgetEnd = budgetStart + (budgetSection ? budgetSection.offsetHeight : 0);
+                const insightsStart = insightsSection ? insightsSection.offsetTop : budgetEnd;
+                const insightsEnd = insightsStart + (insightsSection ? insightsSection.offsetHeight : 0);
+                const ctaStart = ctaSection ? ctaSection.offsetTop : insightsEnd;
+
+                // Determine current phase and transition progress
+                let currentPhase = 'hero';
+                let transitionProgress = 0;
+                let showIcons = true;
+
+                // Hero section (show icons from 10% to end)
+                if (scrollY < heroStart + viewportHeight * 0.1) {
+                    showIcons = false;
+                } else if (scrollY < heroEnd - viewportHeight * 0.3) {
+                    currentPhase = 'hero';
+                    // Calculate transition to budget
+                    const phaseEnd = heroEnd - viewportHeight * 0.5;
+                    if (scrollY > phaseEnd) {
+                        transitionProgress = Math.min(1, (scrollY - phaseEnd) / (viewportHeight * 0.2));
+                    }
+                } else if (scrollY < budgetEnd - viewportHeight * 0.3) {
+                    currentPhase = 'budget';
+                    // Calculate transition to insights
+                    const phaseEnd = budgetEnd - viewportHeight * 0.5;
+                    if (scrollY > phaseEnd) {
+                        transitionProgress = Math.min(1, (scrollY - phaseEnd) / (viewportHeight * 0.2));
+                    }
+                } else if (scrollY < insightsEnd - viewportHeight * 0.3) {
+                    currentPhase = 'insights';
+                } else if (scrollY > ctaStart - viewportHeight * 0.5) {
+                    // Fade out at CTA
+                    showIcons = false;
+                }
+
+                // Update container visibility
+                container.style.opacity = showIcons ? '1' : '0';
+
+                // Update each slot's icons
+                slots.forEach(slot => {
+                    const heroIcon = slot.querySelector('.phase-hero');
+                    const budgetIcon = slot.querySelector('.phase-budget');
+                    const insightsIcon = slot.querySelector('.phase-insights');
+
+                    if (currentPhase === 'hero') {
+                        heroIcon.style.opacity = 1 - transitionProgress;
+                        budgetIcon.style.opacity = transitionProgress;
+                        insightsIcon.style.opacity = 0;
+                    } else if (currentPhase === 'budget') {
+                        heroIcon.style.opacity = 0;
+                        budgetIcon.style.opacity = 1 - transitionProgress;
+                        insightsIcon.style.opacity = transitionProgress;
+                    } else {
+                        heroIcon.style.opacity = 0;
+                        budgetIcon.style.opacity = 0;
+                        insightsIcon.style.opacity = 1;
+                    }
+                });
+            }
+
+            // Throttled scroll handler
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        updatePhase();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // Initial update
+            updatePhase();
+        }
+
         // Final CTA animations
         function initCtaAnimations() {
             const ctaLeft = document.getElementById('cta-left');
@@ -2393,6 +2401,7 @@
             initEmailAnimations();
             initBudgetAnimations();
             initCtaAnimations();
+            initGlobalFloatingIcons();
         });
 
         // Handle resize
