@@ -353,6 +353,7 @@
         .chat-container {
             position: sticky;
             top: 0;
+            width: 100%;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -481,6 +482,15 @@
         }
         .mode-label .icon {
             font-size: 1.25rem;
+        }
+
+        /* CTA wrapper - centered like progress dots */
+        .cta-wrapper {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
         }
 
         /* Progress dots */
@@ -831,8 +841,8 @@
                 </div>
             </div>
 
-            <!-- CTA Button with exaggerated glow - centered with left-1/2 -->
-            <div id="chat-cta-wrapper" class="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-0">
+            <!-- CTA Button with exaggerated glow - centered with CSS -->
+            <div id="chat-cta-wrapper" class="cta-wrapper opacity-0">
                 <!-- Button with glows inside -->
                 <a href="https://wa.me/573222490201" target="_blank" id="chat-cta" class="wa-link wa-cta relative inline-flex items-center justify-center px-10 py-5 bg-whatsapp hover:bg-whatsapp-dark text-white rounded-full font-bold text-xl transition shadow-lg shadow-green-500/50 hover:shadow-green-500/70 hover:scale-105">
                     <!-- Glow layers (absolutely positioned from button center) -->
@@ -1399,8 +1409,8 @@
 
             // Phone starts hidden - use GSAP for smoother control
             gsap.set(phone, { opacity: 0, scale: 0.9, y: 0 });
-            // CTA starts hidden below - keep translateX(-50%) for centering
-            gsap.set(ctaWrapper, { opacity: 0, y: 40, xPercent: -50 });
+            // CTA starts hidden - only animate opacity, CSS handles centering
+            ctaWrapper.style.opacity = '0';
 
             // Create smooth setters for fluid animation (quickTo provides interpolation)
             const setPhoneScale = gsap.quickTo(phone, "scale", { duration: 0.6, ease: "power2.out" });
@@ -1513,16 +1523,12 @@
                         const clipAmount = outProgress * 35;
                         phone.style.clipPath = `inset(0 0 ${clipAmount}% 0)`;
 
-                        // Show CTA with GSAP (xPercent: -50 keeps it centered)
-                        gsap.to(ctaWrapper, {
-                            opacity: outProgress,
-                            y: (1 - outProgress) * 40,
-                            xPercent: -50,
-                            duration: 0.1,
-                            overwrite: 'auto'
-                        });
+                        // Show CTA - only animate opacity, CSS handles positioning
+                        ctaWrapper.style.opacity = outProgress;
+                        ctaWrapper.style.transform = `translateX(-50%) translateY(${(1 - outProgress) * 30}px)`;
                     } else {
-                        gsap.to(ctaWrapper, { opacity: 0, y: 40, xPercent: -50, duration: 0.1, overwrite: 'auto' });
+                        ctaWrapper.style.opacity = '0';
+                        ctaWrapper.style.transform = 'translateX(-50%) translateY(30px)';
                     }
 
                     // Scroll hint
