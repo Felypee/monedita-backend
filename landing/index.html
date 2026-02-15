@@ -1087,8 +1087,8 @@
         </div>
     </section>
 
-    <!-- Section: Budgets & Alerts -->
-    <section id="budgets-section" class="relative min-h-[300vh] bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" style="z-index: 45;">
+    <!-- Section: Budgets & Alerts (Cinematic Scroll) -->
+    <section id="budgets-section" class="relative min-h-[500vh] bg-gradient-to-br from-emerald-50 via-white to-teal-50/30" style="z-index: 45;">
         <!-- Floating gradient blobs -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute w-96 h-96 bg-gradient-to-br from-emerald-200/40 to-teal-200/40 rounded-full blur-3xl top-20 -left-20 animate-float-slow"></div>
@@ -1096,92 +1096,107 @@
             <div class="absolute w-64 h-64 bg-gradient-to-br from-violet-200/30 to-purple-200/30 rounded-full blur-3xl top-1/2 left-1/3 animate-float-slow" style="animation-delay: -10s;"></div>
         </div>
 
-        <div class="sticky top-0 min-h-screen flex items-center py-20">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <!-- Section Title -->
-                <div class="text-center mb-16 budget-title opacity-0">
-                    <h2 class="fluid-section font-black text-gray-900 mb-4" data-i18n="budgets.title">Smart budgets, real alerts</h2>
-                    <p class="text-xl text-gray-600 max-w-2xl mx-auto" data-i18n="budgets.subtitle">
-                        Set limits for each category and get notified before you overspend.
-                    </p>
-                </div>
+        <!-- Title 1: Smart Alerts (centered, appears first) -->
+        <div id="budget-title-1" class="fixed inset-0 flex flex-col items-center justify-center pointer-events-none opacity-0" style="z-index: 46;">
+            <h2 class="fluid-section font-black text-gray-900 text-center px-4">Never overspend again</h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto text-center px-4 mt-4 opacity-0" id="budget-subtitle-1">
+                Get smart alerts before you hit your budget limits.
+            </p>
+        </div>
 
-                <!-- Features Grid -->
-                <div class="grid md:grid-cols-3 gap-8">
-                    <!-- Budget Card -->
-                    <div class="budget-card opacity-0 translate-y-8 bg-white rounded-2xl p-6 shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow">
-                        <div class="w-14 h-14 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center mb-5 shadow-lg">
-                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        <!-- WhatsApp Alert Mockup -->
+        <div id="budget-alert-mockup" class="fixed inset-0 flex items-center justify-center pointer-events-none opacity-0" style="z-index: 47;">
+            <div class="w-full max-w-sm mx-4">
+                <!-- Phone notification style -->
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+                    <!-- Notification header -->
+                    <div class="bg-gradient-to-r from-whatsapp to-emerald-500 px-4 py-3 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                            <svg viewBox="0 0 100 100" class="w-7 h-7">
+                                <circle cx="50" cy="50" r="42" fill="#FFD93D"/>
+                                <ellipse cx="38" cy="45" rx="4" ry="5" fill="#5D4037"/>
+                                <ellipse cx="62" cy="45" rx="4" ry="5" fill="#5D4037"/>
+                                <path d="M 35 60 Q 50 72 65 60" fill="none" stroke="#5D4037" stroke-width="3" stroke-linecap="round"/>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3" data-i18n="budgets.feature1.title">Create Budgets</h3>
-                        <p class="text-gray-600 mb-4" data-i18n="budgets.feature1.desc">Set monthly limits for food, transport, entertainment, and more.</p>
-
-                        <!-- Mini budget preview -->
-                        <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">🍔 Food</span>
-                                <span class="text-sm font-bold text-gray-900">$200/mo</span>
-                            </div>
-                            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full" style="width: 65%"></div>
-                            </div>
-                            <p class="text-xs text-gray-500">$130 spent • $70 left</p>
+                        <div class="flex-1">
+                            <p class="text-white font-semibold text-sm">Monedita</p>
+                            <p class="text-white/80 text-xs">now</p>
                         </div>
                     </div>
-
-                    <!-- Alert Card -->
-                    <div class="budget-card opacity-0 translate-y-8 bg-white rounded-2xl p-6 shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow" style="transition-delay: 0.1s;">
-                        <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mb-5 shadow-lg">
-                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                            </svg>
+                    <!-- Alert message -->
+                    <div class="p-4 bg-amber-50">
+                        <div class="flex items-start gap-3">
+                            <span class="text-3xl">⚠️</span>
+                            <div>
+                                <p class="font-bold text-amber-800 text-lg">Budget Alert!</p>
+                                <p class="text-amber-700 mt-1">You've used <span class="font-bold">85%</span> of your Food budget.</p>
+                                <p class="text-amber-600 text-sm mt-2">$30 remaining this month</p>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3" data-i18n="budgets.feature2.title">Smart Alerts</h3>
-                        <p class="text-gray-600 mb-4" data-i18n="budgets.feature2.desc">Get WhatsApp notifications when you're approaching your limits.</p>
+                    </div>
+                    <!-- Progress bar -->
+                    <div class="px-4 pb-4 bg-amber-50">
+                        <div class="h-3 bg-amber-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-1000" id="alert-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-amber-600 mt-2 text-center">🍔 Food: $170 / $200</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Mini alert preview -->
-                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                            <div class="flex items-start gap-3">
-                                <span class="text-2xl">⚠️</span>
-                                <div>
-                                    <p class="text-sm font-semibold text-amber-800" data-i18n="budgets.alert.title">Budget Alert!</p>
-                                    <p class="text-xs text-amber-700 mt-1" data-i18n="budgets.alert.msg">You've used 85% of your Food budget. $30 remaining.</p>
+        <!-- Title 2: Create Budgets (centered) -->
+        <div id="budget-title-2" class="fixed inset-0 flex flex-col items-center justify-center pointer-events-none opacity-0" style="z-index: 46;">
+            <h2 class="fluid-section font-black text-gray-900 text-center px-4">Set your limits</h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto text-center px-4 mt-4 opacity-0" id="budget-subtitle-2">
+                Create budgets for any category in seconds.
+            </p>
+        </div>
+
+        <!-- WhatsApp Budget Creation Mockup -->
+        <div id="budget-create-mockup" class="fixed inset-0 flex items-center justify-center pointer-events-none opacity-0" style="z-index: 47;">
+            <div class="w-full max-w-sm mx-4">
+                <div class="bg-gray-900 rounded-[2rem] p-2 shadow-2xl">
+                    <div class="bg-white rounded-[1.5rem] overflow-hidden">
+                        <!-- Chat header -->
+                        <div class="bg-gradient-to-r from-whatsapp to-emerald-600 px-4 py-3 flex items-center gap-3">
+                            <div class="w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center">
+                                <svg viewBox="0 0 100 100" class="w-5 h-5">
+                                    <circle cx="50" cy="50" r="42" fill="#FFD93D"/>
+                                    <ellipse cx="38" cy="45" rx="4" ry="5" fill="#5D4037"/>
+                                    <ellipse cx="62" cy="45" rx="4" ry="5" fill="#5D4037"/>
+                                    <path d="M 35 60 Q 50 72 65 60" fill="none" stroke="#5D4037" stroke-width="3"/>
+                                </svg>
+                            </div>
+                            <span class="text-white font-semibold">Monedita</span>
+                        </div>
+                        <!-- Chat messages -->
+                        <div class="p-3 space-y-2 bg-[#E5DDD5] min-h-[280px]">
+                            <div id="budget-msg-1" class="flex justify-end opacity-0 translate-y-4">
+                                <div class="bg-[#DCF8C6] rounded-lg px-3 py-2 max-w-[80%]">
+                                    <p class="text-sm text-gray-800">Create budget food $200</p>
+                                </div>
+                            </div>
+                            <div id="budget-msg-2" class="flex justify-start opacity-0 translate-y-4">
+                                <div class="bg-white rounded-lg px-3 py-2 max-w-[80%] shadow-sm">
+                                    <p class="text-sm text-gray-800"><span class="text-green-500">✓</span> Budget created!</p>
+                                    <div class="mt-2 p-2 bg-gray-50 rounded-lg">
+                                        <p class="text-xs text-gray-500">🍔 Food</p>
+                                        <p class="text-lg font-bold text-gray-900">$200<span class="text-xs font-normal text-gray-500">/month</span></p>
+                                        <div class="h-1.5 bg-gray-200 rounded-full mt-1">
+                                            <div class="h-full bg-emerald-500 rounded-full" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="budget-msg-3" class="flex justify-start opacity-0 translate-y-4">
+                                <div class="bg-white rounded-lg px-3 py-2 max-w-[80%] shadow-sm">
+                                    <p class="text-sm text-gray-800">I'll notify you at 50%, 75%, and 90% 🔔</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Categories Card -->
-                    <div class="budget-card opacity-0 translate-y-8 bg-white rounded-2xl p-6 shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow" style="transition-delay: 0.2s;">
-                        <div class="w-14 h-14 bg-gradient-to-br from-violet-400 to-purple-500 rounded-xl flex items-center justify-center mb-5 shadow-lg">
-                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3" data-i18n="budgets.feature3.title">Custom Categories</h3>
-                        <p class="text-gray-600 mb-4" data-i18n="budgets.feature3.desc">Create your own categories to track exactly what matters to you.</p>
-
-                        <!-- Mini categories preview -->
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">🏠 Rent</span>
-                            <span class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">💊 Health</span>
-                            <span class="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">🎮 Gaming</span>
-                            <span class="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">☕ Coffee</span>
-                            <span class="px-3 py-1.5 bg-pink-100 text-pink-700 rounded-full text-sm font-medium">+ Add</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- WhatsApp CTA -->
-                <div class="text-center mt-12 budget-cta opacity-0">
-                    <a href="https://wa.me/573222490201" target="_blank" class="wa-link inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-whatsapp to-emerald-500 hover:from-emerald-500 hover:to-whatsapp text-white rounded-full font-bold text-lg transition-all shadow-xl hover:shadow-2xl hover:scale-105 transform">
-                        <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                        <span data-i18n="budgets.cta">Start Managing Your Budget</span>
-                    </a>
                 </div>
             </div>
         </div>
@@ -1889,41 +1904,140 @@
         }
 
 
-        // Budget section animations
+        // Budget section animations - Cinematic scroll-driven
         function initBudgetAnimations() {
-            const budgetTitle = document.querySelector('.budget-title');
-            const budgetCards = document.querySelectorAll('.budget-card');
-            const budgetCta = document.querySelector('.budget-cta');
+            const title1 = document.getElementById('budget-title-1');
+            const subtitle1 = document.getElementById('budget-subtitle-1');
+            const alertMockup = document.getElementById('budget-alert-mockup');
+            const alertProgressBar = document.getElementById('alert-progress-bar');
+            const title2 = document.getElementById('budget-title-2');
+            const subtitle2 = document.getElementById('budget-subtitle-2');
+            const createMockup = document.getElementById('budget-create-mockup');
+            const budgetMsg1 = document.getElementById('budget-msg-1');
+            const budgetMsg2 = document.getElementById('budget-msg-2');
+            const budgetMsg3 = document.getElementById('budget-msg-3');
+
+            let alertAnimated = false;
 
             ScrollTrigger.create({
                 trigger: "#budgets-section",
-                start: "top 60%",
-                onEnter: () => {
-                    // Animate title
-                    gsap.to(budgetTitle, {
-                        opacity: 1,
-                        duration: 0.8,
-                        ease: "power3.out"
-                    });
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 2,
+                onUpdate: (self) => {
+                    const progress = self.progress;
 
-                    // Animate cards with stagger
-                    budgetCards.forEach((card, i) => {
-                        gsap.to(card, {
-                            opacity: 1,
-                            y: 0,
-                            duration: 0.8,
-                            delay: 0.2 + (i * 0.15),
-                            ease: "power3.out"
-                        });
-                    });
+                    // Phase 1 (0-10%): Title 1 appears
+                    if (progress < 0.10) {
+                        const p = progress / 0.10;
+                        title1.style.opacity = p;
+                        title1.style.transform = `scale(${0.9 + p * 0.1}) translateY(${(1 - p) * 30}px)`;
+                        subtitle1.style.opacity = '0';
+                        alertMockup.style.opacity = '0';
+                        title2.style.opacity = '0';
+                        createMockup.style.opacity = '0';
+                    }
+                    // Phase 2 (10-18%): Subtitle 1 appears
+                    else if (progress < 0.18) {
+                        const p = (progress - 0.10) / 0.08;
+                        title1.style.opacity = '1';
+                        title1.style.transform = 'scale(1) translateY(0)';
+                        subtitle1.style.opacity = p;
+                        alertMockup.style.opacity = '0';
+                    }
+                    // Phase 3 (18-28%): Title fades, alert mockup appears
+                    else if (progress < 0.28) {
+                        const p = (progress - 0.18) / 0.10;
+                        title1.style.opacity = 1 - p;
+                        title1.style.transform = `translateY(${-p * 50}px)`;
+                        subtitle1.style.opacity = 1 - p;
+                        alertMockup.style.opacity = p;
+                        alertMockup.style.transform = `translateY(${(1 - p) * 50}px) scale(${0.9 + p * 0.1})`;
+                    }
+                    // Phase 4 (28-45%): Alert mockup visible, progress bar animates
+                    else if (progress < 0.45) {
+                        title1.style.opacity = '0';
+                        alertMockup.style.opacity = '1';
+                        alertMockup.style.transform = 'translateY(0) scale(1)';
 
-                    // Animate CTA
-                    gsap.to(budgetCta, {
-                        opacity: 1,
-                        duration: 0.8,
-                        delay: 0.8,
-                        ease: "power3.out"
-                    });
+                        // Animate progress bar
+                        if (!alertAnimated && progress >= 0.30) {
+                            alertAnimated = true;
+                            alertProgressBar.style.width = '85%';
+                        }
+
+                        title2.style.opacity = '0';
+                        createMockup.style.opacity = '0';
+                    }
+                    // Phase 5 (45-55%): Alert fades, Title 2 appears
+                    else if (progress < 0.55) {
+                        const p = (progress - 0.45) / 0.10;
+                        alertMockup.style.opacity = 1 - p;
+                        alertMockup.style.transform = `translateY(${-p * 50}px)`;
+                        title2.style.opacity = p;
+                        title2.style.transform = `scale(${0.9 + p * 0.1}) translateY(${(1 - p) * 30}px)`;
+                        subtitle2.style.opacity = '0';
+                        createMockup.style.opacity = '0';
+                    }
+                    // Phase 6 (55-63%): Subtitle 2 appears
+                    else if (progress < 0.63) {
+                        const p = (progress - 0.55) / 0.08;
+                        alertMockup.style.opacity = '0';
+                        title2.style.opacity = '1';
+                        title2.style.transform = 'scale(1) translateY(0)';
+                        subtitle2.style.opacity = p;
+                        createMockup.style.opacity = '0';
+                    }
+                    // Phase 7 (63-73%): Title 2 fades, create mockup appears
+                    else if (progress < 0.73) {
+                        const p = (progress - 0.63) / 0.10;
+                        title2.style.opacity = 1 - p;
+                        title2.style.transform = `translateY(${-p * 50}px)`;
+                        subtitle2.style.opacity = 1 - p;
+                        createMockup.style.opacity = p;
+                        createMockup.style.transform = `translateY(${(1 - p) * 50}px) scale(${0.9 + p * 0.1})`;
+                    }
+                    // Phase 8 (73-90%): Budget chat messages appear
+                    else if (progress < 0.90) {
+                        title2.style.opacity = '0';
+                        createMockup.style.opacity = '1';
+                        createMockup.style.transform = 'translateY(0) scale(1)';
+
+                        const msgProgress = (progress - 0.73) / 0.17;
+
+                        // Message 1 (0-33%)
+                        if (msgProgress >= 0) {
+                            const m1 = Math.min(msgProgress / 0.33, 1);
+                            budgetMsg1.style.opacity = m1;
+                            budgetMsg1.style.transform = `translateY(${(1 - m1) * 16}px)`;
+                        }
+                        // Message 2 (33-66%)
+                        if (msgProgress >= 0.33) {
+                            const m2 = Math.min((msgProgress - 0.33) / 0.33, 1);
+                            budgetMsg2.style.opacity = m2;
+                            budgetMsg2.style.transform = `translateY(${(1 - m2) * 16}px)`;
+                        }
+                        // Message 3 (66-100%)
+                        if (msgProgress >= 0.66) {
+                            const m3 = Math.min((msgProgress - 0.66) / 0.34, 1);
+                            budgetMsg3.style.opacity = m3;
+                            budgetMsg3.style.transform = `translateY(${(1 - m3) * 16}px)`;
+                        }
+                    }
+                    // Phase 9 (90-100%): Fade out everything
+                    else {
+                        const p = (progress - 0.90) / 0.10;
+                        createMockup.style.opacity = 1 - p;
+                        budgetMsg1.style.opacity = 1 - p;
+                        budgetMsg2.style.opacity = 1 - p;
+                        budgetMsg3.style.opacity = 1 - p;
+                    }
+
+                    // Reset on scroll back
+                    if (progress < 0.02) {
+                        alertAnimated = false;
+                        alertProgressBar.style.width = '0%';
+                    }
                 }
             });
         }
