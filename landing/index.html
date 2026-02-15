@@ -887,7 +887,7 @@
         </div>
 
         <!-- Report content (appears after title moves up) -->
-        <div id="insights-content" class="fixed inset-0 flex items-start justify-center pointer-events-none opacity-0 overflow-y-auto" style="z-index: 52; padding-top: 140px;">
+        <div id="insights-content" class="fixed inset-0 flex items-start justify-center pointer-events-none opacity-0 overflow-y-auto" style="z-index: 52; padding-top: 200px;">
             <div class="w-full pb-20">
                 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <!-- Email Mockup - Personal email style with bar charts -->
@@ -1579,45 +1579,50 @@
                         insightsSubtitle.style.opacity = '0';
                         insightsContent.style.opacity = '0';
                     }
-                    // Phase 3 (20-30%): Subtitle appears
-                    else if (progress < 0.30) {
-                        const subtitleProgress = (progress - 0.20) / 0.10;
+                    // Phase 3 (20-28%): Subtitle appears
+                    else if (progress < 0.28) {
+                        const subtitleProgress = (progress - 0.20) / 0.08;
                         titleContainer.style.opacity = '1';
                         titleContainer.style.transform = 'translateY(0)';
+                        titleContainer.style.justifyContent = 'center';
                         insightsTitle.style.opacity = '1';
                         insightsTitle.style.transform = 'scale(1) translateY(0)';
                         insightsSubtitle.style.opacity = subtitleProgress;
                         insightsSubtitle.style.transform = `translateY(${(1 - subtitleProgress) * 20}px)`;
                         insightsContent.style.opacity = '0';
+                        emailMockup.style.opacity = '0';
                     }
-                    // Phase 4 (30-45%): Title/subtitle move to top, content container appears
-                    else if (progress < 0.45) {
-                        const moveProgress = (progress - 0.30) / 0.15;
-                        // Move title container up and make it smaller
-                        const targetY = -38; // vh units
-                        titleContainer.style.transform = `translateY(${moveProgress * targetY}vh) scale(${1 - moveProgress * 0.3})`;
+                    // Phase 4 (28-40%): Title/subtitle move to top
+                    else if (progress < 0.40) {
+                        const moveProgress = (progress - 0.28) / 0.12;
+                        // Move title container to top
+                        titleContainer.style.justifyContent = 'flex-start';
+                        titleContainer.style.paddingTop = `${80 + (1 - moveProgress) * 200}px`;
+                        titleContainer.style.transform = `scale(${1 - moveProgress * 0.15})`;
                         titleContainer.style.opacity = '1';
                         insightsSubtitle.style.opacity = '1';
                         insightsSubtitle.style.transform = 'translateY(0)';
-                        // Fade in content container
-                        insightsContent.style.opacity = moveProgress;
-                        insightsContent.style.pointerEvents = moveProgress > 0.5 ? 'auto' : 'none';
-                        // Email mockup starts appearing
-                        emailMockup.style.opacity = moveProgress * 0.5;
-                        emailMockup.style.transform = `translateY(${(1 - moveProgress) * 80}px)`;
+                        // Content stays hidden during title movement
+                        insightsContent.style.opacity = '0';
+                        emailMockup.style.opacity = '0';
                     }
-                    // Phase 5 (45-60%): Email mockup fully appears, counters animate
-                    else if (progress < 0.60) {
-                        const emailProgress = (progress - 0.45) / 0.15;
-                        titleContainer.style.transform = 'translateY(-38vh) scale(0.7)';
+                    // Phase 5 (40-55%): Email mockup appears BELOW title
+                    else if (progress < 0.55) {
+                        const emailProgress = (progress - 0.40) / 0.15;
+                        // Title stays at top
+                        titleContainer.style.justifyContent = 'flex-start';
+                        titleContainer.style.paddingTop = '80px';
+                        titleContainer.style.transform = 'scale(0.85)';
                         titleContainer.style.opacity = '1';
-                        insightsContent.style.opacity = '1';
-                        insightsContent.style.pointerEvents = 'auto';
-                        emailMockup.style.opacity = 0.5 + (emailProgress * 0.5);
-                        emailMockup.style.transform = `translateY(${(1 - emailProgress) * 40}px)`;
+                        // Content fades in
+                        insightsContent.style.opacity = emailProgress;
+                        insightsContent.style.pointerEvents = emailProgress > 0.5 ? 'auto' : 'none';
+                        // Email mockup appears from below
+                        emailMockup.style.opacity = emailProgress;
+                        emailMockup.style.transform = `translateY(${(1 - emailProgress) * 100}px)`;
 
                         // Trigger counters once
-                        if (!countersAnimated && progress >= 0.50) {
+                        if (!countersAnimated && progress >= 0.45) {
                             countersAnimated = true;
                             gsap.to(statTotal, {
                                 innerHTML: 312,
@@ -1633,13 +1638,17 @@
                             });
                         }
                     }
-                    // Phase 6 (60-85%): Category bars appear one by one
-                    else if (progress < 0.85) {
-                        titleContainer.style.transform = 'translateY(-38vh) scale(0.7)';
+                    // Phase 6 (55-80%): Category bars appear one by one
+                    else if (progress < 0.80) {
+                        // Keep title at top
+                        titleContainer.style.justifyContent = 'flex-start';
+                        titleContainer.style.paddingTop = '80px';
+                        titleContainer.style.transform = 'scale(0.85)';
+                        insightsContent.style.opacity = '1';
                         emailMockup.style.opacity = '1';
                         emailMockup.style.transform = 'translateY(0)';
 
-                        const barProgress = (progress - 0.60) / 0.25;
+                        const barProgress = (progress - 0.55) / 0.25;
                         const totalBars = categoryBars.length;
 
                         categoryBars.forEach((bar, i) => {
@@ -1657,9 +1666,14 @@
                             }
                         });
                     }
-                    // Phase 7 (85-100%): Alert tip appears
+                    // Phase 7 (80-100%): Alert tip appears
                     else {
-                        titleContainer.style.transform = 'translateY(-38vh) scale(0.7)';
+                        // Keep title at top
+                        titleContainer.style.justifyContent = 'flex-start';
+                        titleContainer.style.paddingTop = '80px';
+                        titleContainer.style.transform = 'scale(0.85)';
+                        insightsContent.style.opacity = '1';
+
                         categoryBars.forEach(bar => {
                             bar.style.opacity = '1';
                             bar.style.transform = 'translateY(0)';
@@ -1667,7 +1681,7 @@
                             if (fill) fill.style.width = fill.dataset.width;
                         });
 
-                        const alertProgress = (progress - 0.85) / 0.15;
+                        const alertProgress = (progress - 0.80) / 0.20;
                         emailAlert.style.opacity = alertProgress;
                         emailAlert.style.transform = `translateY(${(1 - alertProgress) * 15}px)`;
                     }
