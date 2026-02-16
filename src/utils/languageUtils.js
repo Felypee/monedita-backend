@@ -130,6 +130,7 @@ Try it now! Tell me about a recent expense.`,
     error_service_unavailable: "Service temporarily unavailable due to high demand. Please try again later.",
     ask_name_again: "I didn't catch your name. What should I call you?",
     not_enough_moneditas: "You need {needed} moneditas but only have {remaining} left.",
+    expenses_skipped: "{count} expense(s) were skipped due to insufficient moneditas.",
     image_saved_for_review: "I couldn't detect expenses in this image. It's been saved for review.",
 
     // Tutorial/Onboarding - Step by step guided tour
@@ -326,6 +327,7 @@ Escribe *tutorial* para ver la guía completa.
     error_service_unavailable: "Servicio temporalmente no disponible por alta demanda. Por favor intenta más tarde.",
     ask_name_again: "No entendí tu nombre. ¿Cómo te llamas?",
     not_enough_moneditas: "Necesitas {needed} moneditas pero solo te quedan {remaining}.",
+    expenses_skipped: "Se omitieron {count} gasto(s) por falta de moneditas.",
     image_saved_for_review: "No pude detectar gastos en esta imagen. Se guardó para revisión.",
 
     // Tutorial/Onboarding - Guía paso a paso
@@ -522,6 +524,7 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     error_service_unavailable: "Serviço temporariamente indisponível devido à alta demanda. Por favor, tente novamente mais tarde.",
     ask_name_again: "Não entendi seu nome. Como posso te chamar?",
     not_enough_moneditas: "Você precisa de {needed} moneditas mas só tem {remaining}.",
+    expenses_skipped: "{count} despesa(s) foram ignoradas por falta de moneditas.",
     image_saved_for_review: "Não consegui detectar despesas nesta imagem. Foi salva para revisão.",
 
     // Tutorial/Onboarding - Guia passo a passo
