@@ -11,6 +11,7 @@ import {
 } from './services/reminderService.js';
 import { handleWompiWebhook } from './handlers/wompiWebhookHandler.js';
 import { getUsageStats } from './utils/usageMonitor.js';
+import statsRoutes from './routes/statsRoutes.js';
 
 dotenv.config();
 
@@ -62,6 +63,9 @@ const wompiLimiter = rateLimit({
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Monedita server is running' });
 });
+
+// Stats API routes (JWT protected)
+app.use(statsRoutes);
 
 // Usage stats endpoint (protected)
 app.get('/api/usage', (req, res) => {

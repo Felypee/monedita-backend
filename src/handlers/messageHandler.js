@@ -81,12 +81,28 @@ export async function handleIncomingMessage(message, phone) {
 
     const lang = user.language || 'en';
 
-    // For new users, send welcome message and process their first message normally
+    // For new users, send welcome message asking for name
     if (isNewUser) {
-      // Send a brief welcome, then process their message
       const welcomeMsg = getWelcomeMessage(lang);
+      if (clearIndicator) await clearIndicator();
       await sendTextMessage(phone, welcomeMsg);
-      // Continue processing their message below (don't return)
+      return; // Wait for them to respond with their name
+    }
+
+    // If user doesn't have a name yet, check if this message is their name
+    if (!user.name && message.type === "text") {
+      const messageText = message.text.body;
+      if (looksLikeName(messageText)) {
+        const name = messageText.trim();
+        await UserDB.update(phone, { name });
+        if (clearIndicator) await clearIndicator();
+        await sendTextMessage(phone, getNameSavedMessage(name, lang));
+        return;
+      }
+      // If doesn't look like a name, ask again
+      if (clearIndicator) await clearIndicator();
+      await sendTextMessage(phone, getMessage('ask_name_again', lang) || getWelcomeMessage(lang));
+      return;
     }
 
     // For text messages, use batching (10-second window)
@@ -167,27 +183,80 @@ export async function handleIncomingMessage(message, phone) {
 }
 
 /**
- * Get welcome message for new users
+ * Get welcome message for new users - asks for name
  */
 function getWelcomeMessage(lang) {
   const messages = {
     en: `👋 Welcome to Monedita!
 
-I'm your AI expense assistant. Just tell me what you spent and I'll track it for you.
+I'm your AI expense assistant.
 
-Try it now: "Spent 20 on coffee" or send a receipt photo!`,
+What's your name?`,
     es: `👋 ¡Bienvenido a Monedita!
 
-Soy tu asistente de gastos con IA. Solo dime lo que gastaste y lo registro por ti.
+Soy tu asistente de gastos con IA.
 
-Pruébalo: "Gasté 20000 en café" o envía una foto de recibo!`,
+¿Cómo te llamas?`,
     pt: `👋 Bem-vindo ao Monedita!
 
-Sou seu assistente de despesas com IA. Só me diga o que gastou e eu registro para você.
+Sou seu assistente de despesas com IA.
 
-Experimente: "Gastei 20 em café" ou envie uma foto do recibo!`
+Qual é o seu nome?`
   };
   return messages[lang] || messages.en;
+}
+
+/**
+ * Get message after saving user's name
+ */
+function getNameSavedMessage(name, lang) {
+  const messages = {
+    en: `Nice to meet you, *${name}*! 🎉
+
+You have *50 free moneditas* to start.
+
+Just tell me your expenses:
+• "Spent 20 on coffee"
+• Send a receipt photo
+• Or send a voice note
+
+Let's go! 💪`,
+    es: `¡Mucho gusto, *${name}*! 🎉
+
+Tienes *50 moneditas gratis* para empezar.
+
+Solo dime tus gastos:
+• "Gasté 20000 en café"
+• Envía foto de un recibo
+• O envía una nota de voz
+
+¡Vamos! 💪`,
+    pt: `Prazer, *${name}*! 🎉
+
+Você tem *50 moneditas grátis* para começar.
+
+Só me diga seus gastos:
+• "Gastei 20 em café"
+• Envie foto de um recibo
+• Ou envie uma nota de voz
+
+Vamos lá! 💪`
+  };
+  return messages[lang] || messages.en;
+}
+
+/**
+ * Check if message looks like a name (simple heuristic)
+ */
+function looksLikeName(message) {
+  const trimmed = message.trim();
+  // Name should be 1-50 chars, no numbers, no special expense patterns
+  if (trimmed.length < 1 || trimmed.length > 50) return false;
+  if (/\d/.test(trimmed)) return false; // Has numbers
+  if (/spent|gast[eéo]|compré|bought|\$/i.test(trimmed)) return false; // Expense pattern
+  // Should be 1-3 words max
+  const words = trimmed.split(/\s+/);
+  return words.length <= 3;
 }
 
 /**
@@ -239,14 +308,15 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
 /**
  * Process image message (receipt/bill OCR)
+ * Charges 1 monedita per expense detected in the image
  */
 async function processImageMessage(phone, imageData, userCurrency, lang = 'en') {
   try {
-    // Check image message limit
-    const imageLimitCheck = await checkLimit(phone, USAGE_TYPES.IMAGE);
-    if (!imageLimitCheck.allowed) {
+    // First check if user has at least 1 monedita available
+    const initialCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
+    if (!initialCheck.allowed) {
       const status = await getSubscriptionStatus(phone);
-      const limitMsg = getLimitExceededMessage(USAGE_TYPES.IMAGE, lang, imageLimitCheck);
+      const limitMsg = getLimitExceededMessage(USAGE_TYPES.TEXT, lang, initialCheck);
       const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
       return `${limitMsg}\n\n${upgradeMsg}`;
     }
@@ -270,7 +340,20 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
         reason: 'no_expense_detected',
         raw_result: result,
       });
+      // Still charge 1 monedita for processing the image (API cost)
+      await trackUsage(phone, USAGE_TYPES.TEXT);
       return getMessage('image_saved_for_review', lang);
+    }
+
+    // Check if user has enough moneditas for all detected expenses
+    const expenseCount = result.expenses.length;
+    const currentCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
+    if (currentCheck.remaining !== -1 && currentCheck.remaining < expenseCount) {
+      const status = await getSubscriptionStatus(phone);
+      return getMessage('not_enough_moneditas', lang, {
+        needed: expenseCount,
+        remaining: currentCheck.remaining
+      }) + `\n\n${getUpgradeMessage(status.plan.id, lang)}`;
     }
 
     // Validate all amounts
@@ -304,8 +387,10 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
       }
     }
 
-    // Track image usage after successful processing
-    await trackUsage(phone, USAGE_TYPES.IMAGE);
+    // Track usage: 1 monedita per expense detected
+    for (let i = 0; i < expenseCount; i++) {
+      await trackUsage(phone, USAGE_TYPES.TEXT);
+    }
 
     // Build response
     let response;
@@ -345,14 +430,15 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
 
 /**
  * Process audio message (voice note)
+ * Charges 1 monedita per expense detected in the audio
  */
 async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') {
   try {
-    // Check voice message limit
-    const voiceLimitCheck = await checkLimit(phone, USAGE_TYPES.VOICE);
-    if (!voiceLimitCheck.allowed) {
+    // First check if user has at least 1 monedita available
+    const initialCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
+    if (!initialCheck.allowed) {
       const status = await getSubscriptionStatus(phone);
-      const limitMsg = getLimitExceededMessage(USAGE_TYPES.VOICE, lang, voiceLimitCheck);
+      const limitMsg = getLimitExceededMessage(USAGE_TYPES.TEXT, lang, initialCheck);
       const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
       return `${limitMsg}\n\n${upgradeMsg}`;
     }
@@ -381,10 +467,23 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
         reason: 'no_expense_detected',
         raw_result: result,
       });
+      // Still charge 1 monedita for processing the audio (API cost)
+      await trackUsage(phone, USAGE_TYPES.TEXT);
       if (result.transcription) {
         return `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n${getMessage('audio_saved_for_review', lang)}`;
       }
       return getMessage('audio_saved_for_review', lang);
+    }
+
+    // Check if user has enough moneditas for all detected expenses
+    const expenseCount = result.expenses.length;
+    const currentCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
+    if (currentCheck.remaining !== -1 && currentCheck.remaining < expenseCount) {
+      const status = await getSubscriptionStatus(phone);
+      return `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n${getMessage('not_enough_moneditas', lang, {
+        needed: expenseCount,
+        remaining: currentCheck.remaining
+      })}\n\n${getUpgradeMessage(status.plan.id, lang)}`;
     }
 
     // Validate all amounts
@@ -418,8 +517,10 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
       }
     }
 
-    // Track voice usage after successful processing
-    await trackUsage(phone, USAGE_TYPES.VOICE);
+    // Track usage: 1 monedita per expense detected
+    for (let i = 0; i < expenseCount; i++) {
+      await trackUsage(phone, USAGE_TYPES.TEXT);
+    }
 
     // Build response
     let response = `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n`;

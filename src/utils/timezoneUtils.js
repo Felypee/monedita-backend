@@ -141,3 +141,25 @@ export function isUserInTimeRange(phone, startHour, endHour) {
   const hour = getUserLocalHour(phone);
   return hour >= startHour && hour < endHour;
 }
+
+/**
+ * Get the current day of week for a user based on their phone number
+ * @param {string} phone - User's phone number
+ * @returns {number} Day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+ */
+export function getUserLocalDay(phone) {
+  const timezone = getTimezoneFromPhone(phone);
+  try {
+    const now = new Date();
+    const options = {
+      timeZone: timezone,
+      weekday: 'short'
+    };
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+    const dayName = formatter.format(now);
+    const dayMap = { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 };
+    return dayMap[dayName] ?? new Date().getUTCDay();
+  } catch (error) {
+    return new Date().getUTCDay();
+  }
+}

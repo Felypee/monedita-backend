@@ -5,10 +5,12 @@
  */
 
 import cron from "node-cron";
-import { UserDB } from "../database/index.js";
-import { sendInteractiveButtons } from "../utils/whatsappClient.js";
+import { UserDB, ExpenseDB } from "../database/index.js";
+import { sendInteractiveButtons, sendTextMessage } from "../utils/whatsappClient.js";
 import { getMessage } from "../utils/languageUtils.js";
-import { getUserLocalHour, getTimezoneFromPhone } from "../utils/timezoneUtils.js";
+import { getUserLocalHour, getTimezoneFromPhone, getUserLocalDay } from "../utils/timezoneUtils.js";
+import { generateStatsUrl, getTokenExpiryDescription } from "./statsTokenService.js";
+import { formatAmount } from "../utils/currencyUtils.js";
 
 // Track reminder state per user (to handle Yes responses)
 const pendingReminders = new Map();
@@ -166,10 +168,119 @@ export function clearPendingReminder(phone) {
 }
 
 /**
+ * Send weekly summary with stats link to a single user
+ * @param {string} phone - User's phone number
+ */
+export async function sendWeeklySummary(phone) {
+  try {
+    const userLang = await UserDB.getLanguage(phone) || 'es';
+    const user = await UserDB.get(phone);
+    const userCurrency = user?.currency || 'COP';
+
+    // Calculate last week's date range
+    const now = new Date();
+    const endOfWeek = new Date(now);
+    endOfWeek.setHours(23, 59, 59, 999);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    // Get expenses from last week
+    const expenses = (await ExpenseDB.getByDateRange(phone, startOfWeek, endOfWeek)) || [];
+    const totalSpent = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+
+    // Generate stats URL
+    const statsUrl = generateStatsUrl(phone);
+    const expiryTime = getTokenExpiryDescription();
+
+    const messages = {
+      en: `📊 *Your Weekly Summary*
+
+This week you spent ${formatAmount(totalSpent, userCurrency)} in ${expenses.length} expenses.
+
+See your complete report with charts and category breakdown:
+
+${statsUrl}
+
+This link is valid for ${expiryTime}.`,
+      es: `📊 *Tu Resumen Semanal*
+
+Esta semana gastaste ${formatAmount(totalSpent, userCurrency)} en ${expenses.length} gastos.
+
+Ve tu reporte completo con gráficos y desglose por categoría:
+
+${statsUrl}
+
+Este link es válido por ${expiryTime}.`,
+      pt: `📊 *Seu Resumo Semanal*
+
+Esta semana você gastou ${formatAmount(totalSpent, userCurrency)} em ${expenses.length} despesas.
+
+Veja seu relatório completo com gráficos e detalhamento por categoria:
+
+${statsUrl}
+
+Este link é válido por ${expiryTime}.`
+    };
+
+    await sendTextMessage(phone, messages[userLang] || messages.es);
+    console.log(`📊 Sent weekly summary to ${phone}`);
+    return true;
+  } catch (error) {
+    console.error(`Error sending weekly summary to ${phone}:`, error.message);
+    return false;
+  }
+}
+
+/**
+ * Send weekly summaries to users whose local time is Sunday evening
+ */
+export async function sendWeeklySummaries() {
+  try {
+    const users = await UserDB.all();
+
+    if (!users || users.length === 0) {
+      console.log("📭 No users for weekly summary");
+      return { sent: 0, skipped: 0, failed: 0 };
+    }
+
+    let sent = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (const user of users) {
+      // Check if user's local day is Sunday and hour is around 7 PM
+      const userDay = getUserLocalDay(user.phone);
+      const userHour = getUserLocalHour(user.phone);
+
+      // Sunday = 0, send around 7 PM (19:00)
+      if (userDay === 0 && userHour >= 19 && userHour < 20) {
+        const success = await sendWeeklySummary(user.phone);
+        if (success) {
+          sent++;
+        } else {
+          failed++;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } else {
+        skipped++;
+      }
+    }
+
+    console.log(`📊 Weekly summary job: ${sent} sent, ${skipped} skipped (wrong day/hour), ${failed} failed`);
+    return { sent, skipped, failed };
+  } catch (error) {
+    console.error("Error sending weekly summaries:", error);
+    return { sent: 0, skipped: 0, failed: 0, error: error.message };
+  }
+}
+
+/**
  * Start the cron scheduler for reminders
  * Runs every hour and sends reminders to users whose local time matches:
  * - 12:00 PM (noon) - afternoon reminder
  * - 9:00 PM - evening reminder
+ * - Sunday 7:00 PM - weekly summary
  */
 export function startReminderScheduler() {
   // Run every hour at minute 0 to check all timezones
@@ -182,7 +293,10 @@ export function startReminderScheduler() {
 
     // Send evening reminders (9 PM local time)
     await sendRemindersForLocalHour(21, 'evening');
+
+    // Send weekly summaries (Sunday 7 PM local time)
+    await sendWeeklySummaries();
   });
 
-  console.log("⏰ Reminder scheduler started (checks every hour for local 12 PM and 9 PM)");
+  console.log("⏰ Reminder scheduler started (checks every hour for local 12 PM, 9 PM, and Sunday 7 PM weekly summary)");
 }

@@ -128,6 +128,9 @@ Try it now! Tell me about a recent expense.`,
     unsupported_message: "I can process text, images (receipts), and voice messages. Try one of those!",
     error_generic: "Sorry, I encountered an error. Please try again.",
     error_service_unavailable: "Service temporarily unavailable due to high demand. Please try again later.",
+    ask_name_again: "I didn't catch your name. What should I call you?",
+    not_enough_moneditas: "You need {needed} moneditas but only have {remaining} left.",
+    image_saved_for_review: "I couldn't detect expenses in this image. It's been saved for review.",
 
     // Tutorial/Onboarding - Step by step guided tour
     tutorial_ask_name: `👋 Hey! I'm Monedita, your personal expense tracker.
@@ -190,16 +193,16 @@ Tell me about an expense to get started!`,
     tutorial_restart: `Welcome back! Let's do a quick refresher.`,
 
     // Subscription & Limits
-    limit_text_exceeded: "You've reached your monthly limit of {limit} text messages. Upgrade your plan to continue.",
-    limit_voice_exceeded: "You've reached your monthly limit of {limit} voice messages. Upgrade your plan to continue.",
-    limit_image_exceeded: "You've reached your monthly limit of {limit} image/receipt scans. Upgrade your plan to continue.",
-    limit_ai_exceeded: "You've reached your monthly limit of {limit} AI conversations. Upgrade your plan to continue.",
-    limit_budget_exceeded: "You've reached your limit of {limit} budget(s). Upgrade your plan to add more.",
+    limit_text_exceeded: "You've used all your moneditas for this month ({limit} total).",
+    limit_voice_exceeded: "You've used all your moneditas for this month ({limit} total).",
+    limit_image_exceeded: "You've used all your moneditas for this month ({limit} total).",
+    limit_ai_exceeded: "You've used all your moneditas for this month ({limit} total).",
+    limit_budget_exceeded: "You've used all your moneditas for this month ({limit} total).",
     export_not_allowed: "CSV export is not available on your current plan. Upgrade to Basic or Premium to export.",
     export_pdf_not_allowed: "PDF export is only available on Premium plan.",
 
-    upgrade_cta_free: "Type *upgrade* to see available plans and unlock more features!",
-    upgrade_cta_basic: "Type *upgrade* to see Premium features!",
+    upgrade_cta_free: "Get more moneditas: https://landing-nu-lovat.vercel.app/#pricing",
+    upgrade_cta_basic: "Upgrade to Premium: https://landing-nu-lovat.vercel.app/#pricing",
 
     subscription_status_title: "Your Plan: *{plan}*",
     subscription_usage: "*Monthly Usage:*",
@@ -321,6 +324,9 @@ Escribe *tutorial* para ver la guía completa.
     unsupported_message: "Puedo procesar texto, imágenes (recibos) y mensajes de voz. ¡Intenta uno de esos!",
     error_generic: "Lo siento, ocurrió un error. Por favor intenta de nuevo.",
     error_service_unavailable: "Servicio temporalmente no disponible por alta demanda. Por favor intenta más tarde.",
+    ask_name_again: "No entendí tu nombre. ¿Cómo te llamas?",
+    not_enough_moneditas: "Necesitas {needed} moneditas pero solo te quedan {remaining}.",
+    image_saved_for_review: "No pude detectar gastos en esta imagen. Se guardó para revisión.",
 
     // Tutorial/Onboarding - Guía paso a paso
     tutorial_ask_name: `👋 ¡Hola! Soy Monedita, tu asistente de gastos.
@@ -383,16 +389,16 @@ Escribe *tutorial* para repasar. ¡Ahora cuéntame un gasto real!`,
     tutorial_restart: `¡Hola de nuevo! Hagamos un repaso rápido.`,
 
     // Subscription & Limits
-    limit_text_exceeded: "Has alcanzado tu límite mensual de {limit} mensajes de texto. Mejora tu plan para continuar.",
-    limit_voice_exceeded: "Has alcanzado tu límite mensual de {limit} mensajes de voz. Mejora tu plan para continuar.",
-    limit_image_exceeded: "Has alcanzado tu límite mensual de {limit} escaneos de recibos. Mejora tu plan para continuar.",
-    limit_ai_exceeded: "Has alcanzado tu límite mensual de {limit} conversaciones con IA. Mejora tu plan para continuar.",
-    limit_budget_exceeded: "Has alcanzado tu límite de {limit} presupuesto(s). Mejora tu plan para agregar más.",
+    limit_text_exceeded: "Se acabaron tus moneditas del mes ({limit} en total).",
+    limit_voice_exceeded: "Se acabaron tus moneditas del mes ({limit} en total).",
+    limit_image_exceeded: "Se acabaron tus moneditas del mes ({limit} en total).",
+    limit_ai_exceeded: "Se acabaron tus moneditas del mes ({limit} en total).",
+    limit_budget_exceeded: "Se acabaron tus moneditas del mes ({limit} en total).",
     export_not_allowed: "La exportación CSV no está disponible en tu plan actual. Mejora a Basic o Premium para exportar.",
     export_pdf_not_allowed: "La exportación PDF solo está disponible en el plan Premium.",
 
-    upgrade_cta_free: "Escribe *upgrade* para ver los planes disponibles y desbloquear más funciones.",
-    upgrade_cta_basic: "Escribe *upgrade* para ver las funciones Premium.",
+    upgrade_cta_free: "Consigue más moneditas: https://landing-nu-lovat.vercel.app/#pricing",
+    upgrade_cta_basic: "Mejora a Premium: https://landing-nu-lovat.vercel.app/#pricing",
 
     subscription_status_title: "Tu Plan: *{plan}*",
     subscription_usage: "*Uso Mensual:*",
@@ -514,6 +520,9 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     unsupported_message: "Posso processar texto, imagens (recibos) e mensagens de voz. Tente um desses!",
     error_generic: "Desculpe, ocorreu um erro. Por favor, tente novamente.",
     error_service_unavailable: "Serviço temporariamente indisponível devido à alta demanda. Por favor, tente novamente mais tarde.",
+    ask_name_again: "Não entendi seu nome. Como posso te chamar?",
+    not_enough_moneditas: "Você precisa de {needed} moneditas mas só tem {remaining}.",
+    image_saved_for_review: "Não consegui detectar despesas nesta imagem. Foi salva para revisão.",
 
     // Tutorial/Onboarding - Guia passo a passo
     tutorial_ask_name: `👋 Oi! Sou o Monedita, seu assistente de despesas.
@@ -576,16 +585,16 @@ Me conte sobre uma despesa para começar!`,
     tutorial_restart: `Olá de novo! Vamos fazer uma revisão rápida.`,
 
     // Subscription & Limits
-    limit_text_exceeded: "Você atingiu seu limite mensal de {limit} mensagens de texto. Atualize seu plano para continuar.",
-    limit_voice_exceeded: "Você atingiu seu limite mensal de {limit} mensagens de voz. Atualize seu plano para continuar.",
-    limit_image_exceeded: "Você atingiu seu limite mensal de {limit} digitalizações de recibos. Atualize seu plano para continuar.",
-    limit_ai_exceeded: "Você atingiu seu limite mensal de {limit} conversas com IA. Atualize seu plano para continuar.",
-    limit_budget_exceeded: "Você atingiu seu limite de {limit} orçamento(s). Atualize seu plano para adicionar mais.",
+    limit_text_exceeded: "Suas moneditas do mês acabaram ({limit} no total).",
+    limit_voice_exceeded: "Suas moneditas do mês acabaram ({limit} no total).",
+    limit_image_exceeded: "Suas moneditas do mês acabaram ({limit} no total).",
+    limit_ai_exceeded: "Suas moneditas do mês acabaram ({limit} no total).",
+    limit_budget_exceeded: "Suas moneditas do mês acabaram ({limit} no total).",
     export_not_allowed: "A exportação CSV não está disponível no seu plano atual. Atualize para Basic ou Premium para exportar.",
     export_pdf_not_allowed: "A exportação PDF está disponível apenas no plano Premium.",
 
-    upgrade_cta_free: "Digite *upgrade* para ver os planos disponíveis e desbloquear mais recursos!",
-    upgrade_cta_basic: "Digite *upgrade* para ver os recursos Premium!",
+    upgrade_cta_free: "Consiga mais moneditas: https://landing-nu-lovat.vercel.app/#pricing",
+    upgrade_cta_basic: "Atualize para Premium: https://landing-nu-lovat.vercel.app/#pricing",
 
     subscription_status_title: "Seu Plano: *{plan}*",
     subscription_usage: "*Uso Mensal:*",

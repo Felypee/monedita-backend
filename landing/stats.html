@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Estadísticas - Monedita</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .loading-spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #10b981;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .category-food { background-color: #fef3c7; color: #92400e; }
+    .category-transport { background-color: #dbeafe; color: #1e40af; }
+    .category-shopping { background-color: #fce7f3; color: #9d174d; }
+    .category-entertainment { background-color: #ede9fe; color: #5b21b6; }
+    .category-bills { background-color: #fee2e2; color: #991b1b; }
+    .category-health { background-color: #d1fae5; color: #065f46; }
+    .category-other { background-color: #f3f4f6; color: #374151; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="logo-monedita.svg" alt="Monedita" class="h-8 w-8">
+        <h1 class="text-xl font-bold text-gray-800">Mis Estadísticas</h1>
+      </div>
+      <div id="user-info" class="text-sm text-gray-600"></div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loading" class="flex flex-col items-center justify-center min-h-[60vh]">
+    <div class="loading-spinner mb-4"></div>
+    <p class="text-gray-600">Cargando tus estadísticas...</p>
+  </div>
+
+  <!-- Error State -->
+  <div id="error" class="hidden flex flex-col items-center justify-center min-h-[60vh] px-4">
+    <div class="text-6xl mb-4">😕</div>
+    <h2 class="text-xl font-bold text-gray-800 mb-2">No se pudo cargar</h2>
+    <p id="error-message" class="text-gray-600 text-center mb-4"></p>
+    <a href="https://wa.me/573001234567" class="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition">
+      Volver a WhatsApp
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <main id="content" class="hidden max-w-4xl mx-auto px-4 py-6">
+    <!-- Moneditas Status -->
+    <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 text-white mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-emerald-100 text-sm">Plan <span id="plan-name" class="font-semibold"></span></p>
+          <p class="text-3xl font-bold mt-1"><span id="moneditas-remaining">--</span> moneditas</p>
+          <p class="text-emerald-100 text-sm mt-1">de <span id="moneditas-total">--</span> este mes</p>
+        </div>
+        <div class="text-6xl opacity-80">🪙</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
+      <div class="flex flex-wrap gap-2">
+        <button data-filter="today" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition">Hoy</button>
+        <button data-filter="yesterday" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition">Ayer</button>
+        <button data-filter="week" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition">Esta semana</button>
+        <button data-filter="month" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-emerald-500 text-white">Este mes</button>
+        <button data-filter="last_month" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition" id="btn-last-month">Mes anterior</button>
+        <button data-filter="6months" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition" id="btn-6months">6 meses</button>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <p class="text-gray-500 text-sm">Total gastado</p>
+        <p id="total-spent" class="text-2xl font-bold text-gray-800">$0</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <p class="text-gray-500 text-sm">Gastos registrados</p>
+        <p id="expense-count" class="text-2xl font-bold text-gray-800">0</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm col-span-2 md:col-span-1">
+        <p class="text-gray-500 text-sm">Promedio por gasto</p>
+        <p id="average-expense" class="text-2xl font-bold text-gray-800">$0</p>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <!-- Category Pie Chart -->
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <h3 class="font-semibold text-gray-800 mb-4">Por categoría</h3>
+        <div class="h-64">
+          <canvas id="category-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Daily Bar Chart -->
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <h3 class="font-semibold text-gray-800 mb-4">Por día</h3>
+        <div class="h-64">
+          <canvas id="daily-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Progress -->
+    <div id="budgets-section" class="bg-white rounded-xl p-4 shadow-sm mb-6">
+      <h3 class="font-semibold text-gray-800 mb-4">Presupuestos</h3>
+      <div id="budgets-list" class="space-y-3">
+        <p class="text-gray-500 text-sm">No tienes presupuestos configurados</p>
+      </div>
+    </div>
+
+    <!-- Recent Expenses -->
+    <div class="bg-white rounded-xl p-4 shadow-sm">
+      <h3 class="font-semibold text-gray-800 mb-4">Gastos recientes</h3>
+      <div id="expenses-list" class="space-y-2">
+        <p class="text-gray-500 text-sm">No hay gastos en este período</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-8 text-gray-500 text-sm">
+    <p>Generado por <a href="https://landing-nu-lovat.vercel.app" class="text-emerald-600 hover:underline">Monedita</a></p>
+  </footer>
+
+  <script>
+    // API base URL - change for production
+    const API_BASE = 'https://financeflow-mvp-production.up.railway.app'; // TODO: Update with actual backend URL
+
+    // Get token from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    // State
+    let currentFilter = 'month';
+    let userData = null;
+    let categoryChart = null;
+    let dailyChart = null;
+
+    // Category colors
+    const categoryColors = {
+      food: { bg: '#fef3c7', border: '#f59e0b' },
+      transport: { bg: '#dbeafe', border: '#3b82f6' },
+      shopping: { bg: '#fce7f3', border: '#ec4899' },
+      entertainment: { bg: '#ede9fe', border: '#8b5cf6' },
+      bills: { bg: '#fee2e2', border: '#ef4444' },
+      health: { bg: '#d1fae5', border: '#10b981' },
+      other: { bg: '#f3f4f6', border: '#6b7280' },
+    };
+
+    // Category emojis
+    const categoryEmojis = {
+      food: '🍔',
+      transport: '🚗',
+      shopping: '🛒',
+      entertainment: '🎬',
+      bills: '📄',
+      health: '💊',
+      other: '📦',
+    };
+
+    // Initialize
+    async function init() {
+      if (!token) {
+        showError('Link inválido. Pide un nuevo link desde WhatsApp.');
+        return;
+      }
+
+      try {
+        await loadStats(currentFilter);
+        setupFilterButtons();
+      } catch (error) {
+        console.error('Error:', error);
+        showError(error.message || 'Error al cargar las estadísticas');
+      }
+    }
+
+    // Load stats from API
+    async function loadStats(filter) {
+      const response = await fetch(`${API_BASE}/api/stats?filter=${filter}&token=${token}`);
+
+      if (!response.ok) {
+        const data = await response.json();
+        if (response.status === 401) {
+          throw new Error(data.error === 'Token expired'
+            ? 'Este link ha expirado. Pide uno nuevo desde WhatsApp.'
+            : 'Link inválido. Pide un nuevo link desde WhatsApp.');
+        }
+        throw new Error('Error al cargar datos');
+      }
+
+      const data = await response.json();
+      userData = data;
+      renderStats(data);
+
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('content').classList.remove('hidden');
+    }
+
+    // Render stats
+    function renderStats(data) {
+      // User info
+      document.getElementById('user-info').textContent = `Hola, ${data.user.name}`;
+      document.getElementById('plan-name').textContent = data.user.plan;
+
+      // Moneditas
+      const remaining = data.user.moneditas.remaining;
+      const limit = data.user.moneditas.limit;
+      document.getElementById('moneditas-remaining').textContent = remaining === -1 ? '∞' : remaining;
+      document.getElementById('moneditas-total').textContent = limit === -1 ? 'ilimitadas' : limit;
+
+      // Summary
+      document.getElementById('total-spent').textContent = formatCurrency(data.stats.totalSpent, data.user.currency);
+      document.getElementById('expense-count').textContent = data.stats.expenseCount;
+      document.getElementById('average-expense').textContent = formatCurrency(data.stats.averageExpense, data.user.currency);
+
+      // Disable filters based on plan
+      if (data.user.plan === 'Free') {
+        document.getElementById('btn-last-month').classList.add('opacity-50', 'cursor-not-allowed');
+        document.getElementById('btn-last-month').title = 'Disponible en plan Basic';
+        document.getElementById('btn-6months').classList.add('opacity-50', 'cursor-not-allowed');
+        document.getElementById('btn-6months').title = 'Disponible en plan Basic';
+      }
+
+      // Charts
+      renderCategoryChart(data.byCategory);
+      renderDailyChart(data.byDay, data.user.currency);
+
+      // Budgets
+      renderBudgets(data.budgets, data.user.currency);
+
+      // Recent expenses
+      renderExpenses(data.recentExpenses, data.user.currency);
+    }
+
+    // Render category pie chart
+    function renderCategoryChart(categories) {
+      const ctx = document.getElementById('category-chart').getContext('2d');
+
+      if (categoryChart) {
+        categoryChart.destroy();
+      }
+
+      if (categories.length === 0) {
+        ctx.font = '14px sans-serif';
+        ctx.fillStyle = '#9ca3af';
+        ctx.textAlign = 'center';
+        ctx.fillText('Sin datos', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+      }
+
+      categoryChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: categories.map(c => `${categoryEmojis[c.category] || '📦'} ${c.category}`),
+          datasets: [{
+            data: categories.map(c => c.total),
+            backgroundColor: categories.map(c => categoryColors[c.category]?.border || '#6b7280'),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 12, padding: 8 }
+            }
+          }
+        }
+      });
+    }
+
+    // Render daily bar chart
+    function renderDailyChart(days, currency) {
+      const ctx = document.getElementById('daily-chart').getContext('2d');
+
+      if (dailyChart) {
+        dailyChart.destroy();
+      }
+
+      if (days.length === 0) {
+        ctx.font = '14px sans-serif';
+        ctx.fillStyle = '#9ca3af';
+        ctx.textAlign = 'center';
+        ctx.fillText('Sin datos', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+      }
+
+      dailyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: days.map(d => formatDate(d.date)),
+          datasets: [{
+            data: days.map(d => d.total),
+            backgroundColor: '#10b981',
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (value) => formatCurrency(value, currency, true)
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Render budgets
+    function renderBudgets(budgets, currency) {
+      const container = document.getElementById('budgets-list');
+
+      if (budgets.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No tienes presupuestos configurados</p>';
+        return;
+      }
+
+      container.innerHTML = budgets.map(b => `
+        <div class="flex items-center gap-3">
+          <span class="text-xl">${categoryEmojis[b.category] || '📦'}</span>
+          <div class="flex-1">
+            <div class="flex justify-between text-sm mb-1">
+              <span class="font-medium">${b.category}</span>
+              <span class="${b.percentage >= 100 ? 'text-red-600' : 'text-gray-600'}">${b.percentage}%</span>
+            </div>
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full ${b.percentage >= 100 ? 'bg-red-500' : b.percentage >= 80 ? 'bg-yellow-500' : 'bg-emerald-500'} rounded-full transition-all" style="width: ${Math.min(b.percentage, 100)}%"></div>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">${formatCurrency(b.spent, currency)} de ${formatCurrency(b.budgetAmount, currency)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render expenses list
+    function renderExpenses(expenses, currency) {
+      const container = document.getElementById('expenses-list');
+
+      if (expenses.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No hay gastos en este período</p>';
+        return;
+      }
+
+      container.innerHTML = expenses.map(e => `
+        <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+          <span class="text-xl">${categoryEmojis[e.category] || '📦'}</span>
+          <div class="flex-1">
+            <p class="font-medium text-gray-800">${e.description || e.category}</p>
+            <p class="text-xs text-gray-500">${formatDateTime(e.date)}</p>
+          </div>
+          <span class="font-semibold text-gray-800">${formatCurrency(e.amount, currency)}</span>
+        </div>
+      `).join('');
+    }
+
+    // Setup filter buttons
+    function setupFilterButtons() {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const filter = btn.dataset.filter;
+
+          // Check if filter is allowed for current plan
+          if (userData?.user.plan === 'Free' && ['last_month', '6months', 'year', 'custom'].includes(filter)) {
+            alert('Esta opción está disponible en planes Basic y Premium');
+            return;
+          }
+
+          // Update UI
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('bg-emerald-500', 'text-white');
+            b.classList.add('bg-gray-100', 'text-gray-700');
+          });
+          btn.classList.remove('bg-gray-100', 'text-gray-700');
+          btn.classList.add('bg-emerald-500', 'text-white');
+
+          currentFilter = filter;
+          await loadStats(filter);
+        });
+      });
+    }
+
+    // Format currency
+    function formatCurrency(amount, currency, short = false) {
+      if (currency === 'COP') {
+        const formatted = Math.round(amount).toLocaleString('es-CO');
+        return short ? `$${formatted}` : `$${formatted}`;
+      }
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency || 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(amount);
+    }
+
+    // Format date
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    }
+
+    // Format date time
+    function formatDateTime(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Show error
+    function showError(message) {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('error').classList.remove('hidden');
+      document.getElementById('error-message').textContent = message;
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>

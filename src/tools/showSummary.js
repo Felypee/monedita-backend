@@ -1,11 +1,11 @@
 /**
  * Tool: Show Summary
- * Shows spending summary for the current month
+ * Redirects user to the visual stats page with a magic link
  */
 
-import { ExpenseDB, BudgetDB, UserDB } from "../database/index.js";
+import { generateStatsUrl, getTokenExpiryDescription } from "../services/statsTokenService.js";
+import { ExpenseDB } from "../database/index.js";
 import { formatAmount } from "../utils/currencyUtils.js";
-import { getMessage } from "../utils/languageUtils.js";
 
 export const definition = {
   name: "show_summary",
@@ -18,40 +18,50 @@ export const definition = {
 };
 
 export async function handler(phone, params, lang, userCurrency) {
+  const statsUrl = generateStatsUrl(phone);
+  const expiryTime = getTokenExpiryDescription();
+
+  // Get quick stats for the teaser
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
   const expenses = (await ExpenseDB.getByDateRange(phone, startOfMonth, endOfMonth)) || [];
-  const categorySummary = (await ExpenseDB.getCategorySummary(phone, startOfMonth, endOfMonth)) || {};
-  const budgets = (await BudgetDB.getByUser(phone)) || [];
-
   const totalSpent = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-  const totalBudget = budgets.reduce((sum, b) => sum + parseFloat(b.amount || 0), 0);
 
   const locale = lang === 'es' ? 'es' : lang === 'pt' ? 'pt' : 'en';
   const monthName = now.toLocaleString(locale, { month: "long" });
 
-  let response = getMessage('summary_title', lang, { month: monthName }) + "\n\n";
-  response += `${getMessage('summary_total_spent', lang)} ${formatAmount(totalSpent, userCurrency)}\n`;
+  const messages = {
+    en: `📊 *Summary for ${monthName}*
 
-  if (totalBudget > 0) {
-    response += `${getMessage('summary_total_budget', lang)} ${formatAmount(totalBudget, userCurrency)}\n`;
-    response += `${getMessage('summary_remaining', lang)} ${formatAmount(totalBudget - totalSpent, userCurrency)}\n\n`;
-  }
+💰 Total: ${formatAmount(totalSpent, userCurrency)} (${expenses.length} expenses)
 
-  response += `${getMessage('summary_by_category', lang)}\n`;
-  const sortedCategories = Object.entries(categorySummary).sort((a, b) => b[1].total - a[1].total);
+View your complete report with charts and filters:
 
-  for (const [category, data] of sortedCategories) {
-    response += `• ${category}: ${formatAmount(data.total, userCurrency)} (${data.count} ${getMessage('summary_expenses', lang)})\n`;
-  }
+${statsUrl}
 
-  if (sortedCategories.length === 0) {
-    response += getMessage('expenses_none', lang);
-  }
+This link is valid for ${expiryTime}.`,
+    es: `📊 *Resumen de ${monthName}*
 
-  return { success: true, message: response };
+💰 Total: ${formatAmount(totalSpent, userCurrency)} (${expenses.length} gastos)
+
+Ve tu reporte completo con gráficos y filtros:
+
+${statsUrl}
+
+Este link es válido por ${expiryTime}.`,
+    pt: `📊 *Resumo de ${monthName}*
+
+💰 Total: ${formatAmount(totalSpent, userCurrency)} (${expenses.length} despesas)
+
+Veja seu relatório completo com gráficos e filtros:
+
+${statsUrl}
+
+Este link é válido por ${expiryTime}.`
+  };
+
+  return { success: true, message: messages[lang] || messages.es };
 }
 
 export default { definition, handler };

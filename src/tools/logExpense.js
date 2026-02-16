@@ -3,10 +3,9 @@
  * Records one or more expenses from user message
  */
 
-import { ExpenseDB, BudgetDB, UserDB } from "../database/index.js";
+import { ExpenseDB, BudgetDB } from "../database/index.js";
 import { validateAmount, formatAmount } from "../utils/currencyUtils.js";
 import { getMessage } from "../utils/languageUtils.js";
-import { checkLimit, trackUsage, getSubscriptionStatus, getLimitExceededMessage, getUpgradeMessage, USAGE_TYPES } from "../services/subscriptionService.js";
 
 export const definition = {
   name: "log_expense",
@@ -53,14 +52,8 @@ export async function handler(phone, params, lang, userCurrency) {
     return { success: false, message: getMessage('currency_not_set', lang) };
   }
 
-  // Check text message limit
-  const limitCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
-  if (!limitCheck.allowed) {
-    const status = await getSubscriptionStatus(phone);
-    const limitMsg = getLimitExceededMessage(USAGE_TYPES.TEXT, lang, limitCheck);
-    const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
-    return { success: false, message: `${limitMsg}\n\n${upgradeMsg}` };
-  }
+  // Note: Usage is tracked in messageHandler.js before calling the agent
+  // No need to check/track here to avoid double charging
 
   // Validate all amounts first
   const validationErrors = [];
@@ -97,8 +90,7 @@ export async function handler(phone, params, lang, userCurrency) {
     }
   }
 
-  // Track usage after successful logging
-  await trackUsage(phone, USAGE_TYPES.TEXT);
+  // Usage already tracked in messageHandler.js
 
   // Build response
   let response;

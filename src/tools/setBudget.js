@@ -3,10 +3,10 @@
  * Creates or updates a budget for a category
  */
 
-import { BudgetDB, UserDB } from "../database/index.js";
+import { BudgetDB } from "../database/index.js";
 import { formatAmount } from "../utils/currencyUtils.js";
 import { getMessage } from "../utils/languageUtils.js";
-import { checkLimit, trackUsage, getSubscriptionStatus, getLimitExceededMessage, getUpgradeMessage, USAGE_TYPES } from "../services/subscriptionService.js";
+// Note: Budgets are unlimited for all plans in the new moneditas system
 
 export const definition = {
   name: "set_budget",
@@ -47,23 +47,12 @@ export async function handler(phone, params, lang, userCurrency) {
       })
     };
   } else {
-    // Check budget limit before creating new budget
-    const budgetLimitCheck = await checkLimit(phone, USAGE_TYPES.BUDGET);
-    if (!budgetLimitCheck.allowed) {
-      const status = await getSubscriptionStatus(phone);
-      const limitMsg = getLimitExceededMessage(USAGE_TYPES.BUDGET, lang, budgetLimitCheck);
-      const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
-      return { success: false, message: `${limitMsg}\n\n${upgradeMsg}` };
-    }
-
+    // Budgets are unlimited for all plans
     await BudgetDB.create(phone, {
       category: category.toLowerCase(),
       amount,
       period: "monthly"
     });
-
-    // Track budget usage after successful creation
-    await trackUsage(phone, USAGE_TYPES.BUDGET);
 
     return {
       success: true,

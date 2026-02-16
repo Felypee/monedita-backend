@@ -7,7 +7,6 @@ import {
   UserSubscriptionDB,
   UsageDB,
 } from "../database/index.js";
-import { TutorialDB } from "../database/index.js";
 import { getMessage } from "../utils/languageUtils.js";
 
 /**
@@ -22,22 +21,13 @@ export const USAGE_TYPES = {
 };
 
 /**
- * Check if user should bypass limits (e.g., during tutorial)
+ * Check if user should bypass limits
  * @param {string} phone - User's phone number
  * @returns {Promise<boolean>}
  */
 export async function shouldBypassLimits(phone) {
-  try {
-    // Users in tutorial mode don't count against limits
-    const tutorial = await TutorialDB.get(phone);
-    if (tutorial) {
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error("[subscriptionService] Error checking bypass:", error);
-    return false; // Default to enforcing limits on error
-  }
+  // No bypasses - all users are subject to limits
+  return false;
 }
 
 /**
@@ -57,8 +47,8 @@ export async function checkLimit(phone, usageType) {
     return result;
   } catch (error) {
     console.error("[subscriptionService] Error checking limit:", error);
-    // Default to allowing on error to not block users
-    return { allowed: true, used: 0, limit: -1, remaining: -1, error: true };
+    // Default to blocking on error to prevent abuse
+    return { allowed: false, used: 0, limit: 0, remaining: 0, error: true };
   }
 }
 

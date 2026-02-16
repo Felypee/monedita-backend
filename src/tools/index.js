@@ -18,6 +18,7 @@ import helpInfo from "./helpInfo.js";
 import deleteExpense from "./deleteExpense.js";
 import editExpense from "./editExpense.js";
 import deleteBudget from "./deleteBudget.js";
+import showStats from "./showStats.js";
 
 // Registry of all available tools
 const tools = {
@@ -36,6 +37,7 @@ const tools = {
   delete_expense: deleteExpense,
   edit_expense: editExpense,
   delete_budget: deleteBudget,
+  show_stats: showStats,
 };
 
 /**
