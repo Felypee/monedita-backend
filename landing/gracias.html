@@ -106,13 +106,28 @@
 (function(){
   var SB_URL='https://vwyncnduhplvridgxkgd.supabase.co';
   var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3eW5jbmR1aHBsdnJpZGd4a2dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODMzNTYsImV4cCI6MjA4NTU1OTM1Nn0.oX8SavJHaUmBUMDpf9WigKUs6bRn61VAyDpl0YrJIl0';
+  var H={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'};
   var sid=sessionStorage.getItem('_m_sid');
   if(!sid){sid=Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem('_m_sid',sid);}
-  fetch(SB_URL+'/rest/v1/landing_page_visits',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
-    body:JSON.stringify({page_url:location.href,referrer:document.referrer||null,user_agent:navigator.userAgent,language:localStorage.getItem('monedita-lang')||navigator.language,session_id:sid})
+  var base={page_url:location.href,session_id:sid,language:localStorage.getItem('monedita-lang')||navigator.language};
+  fetch(SB_URL+'/rest/v1/landing_page_visits',{method:'POST',headers:H,
+    body:JSON.stringify(Object.assign({},base,{referrer:document.referrer||null,user_agent:navigator.userAgent,event_type:'pageview'}))
   }).catch(function(){});
+  var maxScroll=0;
+  window.addEventListener('scroll',function(){
+    var h=document.documentElement;var pct=Math.round((h.scrollTop+h.clientHeight)/h.scrollHeight*100);
+    if(pct>maxScroll)maxScroll=pct;
+  },{passive:true});
+  var sent=false;
+  function sendScroll(){if(sent||!maxScroll)return;sent=true;
+    navigator.sendBeacon?navigator.sendBeacon(SB_URL+'/rest/v1/landing_page_visits?apikey='+SB_KEY,
+      new Blob([JSON.stringify(Object.assign({},base,{event_type:'scroll_depth',max_scroll_percent:maxScroll}))],{type:'application/json'})
+    ):fetch(SB_URL+'/rest/v1/landing_page_visits',{method:'POST',headers:H,keepalive:true,
+      body:JSON.stringify(Object.assign({},base,{event_type:'scroll_depth',max_scroll_percent:maxScroll}))
+    }).catch(function(){});
+  }
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')sendScroll();});
+  window.addEventListener('beforeunload',sendScroll);
 })();
 </script>
 </body>
