@@ -1,7 +1,7 @@
 # Despliegue de Landing Page - Monedita
 
 ## URL de Produccion
-https://landing-nu-lovat.vercel.app
+https://monedita.app
 
 ## Despliegue Rapido
 

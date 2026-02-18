@@ -29,7 +29,7 @@ cd mcp-servers/expense-analytics && npm install
 
 ### Request Flow
 1. WhatsApp message → Meta webhook → Express `/webhook` endpoint
-2. `messageHandler.js` handles media (images/audio) and tutorial flow
+2. `messageHandler.js` handles media (images/audio) and user onboarding (name collection)
 3. Text messages → `FinanceAgent` uses Claude's tool_use to intelligently route to appropriate tool
 4. Tool executes and returns response → sent back via WhatsApp Business API
 
@@ -63,7 +63,7 @@ Each tool exports:
 ### Key Components
 
 - **src/server.js**: Express entry point with `/webhook` (POST for messages, GET for verification) and `/health` endpoints
-- **src/handlers/messageHandler.js**: Handles message types (text → agent, image → OCR, audio → transcription), tutorial flow, and media processing
+- **src/handlers/messageHandler.js**: Handles message types (text → agent, image → OCR, audio → transcription), user onboarding (name collection), and media processing
 - **src/agents/financeAgent.js**: Uses Claude's tool_use to analyze user intent and call appropriate tools. Provides financial context to Claude.
 - **src/tools/index.js**: Tool registry with `getToolDefinitions()` and `executeTool()` functions
 - **src/services/subscriptionService.js**: Subscription tiers (Free/Basic/Premium), moneditas (tokens) system, and usage tracking

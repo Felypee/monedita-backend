@@ -15,9 +15,6 @@ const budgets = new Map();
 // Store unprocessed cases
 const unprocessedCases = [];
 
-// Store tutorial progress per user
-const tutorials = new Map();
-
 let expenseIdCounter = 1;
 let budgetIdCounter = 1;
 let unprocessedIdCounter = 1;
@@ -471,41 +468,5 @@ export const UnprocessedDB = {
       entry.resolved = true;
     }
     return entry;
-  }
-};
-
-/**
- * Tutorial progress operations
- */
-export const TutorialDB = {
-  create(phone, step = 1) {
-    const tutorial = {
-      phone,
-      currentStep: step,
-      createdAt: new Date(),
-    };
-    tutorials.set(phone, tutorial);
-    return tutorial;
-  },
-
-  get(phone) {
-    return tutorials.get(phone) || null;
-  },
-
-  updateStep(phone, step) {
-    const tutorial = tutorials.get(phone);
-    if (tutorial) {
-      tutorial.currentStep = step;
-      tutorials.set(phone, tutorial);
-    }
-    return tutorial;
-  },
-
-  delete(phone) {
-    return tutorials.delete(phone);
-  },
-
-  exists(phone) {
-    return tutorials.has(phone);
   }
 };

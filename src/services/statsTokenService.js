@@ -10,7 +10,7 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'monedita-stats-secret-change-in-production';
 const TOKEN_EXPIRY = process.env.STATS_TOKEN_EXPIRY || '1h'; // 1 hour default
-const STATS_BASE_URL = process.env.STATS_BASE_URL || 'https://landing-nu-lovat.vercel.app';
+const STATS_BASE_URL = process.env.STATS_BASE_URL || 'https://monedita.app';
 
 /**
  * Generate a stats token for a user

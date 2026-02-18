@@ -9,7 +9,6 @@ let UserDB = InMemory.UserDB;
 let ExpenseDB = InMemory.ExpenseDB;
 let BudgetDB = InMemory.BudgetDB;
 let UnprocessedDB = InMemory.UnprocessedDB;
-let TutorialDB = InMemory.TutorialDB;
 let SubscriptionPlanDB = SubscriptionInMemory.SubscriptionPlanDB;
 let UserSubscriptionDB = SubscriptionInMemory.UserSubscriptionDB;
 let UsageDB = SubscriptionInMemory.UsageDB;
@@ -28,7 +27,6 @@ if (driver === "supabase" || driver === "supa") {
     ExpenseDB = Supabase.ExpenseDB;
     BudgetDB = Supabase.BudgetDB;
     UnprocessedDB = Supabase.UnprocessedDB;
-    TutorialDB = Supabase.TutorialDB;
     testConnection = Supabase.testConnection;
     supabase = Supabase.supabase;
 
@@ -53,7 +51,6 @@ export {
   ExpenseDB,
   BudgetDB,
   UnprocessedDB,
-  TutorialDB,
   SubscriptionPlanDB,
   UserSubscriptionDB,
   UsageDB,

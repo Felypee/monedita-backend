@@ -48,8 +48,6 @@ Say: "Set food budget to 500"
 📈 *Get Insights*
 Ask: "What's my biggest expense?"
 
-Type *tutorial* to see the full guide.
-
 Try it now! Tell me about a recent expense.`,
 
     // Expense logging
@@ -133,66 +131,6 @@ Try it now! Tell me about a recent expense.`,
     expenses_skipped: "{count} expense(s) were skipped due to insufficient moneditas.",
     image_saved_for_review: "I couldn't detect expenses in this image. It's been saved for review.",
 
-    // Tutorial/Onboarding - Step by step guided tour
-    tutorial_ask_name: `👋 Hey! I'm Monedita, your personal expense tracker.
-
-Before we start, what's your name?`,
-    tutorial_ask_name_hint: `Just tell me your name to continue.`,
-    tutorial_welcome: `Hey! I'm Monedita, your personal expense tracker.
-
-I'll show you around in 3 quick steps. Reply anything to start!`,
-
-    tutorial_try_expense: `*Step 1 of 3: Log an expense*
-
-Try it now! Type something like:
-"Spent 20 on coffee"`,
-
-    tutorial_try_expense_hint: `Try: "Spent 15 on lunch"
-
-Or type *skip* to exit.`,
-
-    tutorial_try_summary: `Great! Now let's check your spending.
-
-*Step 2 of 3: Check status*
-
-Ask me: "How am I doing?"`,
-
-    tutorial_try_summary_hint: `Try: "How am I doing?"
-
-Or type *skip* to exit.`,
-
-    tutorial_try_media: `You can also send:
-📷 *Photos* of receipts - I'll read them automatically
-🎤 *Voice messages* - Just tell me what you spent
-
-Reply anything to continue.`,
-
-    tutorial_try_budget: `*Last step: Set a budget*
-
-Control your spending! Try:
-"Set food budget to 500"`,
-
-    tutorial_try_budget_hint: `Try: "Set food budget to 500"
-
-Or type *skip* to finish.`,
-
-    tutorial_complete: `You're all set!
-
-Quick reference:
-• Log expense: "Spent 30 on groceries"
-• Check status: "How am I doing?"
-• Set budget: "Set food budget to 500"
-
-Type *tutorial* anytime to review. Now tell me about a real expense!`,
-
-    tutorial_skipped: `No problem! Type *tutorial* if you need help.
-
-Tell me about an expense to get started!`,
-
-    tutorial_hint: `Reply anything to continue, or *skip* to exit.`,
-
-    tutorial_restart: `Welcome back! Let's do a quick refresher.`,
-
     // Subscription & Limits
     limit_text_exceeded: "You've used all your moneditas for this month ({limit} total).",
     limit_voice_exceeded: "You've used all your moneditas for this month ({limit} total).",
@@ -202,8 +140,8 @@ Tell me about an expense to get started!`,
     export_not_allowed: "CSV export is not available on your current plan. Upgrade to Basic or Premium to export.",
     export_pdf_not_allowed: "PDF export is only available on Premium plan.",
 
-    upgrade_cta_free: "Get more moneditas: https://landing-nu-lovat.vercel.app/#pricing",
-    upgrade_cta_basic: "Upgrade to Premium: https://landing-nu-lovat.vercel.app/#pricing",
+    upgrade_cta_free: "Get more moneditas: https://monedita.app/#pricing",
+    upgrade_cta_basic: "Upgrade to Premium: https://monedita.app/#pricing",
 
     subscription_status_title: "Your Plan: *{plan}*",
     subscription_usage: "*Monthly Usage:*",
@@ -244,8 +182,6 @@ Di: "Pon presupuesto de comida en 500000"
 
 📈 *Obtener Información*
 Pregunta: "¿Cuál es mi mayor gasto?"
-
-Escribe *tutorial* para ver la guía completa.
 
 ¡Pruébalo ahora! Cuéntame sobre un gasto reciente.`,
 
@@ -330,66 +266,6 @@ Escribe *tutorial* para ver la guía completa.
     expenses_skipped: "Se omitieron {count} gasto(s) por falta de moneditas.",
     image_saved_for_review: "No pude detectar gastos en esta imagen. Se guardó para revisión.",
 
-    // Tutorial/Onboarding - Guía paso a paso
-    tutorial_ask_name: `👋 ¡Hola! Soy Monedita, tu asistente de gastos.
-
-Antes de empezar, ¿cómo te llamas?`,
-    tutorial_ask_name_hint: `Solo dime tu nombre para continuar.`,
-    tutorial_welcome: `¡Hola! Soy Monedita, tu asistente de gastos.
-
-Te muestro cómo funciono en 3 pasos. ¡Responde lo que sea para empezar!`,
-
-    tutorial_try_expense: `*Paso 1 de 3: Registra un gasto*
-
-Escribe algo como:
-"Gasté 20000 en café"`,
-
-    tutorial_try_expense_hint: `Prueba: "Gasté 15000 en almuerzo"
-
-O escribe *saltar* para salir.`,
-
-    tutorial_try_summary: `¡Bien! Ahora veamos tus gastos.
-
-*Paso 2 de 3: Ver estado*
-
-Pregúntame: "¿Cómo voy?"`,
-
-    tutorial_try_summary_hint: `Prueba: "¿Cómo voy?"
-
-O escribe *saltar* para salir.`,
-
-    tutorial_try_media: `También puedes enviar:
-📷 *Fotos* de recibos - Los leo automáticamente
-🎤 *Notas de voz* - Solo dime qué gastaste
-
-Responde lo que sea para continuar.`,
-
-    tutorial_try_budget: `*Último paso: Define un presupuesto*
-
-¡Controla tus gastos! Prueba:
-"Pon presupuesto de comida en 500000"`,
-
-    tutorial_try_budget_hint: `Prueba: "Pon presupuesto de comida en 500000"
-
-O escribe *saltar* para terminar.`,
-
-    tutorial_complete: `¡Listo!
-
-Referencia rápida:
-• Registrar gasto: "Gasté 30000 en mercado"
-• Ver estado: "¿Cómo voy?"
-• Presupuesto: "Pon presupuesto de comida en 500000"
-
-Escribe *tutorial* para repasar. ¡Ahora cuéntame un gasto real!`,
-
-    tutorial_skipped: `¡Sin problema! Escribe *tutorial* si necesitas ayuda.
-
-¡Cuéntame sobre un gasto para empezar!`,
-
-    tutorial_hint: `Responde lo que sea para continuar, o *saltar* para salir.`,
-
-    tutorial_restart: `¡Hola de nuevo! Hagamos un repaso rápido.`,
-
     // Subscription & Limits
     limit_text_exceeded: "Se acabaron tus moneditas del mes ({limit} en total).",
     limit_voice_exceeded: "Se acabaron tus moneditas del mes ({limit} en total).",
@@ -399,8 +275,8 @@ Escribe *tutorial* para repasar. ¡Ahora cuéntame un gasto real!`,
     export_not_allowed: "La exportación CSV no está disponible en tu plan actual. Mejora a Basic o Premium para exportar.",
     export_pdf_not_allowed: "La exportación PDF solo está disponible en el plan Premium.",
 
-    upgrade_cta_free: "Consigue más moneditas: https://landing-nu-lovat.vercel.app/#pricing",
-    upgrade_cta_basic: "Mejora a Premium: https://landing-nu-lovat.vercel.app/#pricing",
+    upgrade_cta_free: "Consigue más moneditas: https://monedita.app/#pricing",
+    upgrade_cta_basic: "Mejora a Premium: https://monedita.app/#pricing",
 
     subscription_status_title: "Tu Plan: *{plan}*",
     subscription_usage: "*Uso Mensual:*",
@@ -441,8 +317,6 @@ Diga: "Defina orçamento de comida para 500"
 
 📈 *Obter Informações*
 Pergunte: "Qual é minha maior despesa?"
-
-Digite *tutorial* para ver o guia completo.
 
 Experimente agora! Me conte sobre uma despesa recente.`,
 
@@ -527,66 +401,6 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     expenses_skipped: "{count} despesa(s) foram ignoradas por falta de moneditas.",
     image_saved_for_review: "Não consegui detectar despesas nesta imagem. Foi salva para revisão.",
 
-    // Tutorial/Onboarding - Guia passo a passo
-    tutorial_ask_name: `👋 Oi! Sou o Monedita, seu assistente de despesas.
-
-Antes de começar, qual é o seu nome?`,
-    tutorial_ask_name_hint: `Só me diga seu nome para continuar.`,
-    tutorial_welcome: `Oi! Sou o Monedita, seu assistente de despesas.
-
-Vou te mostrar como funciono em 3 passos. Responda qualquer coisa para começar!`,
-
-    tutorial_try_expense: `*Passo 1 de 3: Registre uma despesa*
-
-Digite algo como:
-"Gastei 20 em café"`,
-
-    tutorial_try_expense_hint: `Tente: "Gastei 15 em almoço"
-
-Ou digite *pular* para sair.`,
-
-    tutorial_try_summary: `Ótimo! Agora vamos ver seus gastos.
-
-*Passo 2 de 3: Ver status*
-
-Me pergunte: "Como estou?"`,
-
-    tutorial_try_summary_hint: `Tente: "Como estou?"
-
-Ou digite *pular* para sair.`,
-
-    tutorial_try_media: `Você também pode enviar:
-📷 *Fotos* de recibos - Leio automaticamente
-🎤 *Mensagens de voz* - Só me diga o que gastou
-
-Responda qualquer coisa para continuar.`,
-
-    tutorial_try_budget: `*Último passo: Defina um orçamento*
-
-Controle seus gastos! Tente:
-"Defina orçamento de comida para 500"`,
-
-    tutorial_try_budget_hint: `Tente: "Defina orçamento de comida para 500"
-
-Ou digite *pular* para finalizar.`,
-
-    tutorial_complete: `Pronto!
-
-Referência rápida:
-• Registrar despesa: "Gastei 30 em mercado"
-• Ver status: "Como estou?"
-• Orçamento: "Defina orçamento de comida para 500"
-
-Digite *tutorial* para revisar. Agora me conte uma despesa real!`,
-
-    tutorial_skipped: `Sem problemas! Digite *tutorial* se precisar de ajuda.
-
-Me conte sobre uma despesa para começar!`,
-
-    tutorial_hint: `Responda qualquer coisa para continuar, ou *pular* para sair.`,
-
-    tutorial_restart: `Olá de novo! Vamos fazer uma revisão rápida.`,
-
     // Subscription & Limits
     limit_text_exceeded: "Suas moneditas do mês acabaram ({limit} no total).",
     limit_voice_exceeded: "Suas moneditas do mês acabaram ({limit} no total).",
@@ -596,8 +410,8 @@ Me conte sobre uma despesa para começar!`,
     export_not_allowed: "A exportação CSV não está disponível no seu plano atual. Atualize para Basic ou Premium para exportar.",
     export_pdf_not_allowed: "A exportação PDF está disponível apenas no plano Premium.",
 
-    upgrade_cta_free: "Consiga mais moneditas: https://landing-nu-lovat.vercel.app/#pricing",
-    upgrade_cta_basic: "Atualize para Premium: https://landing-nu-lovat.vercel.app/#pricing",
+    upgrade_cta_free: "Consiga mais moneditas: https://monedita.app/#pricing",
+    upgrade_cta_basic: "Atualize para Premium: https://monedita.app/#pricing",
 
     subscription_status_title: "Seu Plano: *{plan}*",
     subscription_usage: "*Uso Mensal:*",

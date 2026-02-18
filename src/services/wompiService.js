@@ -69,7 +69,7 @@ export async function createPaymentLink(phone, planId) {
 
     // Redirect to WhatsApp chat after payment (bot sends welcome message via webhook)
     const redirectUrl = process.env.WOMPI_REDIRECT_URL ||
-      `https://landing-nu-lovat.vercel.app/gracias.html`;
+      `https://monedita.app/gracias`;
 
     // Format phone for Wompi (needs country code format)
     const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
@@ -165,7 +165,7 @@ export async function createCheckoutSession(phone, planId) {
     amountInCents,
     currency,
     integritySignature,
-    redirectUrl: process.env.WOMPI_REDIRECT_URL || "https://landing-nu-lovat.vercel.app/gracias.html",
+    redirectUrl: process.env.WOMPI_REDIRECT_URL || "https://monedita.app/gracias",
     plan,
   };
 }

@@ -1,12 +1,13 @@
 /**
  * Tool: Show Expenses
- * Lists recent expenses with optional filtering
+ * Redirects user to the visual stats page with a magic link
  */
 
 import { ExpenseDB } from "../database/index.js";
 import { formatAmount } from "../utils/currencyUtils.js";
 import { getMessage } from "../utils/languageUtils.js";
 import { resolveDateRange, getPeriodLabel } from "../utils/dateUtils.js";
+import { generateStatsUrl, getTokenExpiryDescription } from "../services/statsTokenService.js";
 
 export const definition = {
   name: "show_expenses",
@@ -98,45 +99,84 @@ export async function handler(phone, params, lang, userCurrency) {
     return { success: true, message: getMessage('expenses_none', lang) };
   }
 
-  const locale = lang === 'es' ? 'es-CO' : lang === 'pt' ? 'pt-BR' : 'en-US';
+  // Calculate total for displayed expenses
+  const displayedTotal = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
 
-  // Build title
-  let title = getMessage('expenses_title', lang);
+  // Generate stats URL
+  const statsUrl = generateStatsUrl(phone);
+  const expiryTime = getTokenExpiryDescription();
+
+  // Build teaser with period/category info
+  let periodLabel = '';
   if (period) {
-    title += ` - ${getPeriodLabel(period, lang)}`;
+    periodLabel = getPeriodLabel(period, lang);
+  }
+
+  const messages = {
+    en: buildMessage('en', expenses.length, total, displayedTotal, userCurrency, periodLabel, category, statsUrl, expiryTime),
+    es: buildMessage('es', expenses.length, total, displayedTotal, userCurrency, periodLabel, category, statsUrl, expiryTime),
+    pt: buildMessage('pt', expenses.length, total, displayedTotal, userCurrency, periodLabel, category, statsUrl, expiryTime)
+  };
+
+  return { success: true, message: messages[lang] || messages.es };
+}
+
+function buildMessage(lang, count, total, amount, currency, period, category, url, expiry) {
+  const formattedAmount = formatAmount(amount, currency);
+
+  const labels = {
+    en: {
+      title: '📝 *Your expenses*',
+      total: 'Total',
+      expenses: 'expenses',
+      viewComplete: 'View complete details with charts and filters',
+      linkValid: 'This link is valid for'
+    },
+    es: {
+      title: '📝 *Tus gastos*',
+      total: 'Total',
+      expenses: 'gastos',
+      viewComplete: 'Ve el detalle completo con gráficos y filtros',
+      linkValid: 'Este link es válido por'
+    },
+    pt: {
+      title: '📝 *Suas despesas*',
+      total: 'Total',
+      expenses: 'despesas',
+      viewComplete: 'Veja os detalhes completos com gráficos e filtros',
+      linkValid: 'Este link é válido por'
+    }
+  };
+
+  const l = labels[lang] || labels.es;
+
+  let title = l.title;
+  if (period) {
+    title += ` - ${period}`;
   }
   if (category) {
     title += ` (${category})`;
   }
 
-  let response = `${title}\n\n`;
-
-  // Calculate total for displayed expenses
-  let displayedTotal = 0;
-
-  for (const expense of expenses) {
-    const date = new Date(expense.date);
-    const dateStr = date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-    const timeStr = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-
-    response += `#${expense.id} • ${formatAmount(expense.amount, userCurrency)} - ${expense.category}`;
-    if (expense.description) {
-      response += ` (${expense.description})`;
-    }
-    response += ` - ${dateStr} ${timeStr}\n`;
-
-    displayedTotal += parseFloat(expense.amount);
+  let showing = '';
+  if (total > count) {
+    const showingLabels = {
+      en: `(showing ${count} of ${total})`,
+      es: `(mostrando ${count} de ${total})`,
+      pt: `(mostrando ${count} de ${total})`
+    };
+    showing = ` ${showingLabels[lang] || showingLabels.es}`;
   }
 
-  // Add total
-  response += `\n${getLocalizedMessage('total', lang)}: ${formatAmount(displayedTotal, userCurrency)}`;
+  return `${title}
 
-  // Show if there are more
-  if (total > expenses.length) {
-    response += `\n${getLocalizedMessage('showing_of', lang, { showing: expenses.length, total })}`;
-  }
+💰 ${l.total}: ${formattedAmount} (${count} ${l.expenses})${showing}
 
-  return { success: true, message: response };
+${l.viewComplete}:
+
+${url}
+
+${l.linkValid} ${expiry}.`;
 }
 
 function getLocalizedMessage(key, lang, params = {}) {
