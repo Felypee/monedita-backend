@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { handleIncomingMessage } from './handlers/messageHandler.js';
@@ -20,6 +21,13 @@ const PORT = process.env.PORT || 3000;
 
 // Trust proxy for accurate IP detection (required for Vercel, Railway, etc.)
 app.set('trust proxy', 1);
+
+// CORS configuration for stats page
+app.use(cors({
+  origin: ['https://monedita.app', 'http://localhost:3000', 'http://localhost:5500'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 
 app.use(bodyParser.json());
 
