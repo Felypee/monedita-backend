@@ -38,6 +38,7 @@ import {
   getUpgradeMessage,
   OPERATION_COSTS,
 } from "../services/moneditasService.js";
+import { sendContextSticker, STICKER_CONTEXTS } from "../services/stickerService.js";
 
 /**
  * Handle incoming WhatsApp messages
@@ -85,7 +86,10 @@ export async function handleIncomingMessage(message, phone) {
     if (isNewUser) {
       if (clearIndicator) await clearIndicator();
 
-      // Send vCard first so they can save the contact
+      // Send welcome sticker
+      await sendContextSticker(phone, STICKER_CONTEXTS.WELCOME);
+
+      // Send vCard so they can save the contact
       await sendMoneditaContactCard(phone, lang);
 
       // Then send welcome message
@@ -101,6 +105,7 @@ export async function handleIncomingMessage(message, phone) {
         const name = messageText.trim();
         await UserDB.update(phone, { name });
         if (clearIndicator) await clearIndicator();
+        await sendContextSticker(phone, STICKER_CONTEXTS.CELEBRATE);
         await sendTextMessage(phone, getNameSavedMessage(name, lang));
         return;
       }

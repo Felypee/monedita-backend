@@ -278,6 +278,38 @@ export async function sendContactCard(to, contact) {
 }
 
 /**
+ * Send a sticker via WhatsApp
+ * @param {string} to - Recipient phone number
+ * @param {string} stickerUrl - URL to the sticker (must be .webp, 512x512, max 100KB)
+ */
+export async function sendSticker(to, stickerUrl) {
+  try {
+    const response = await axios.post(
+      `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+      {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: to,
+        type: 'sticker',
+        sticker: {
+          link: stickerUrl
+        }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error sending sticker:', error.response?.data || error.message);
+    return null; // Don't throw, stickers are optional
+  }
+}
+
+/**
  * Download media from WhatsApp
  * @param {string} mediaId - The media ID from the message
  * @returns {Promise<{buffer: Buffer, mimeType: string}>}

@@ -3,6 +3,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { handleIncomingMessage } from './handlers/messageHandler.js';
 import { verifyWebhook } from './utils/webhookVerification.js';
 import {
@@ -15,6 +17,10 @@ import { getUsageStats } from './utils/usageMonitor.js';
 import statsRoutes from './routes/statsRoutes.js';
 
 dotenv.config();
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +36,9 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+
+// Serve static files (stickers, etc.)
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ======================
 // RATE LIMITING (DDoS Protection)
