@@ -37,21 +37,9 @@ export async function handler(phone, params, lang, userCurrency) {
 
     // Send instruction message
     const messages = {
-      en: `Here's my contact card!
-
-Tap on it and select *"Add to Contacts"* to save me as *Monedita* in your phone.
-
-That way you'll see my name instead of just the number in your chats.`,
-      es: `Aqui esta mi tarjeta de contacto!
-
-Toca en ella y selecciona *"Agregar a Contactos"* para guardarme como *Monedita* en tu telefono.
-
-Asi veras mi nombre en lugar de solo el numero en tus chats.`,
-      pt: `Aqui esta meu cartao de contato!
-
-Toque nele e selecione *"Adicionar aos Contatos"* para me salvar como *Monedita* no seu celular.
-
-Assim voce vera meu nome ao inves do numero nos seus chats.`,
+      en: `Tap to save me as *Monedita* in your contacts.`,
+      es: `Toca para guardarme como *Monedita* en tus contactos.`,
+      pt: `Toque para me salvar como *Monedita* nos seus contatos.`,
     };
 
     return {
