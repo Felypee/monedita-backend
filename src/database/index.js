@@ -12,6 +12,7 @@ let UnprocessedDB = InMemory.UnprocessedDB;
 let SubscriptionPlanDB = SubscriptionInMemory.SubscriptionPlanDB;
 let UserSubscriptionDB = SubscriptionInMemory.UserSubscriptionDB;
 let UsageDB = SubscriptionInMemory.UsageDB;
+let MoneditasDB = SubscriptionInMemory.MoneditasDB;
 let testConnection = () => Promise.resolve(true);
 let supabase = null;
 
@@ -35,6 +36,7 @@ if (driver === "supabase" || driver === "supa") {
     SubscriptionPlanDB = SubscriptionSupabase.SubscriptionPlanDB;
     UserSubscriptionDB = SubscriptionSupabase.UserSubscriptionDB;
     UsageDB = SubscriptionSupabase.UsageDB;
+    MoneditasDB = SubscriptionSupabase.MoneditasDB;
   } catch (err) {
     // If dynamic import fails, keep using in-memory and warn
     console.warn(
@@ -54,6 +56,7 @@ export {
   SubscriptionPlanDB,
   UserSubscriptionDB,
   UsageDB,
+  MoneditasDB,
   testConnection,
   supabase,
 };

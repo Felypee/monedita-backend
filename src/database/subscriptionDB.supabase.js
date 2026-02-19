@@ -1,6 +1,10 @@
 /**
  * Supabase database for subscription management
  * Drop-in replacement for subscriptionDB.inMemory.js
+ *
+ * New moneditas-based system (February 2026):
+ * - 1 monedita = $0.002 USD
+ * - Costs: TEXT=5, IMAGE=6, AUDIO=4, WEEKLY_SUMMARY=5
  */
 
 import { supabase } from "./supabaseDB.js";
@@ -40,6 +44,9 @@ export const SubscriptionPlanDB = {
       id: row.id,
       name: row.name,
       priceMonthly: parseFloat(row.price_monthly),
+      moneditasMonthly: row.moneditas_monthly || this._getLegacyMoneditas(row.id),
+      historyDays: row.history_days || this._getLegacyHistoryDays(row.id),
+      // Legacy fields for backward compatibility
       limitTextMessages: row.limit_text_messages,
       limitVoiceMessages: row.limit_voice_messages,
       limitImageMessages: row.limit_image_messages,
@@ -48,6 +55,17 @@ export const SubscriptionPlanDB = {
       canExportCsv: row.can_export_csv,
       canExportPdf: row.can_export_pdf,
     };
+  },
+
+  // Fallback values if DB doesn't have new columns yet
+  _getLegacyMoneditas(planId) {
+    const defaults = { free: 50, basic: 1200, premium: 3500 };
+    return defaults[planId] || 50;
+  },
+
+  _getLegacyHistoryDays(planId) {
+    const defaults = { free: 30, basic: 180, premium: 365 };
+    return defaults[planId] || 30;
   },
 };
 
@@ -164,7 +182,138 @@ export const UserSubscriptionDB = {
 };
 
 /**
- * Usage Tracking operations
+ * Moneditas Usage Tracking - New unified system
+ */
+export const MoneditasDB = {
+  /**
+   * Get the period start for storage
+   */
+  async _getPeriodStart(phone) {
+    return UserSubscriptionDB.getBillingPeriodStart(phone);
+  },
+
+  /**
+   * Get current moneditas usage for this billing period
+   */
+  async getUsage(phone) {
+    const periodStart = await this._getPeriodStart(phone);
+
+    const { data, error } = await supabase
+      .from("moneditas_usage")
+      .select("moneditas_used")
+      .eq("phone", phone)
+      .eq("period_start", periodStart.toISOString())
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return data ? data.moneditas_used : 0;
+  },
+
+  /**
+   * Increment moneditas usage
+   * @param {string} phone - User's phone number
+   * @param {number} amount - Number of moneditas to consume
+   * @param {string} operationType - Type of operation for logging
+   * @returns {Promise<number>} New total usage
+   */
+  async increment(phone, amount, operationType = "unknown") {
+    const periodStart = await this._getPeriodStart(phone);
+    const plan = await UserSubscriptionDB.getPlan(phone);
+
+    // Use upsert to either create or increment
+    const { data: existing } = await supabase
+      .from("moneditas_usage")
+      .select("id, moneditas_used")
+      .eq("phone", phone)
+      .eq("period_start", periodStart.toISOString())
+      .single();
+
+    if (existing) {
+      // Update existing record
+      const { data, error } = await supabase
+        .from("moneditas_usage")
+        .update({
+          moneditas_used: existing.moneditas_used + amount,
+          last_operation: operationType,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id)
+        .select("moneditas_used")
+        .single();
+
+      if (error) throw error;
+      return data.moneditas_used;
+    } else {
+      // Insert new record
+      const { data, error } = await supabase
+        .from("moneditas_usage")
+        .insert([
+          {
+            phone,
+            period_start: periodStart.toISOString(),
+            moneditas_used: amount,
+            moneditas_limit: plan.moneditasMonthly,
+            last_operation: operationType,
+          },
+        ])
+        .select("moneditas_used")
+        .single();
+
+      if (error) throw error;
+      return data.moneditas_used;
+    }
+  },
+
+  /**
+   * Reset usage for a billing period
+   */
+  async resetPeriod(phone) {
+    const periodStart = await this._getPeriodStart(phone);
+
+    const { error } = await supabase
+      .from("moneditas_usage")
+      .delete()
+      .eq("phone", phone)
+      .eq("period_start", periodStart.toISOString());
+
+    if (error) throw error;
+  },
+
+  /**
+   * Get usage details including last operation
+   */
+  async getUsageDetails(phone) {
+    const periodStart = await this._getPeriodStart(phone);
+
+    const { data, error } = await supabase
+      .from("moneditas_usage")
+      .select("*")
+      .eq("phone", phone)
+      .eq("period_start", periodStart.toISOString())
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+
+    if (!data) {
+      return {
+        used: 0,
+        lastOperation: null,
+        periodKey: periodStart.toISOString().split("T")[0],
+      };
+    }
+
+    return {
+      used: data.moneditas_used,
+      limit: data.moneditas_limit,
+      lastOperation: data.last_operation,
+      periodKey: periodStart.toISOString().split("T")[0],
+      updatedAt: data.updated_at,
+    };
+  },
+};
+
+/**
+ * Legacy Usage Tracking operations (kept for backward compatibility)
  */
 export const UsageDB = {
   /**
@@ -286,34 +435,19 @@ export const UsageDB = {
   },
 
   /**
-   * Check if user has exceeded limit for a specific type
-   * Returns { allowed: boolean, used: number, limit: number, remaining: number }
+   * Check if user has exceeded limit - now uses moneditas system
    */
   async checkLimit(phone, usageType) {
     const plan = await UserSubscriptionDB.getPlan(phone);
-    const used = await this.getUsage(phone, usageType);
+    const moneditasUsed = await MoneditasDB.getUsage(phone);
+    const moneditasLimit = plan.moneditasMonthly;
 
-    // Map usage type to plan limit field
-    const limitMap = {
-      text: plan.limitTextMessages,
-      voice: plan.limitVoiceMessages,
-      image: plan.limitImageMessages,
-      ai_conversation: plan.limitAiConversations,
-      budget: plan.limitBudgets,
-    };
+    const remaining = Math.max(0, moneditasLimit - moneditasUsed);
 
-    const limit = limitMap[usageType];
-
-    // -1 means unlimited
-    if (limit === -1) {
-      return { allowed: true, used, limit: -1, remaining: -1 };
-    }
-
-    const remaining = Math.max(0, limit - used);
     return {
-      allowed: used < limit,
-      used,
-      limit,
+      allowed: remaining > 0,
+      used: moneditasUsed,
+      limit: moneditasLimit,
       remaining,
     };
   },

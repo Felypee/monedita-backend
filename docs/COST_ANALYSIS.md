@@ -1,94 +1,114 @@
-# Monedita - Sistema de Pricing con Tokens ("Moneditas")
+# Monedita - Sistema de Moneditas Basado en Costos Reales
 
 > Ultima actualizacion: Febrero 2026
 
-## Resumen Rapido de Costos
+## Resumen Rapido
 
-### Costos Fijos Actuales: $6.25/mes
+### Sistema de Moneditas
 
-| Servicio | Costo |
-|----------|-------|
-| Railway | $5.00 |
-| Supabase | $0 (free tier) |
-| Dominio | $1.25 ($15/año) |
-| Monitoring | $0 (sin Sentry) |
+**1 Monedita = $0.002 USD** (costo real de operacion)
 
-### Costos Variables
+| Operacion | Costo Real | Moneditas | Costo Cobrado |
+|-----------|------------|-----------|---------------|
+| **Texto** | $0.010 | **5** | $0.010 |
+| **Imagen/recibo** | $0.011 | **6** | $0.012 |
+| **Audio** | $0.008 | **4** | $0.008 |
+| **Resumen semanal** | $0.010 | **5** | $0.010 |
 
-| Por Operacion | Costo |
-|---------------|-------|
-| Texto | $0.009 |
-| Imagen | $0.010 |
-| Audio | $0.004 |
-| Wompi | ~12% del pago |
+### Planes
 
-### Proyeccion por Escala
+| Plan | Precio | Moneditas/mes | Uso Tipico |
+|------|--------|---------------|------------|
+| **Free** | $0 | 50 | ~10 gastos texto |
+| **Basic** | $2.99 | 1,200 | ~240 gastos texto |
+| **Premium** | $7.99 | 3,500 | ~700 gastos texto |
 
-| Usuarios | Costos Fijos | Costos Variables | Total | Ingreso | Ganancia |
-|----------|--------------|------------------|-------|---------|----------|
-| **100** | $6.25 | $96.92 | $103 | $110 | **+$7 (6%)** |
-| **500** | $46.25 | $545.40 | $592 | $649 | **+$57 (9%)** |
-| **2000** | $101.25 | $2,486.00 | $2,587 | $3,093 | **+$506 (16%)** |
+### Margenes Reales (con Wompi incluido)
+
+| Plan | Ingreso Neto | Costo Total | Margen |
+|------|--------------|-------------|--------|
+| Free | $0 | $0.15 | -$0.15 |
+| Basic | $2.62 | $2.45 | **+$0.17 (6%)** |
+| Premium | $7.45 | $7.05 | **+$0.40 (5%)** |
 
 ---
 
 ## Tabla de Contenidos
 
-1. [Resumen del Nuevo Sistema](#resumen-del-nuevo-sistema)
-2. [Costos Reales por Operacion](#costos-reales-por-operacion)
+1. [Costos Reales por Operacion](#costos-reales-por-operacion)
+2. [Sistema de Moneditas](#sistema-de-moneditas)
 3. [Planes de Suscripcion](#planes-de-suscripcion)
-4. [Consumo de Moneditas](#consumo-de-moneditas)
-5. [Analisis de Rentabilidad](#analisis-de-rentabilidad)
-6. [Escenarios de Usuarios](#escenarios-de-usuarios)
-7. [Costos de Infraestructura](#costos-de-infraestructura)
-8. [Estrategias y Recomendaciones](#estrategias-y-recomendaciones)
-
----
-
-## Resumen del Nuevo Sistema
-
-### Cambio de Modelo
-
-| Aspecto | Antes | Ahora |
-|---------|-------|-------|
-| **Modelo** | 5 limites separados (texto, voz, imagen, AI, budgets) | 1 recurso universal (moneditas) |
-| **Budgets** | Limitados por plan | Ilimitados para todos |
-| **Resumen semanal** | Solo planes pagos | Todos los planes |
-| **Pagina visual** | No existia (CSV export) | Todos los planes |
-| **Complejidad** | Alta (5 contadores) | Simple (1 contador) |
-
-### Por que el Cambio
-
-1. **Mas simple de entender** - Los usuarios ven un solo numero
-2. **Mas justo** - Pagan por lo que realmente usan
-3. **Mejor conversion** - Free plan mas atractivo = mas usuarios prueban = mas upgrades
-4. **Similar a Claude Code** - Modelo probado en el mercado
+4. [Analisis de Rentabilidad](#analisis-de-rentabilidad)
+5. [Escenarios de Usuarios](#escenarios-de-usuarios)
+6. [Costos de Infraestructura](#costos-de-infraestructura)
+7. [Implementacion Tecnica](#implementacion-tecnica)
 
 ---
 
 ## Costos Reales por Operacion
 
-### APIs Externas (Febrero 2026)
+### APIs y sus costos (Febrero 2026)
 
-| Servicio | Modelo | Pricing |
-|----------|--------|---------|
-| **Claude API** | Sonnet 4.5 | $3/M input, $15/M output |
-| **Claude Vision** | Sonnet 4.5 | Mismo precio (imagen = ~1600 tokens) |
-| **Groq Whisper** | Large v3 | Gratis (free tier) |
-| **OpenAI Whisper** | Whisper-1 | $0.006/minuto (fallback) |
-| **WhatsApp API** | Business | $0.0008/msg utility (Colombia) |
+| Servicio | Modelo | Costo |
+|----------|--------|-------|
+| Claude API | Sonnet 4 | $3/M input, $15/M output |
+| Claude Vision | Sonnet 4 | Mismo + ~1600 tokens/imagen |
+| OpenAI Whisper | whisper-1 | $0.006/minuto (~$0.003 por 30seg) |
+| WhatsApp | Business API | **$0.0008/mensaje** (Colombia) |
 
-### Costo por Tipo de Operacion
+> Nota: Groq Whisper es gratis pero lo contamos como bonus, no como baseline.
 
-| Operacion | Tokens (in/out) | Costo Claude | Costo WA | **Total** |
-|-----------|-----------------|--------------|----------|-----------|
-| **Mensaje texto** | ~1400/300 | $0.0042 + $0.0045 | $0 | **~$0.009** |
-| **Imagen/recibo OCR** | ~2500/150 | $0.0075 + $0.0023 | $0 | **~$0.010** |
-| **Audio (30 seg)** | ~600/150 | $0.0018 + $0.0023 | $0 | **~$0.004** |
-| **Resumen semanal** | ~800/400 | $0.0024 + $0.0060 | $0.0008 | **~$0.009** |
-| **Mensaje saliente WA** | - | - | $0.0008 | **~$0.001** |
+### Costo Calculado por Operacion (Completo)
 
-> Nota: Mensajes de texto incluyen overhead de tool definitions (~770 tokens)
+| Operacion | Claude | Whisper | WhatsApp (resp) | **TOTAL** |
+|-----------|--------|---------|-----------------|-----------|
+| **Texto** | $0.009 | $0 | $0.0008 | **$0.010** |
+| **Imagen/OCR** | $0.010 | $0 | $0.0008 | **$0.011** |
+| **Audio (30seg)** | $0.004 | $0.003 | $0.0008 | **$0.008** |
+| **Resumen semanal** | $0.009 | $0 | $0.0008 | **$0.010** |
+
+### Desglose de Tokens (Claude)
+
+| Operacion | Tokens Input | Tokens Output | Costo Input | Costo Output | Total |
+|-----------|--------------|---------------|-------------|--------------|-------|
+| Texto | ~1,400 | ~300 | $0.0042 | $0.0045 | $0.0087 |
+| Imagen | ~2,500 | ~150 | $0.0075 | $0.0023 | $0.0098 |
+| Audio | ~600 | ~150 | $0.0018 | $0.0023 | $0.0041 |
+
+---
+
+## Sistema de Moneditas
+
+### Filosofia: 1 Monedita = $0.002 USD
+
+Cada monedita representa un costo real de operacion. Esto permite:
+
+1. **Control exacto** - Sabes exactamente cuanto cuesta cada operacion
+2. **Costo fijo predecible** - Si el usuario gasta todo, ya sabes el costo maximo
+3. **Transparencia** - Puedes explicar exactamente que cubre cada monedita
+4. **Escalabilidad** - Ajustas el valor si cambian los precios de APIs
+
+### Costos por Operacion en Moneditas
+
+```javascript
+// src/services/moneditasService.js
+const OPERATION_COSTS = {
+  TEXT_MESSAGE: 5,      // ~$0.010 (Claude $0.009 + WA $0.0008)
+  IMAGE_RECEIPT: 6,     // ~$0.012 (Claude Vision $0.010 + WA $0.0008)
+  AUDIO_MESSAGE: 4,     // ~$0.008 (Whisper $0.003 + Claude $0.004 + WA $0.0008)
+  WEEKLY_SUMMARY: 5,    // ~$0.010 (Claude $0.009 + WA $0.0008)
+  REMINDER: 1,          // ~$0.002 (Simple text, sin Claude)
+};
+```
+
+### Que Incluye Cada Operacion
+
+| Operacion | Incluye |
+|-----------|---------|
+| TEXT_MESSAGE | Claude API + respuesta WhatsApp |
+| IMAGE_RECEIPT | Claude Vision + respuesta WhatsApp |
+| AUDIO_MESSAGE | Whisper transcription + Claude + respuesta WhatsApp |
+| WEEKLY_SUMMARY | Claude analisis + mensaje WhatsApp |
 
 ---
 
@@ -100,69 +120,44 @@
 |----------------|----------|-----------|-------------|
 | **Precio** | $0 | $2.99/mes | $7.99/mes |
 | **Precio COP** | $0 | ~$12,000 | ~$32,000 |
-| **Moneditas/mes** | 50 | 250 | 800 |
+| **Moneditas/mes** | 50 | 1,200 | 3,500 |
+| **Historial** | 30 dias | 6 meses | 12 meses |
 | **Presupuestos** | Ilimitado | Ilimitado | Ilimitado |
 | **Resumen semanal** | Si | Si | Si |
-| **Pagina visual** | Si | Si | Si |
-| **Historial** | 30 dias | 6 meses | 12 meses |
-| **Soporte** | Comunidad | Email | Prioritario |
+| **Export CSV** | Si | Si | Si |
+| **Export PDF** | No | Si | Si |
 
-### Cambios vs Sistema Anterior
+### Que Puede Hacer Cada Plan
 
-| Caracteristica | Antes | Ahora |
-|----------------|-------|-------|
-| Budgets Free | 1 | Ilimitado |
-| Budgets Basic | 5 | Ilimitado |
-| CSV Export | Basic+ | Eliminado |
-| PDF Export | Premium | Eliminado |
-| Pagina visual | No existia | Todos |
-| Resumen semanal | No existia | Todos |
+| Accion | Free (50) | Basic (1,200) | Premium (3,500) |
+|--------|-----------|---------------|-----------------|
+| Texto (5 c/u) | 10 gastos | 240 gastos | 700 gastos |
+| Imagenes (6 c/u) | 8 recibos | 200 recibos | 583 recibos |
+| Audio (4 c/u) | 12 audios | 300 audios | 875 audios |
+| **Mixto tipico*** | ~8 ops | ~190 ops | ~550 ops |
 
----
+*Mixto tipico: 70% texto, 20% imagen, 10% audio
 
-## Consumo de Moneditas
-
-### Costo por Accion
-
-| Accion | Moneditas | Costo Real | Margen |
-|--------|-----------|------------|--------|
-| Registrar gasto (texto) | 1 | ~$0.009 | - |
-| Procesar recibo (imagen) | 3 | ~$0.010 | - |
-| Procesar audio | 2 | ~$0.004 | - |
-| Recibir resumen semanal | 2 | ~$0.009 | - |
-| Mensaje recordatorio | 1 | ~$0.001 | - |
-
-### Que Puedes Hacer con tus Moneditas
-
-| Uso | Free (50) | Basic (250) | Premium (800) |
-|-----|-----------|-------------|---------------|
-| **Solo texto** (1 c/u) | 50 gastos | 250 gastos | 800 gastos |
-| **Solo imagenes** (3 c/u) | 16 recibos | 83 recibos | 266 recibos |
-| **Solo audios** (2 c/u) | 25 audios | 125 audios | 400 audios |
-| **Uso mixto tipico*** | ~40 gastos | ~200 gastos | ~650 gastos |
-
-*Uso mixto tipico: 70% texto, 20% imagen, 10% audio
-
-### Calculo de Uso Mixto Tipico
+### Calculo de Uso Mixto
 
 ```
 Free (50 moneditas):
-- 35 textos x 1 = 35
-- 4 imagenes x 3 = 12
-- 1.5 audios x 2 = 3
-= 50 moneditas
+- 7 textos × 5 = 35 moneditas
+- 1 imagen × 6 = 6 moneditas
+- 2 audios × 4 = 8 moneditas
+= 49 moneditas (~8 operaciones)
 
-Basic (250 moneditas):
-- 175 textos x 1 = 175
-- 17 imagenes x 3 = 51
-- 12 audios x 2 = 24
-= 250 moneditas
+Basic (1,200 moneditas):
+- 168 textos × 5 = 840 moneditas
+- 40 imagenes × 6 = 240 moneditas
+- 30 audios × 4 = 120 moneditas
+= 1,200 moneditas (~238 operaciones)
 
-Premium (800 moneditas):
-- 560 textos x 1 = 560
-- 53 imagenes x 3 = 159
-- 40 audios x 2 = 80
-= ~800 moneditas
+Premium (3,500 moneditas):
+- 490 textos × 5 = 2,450 moneditas
+- 117 imagenes × 6 = 702 moneditas
+- 87 audios × 4 = 348 moneditas
+= 3,500 moneditas (~694 operaciones)
 ```
 
 ---
@@ -173,48 +168,45 @@ Premium (800 moneditas):
 
 #### Plan Free ($0)
 
-| Concepto | Cantidad | Costo Unitario | Total |
-|----------|----------|----------------|-------|
-| Moneditas usadas (promedio 80%) | 40 | ~$0.007* | $0.28 |
-| Resumenes semanales | 4 | $0.009 | $0.036 |
-| **TOTAL** | | | **~$0.32/mes** |
-
-*Promedio ponderado considerando mix de operaciones
+| Concepto | Calculo | Total |
+|----------|---------|-------|
+| Moneditas usadas (80% = 40) | 40 × $0.002 | $0.08 |
+| Infraestructura prorrateada | - | $0.05 |
+| **TOTAL COSTO** | | **~$0.13/mes** |
+| Ingreso | | **$0** |
+| **MARGEN** | | **-$0.13** |
 
 #### Plan Basic ($2.99)
 
-| Concepto | Cantidad | Costo Unitario | Total |
-|----------|----------|----------------|-------|
-| Moneditas usadas (promedio 85%) | 212 | ~$0.007 | $1.48 |
-| Resumenes semanales | 4 | $0.009 | $0.036 |
-| **TOTAL COSTO** | | | **~$1.52/mes** |
-| **INGRESO** | | | **$2.99** |
-| **MARGEN** | | | **$1.47 (49%)** |
+| Concepto | Calculo | Total |
+|----------|---------|-------|
+| Moneditas usadas (100% = 1,200) | 1,200 × $0.002 | $2.40 |
+| Infraestructura prorrateada | - | $0.05 |
+| **TOTAL COSTO** | | **~$2.45/mes** |
+| Precio bruto | | $2.99 |
+| Comision Wompi (~12%) | | -$0.37 |
+| **INGRESO NETO** | | **$2.62** |
+| **MARGEN** | | **+$0.17 (6%)** |
 
 #### Plan Premium ($7.99)
 
-| Concepto | Cantidad | Costo Unitario | Total |
-|----------|----------|----------------|-------|
-| Moneditas usadas (promedio 90%) | 720 | ~$0.007 | $5.04 |
-| Resumenes semanales | 4 | $0.009 | $0.036 |
-| **TOTAL COSTO** | | | **~$5.08/mes** |
-| **INGRESO** | | | **$7.99** |
-| **MARGEN** | | | **$2.91 (36%)** |
+| Concepto | Calculo | Total |
+|----------|---------|-------|
+| Moneditas usadas (100% = 3,500) | 3,500 × $0.002 | $7.00 |
+| Infraestructura prorrateada | - | $0.05 |
+| **TOTAL COSTO** | | **~$7.05/mes** |
+| Precio bruto | | $7.99 |
+| Comision Wompi (~7%) | | -$0.54 |
+| **INGRESO NETO** | | **$7.45** |
+| **MARGEN** | | **+$0.40 (5%)** |
 
 ### Resumen de Margenes
 
-| Plan | Precio | Costo API | Comisión Wompi* | **Margen Real** | **Margen %** |
-|------|--------|-----------|-----------------|-----------------|--------------|
-| **Free** | $0 | $0.32 | $0 | -$0.32 | N/A |
-| **Basic** | $2.99 | $1.52 | $0.37 | **+$1.10** | **37%** |
-| **Premium** | $7.99 | $5.08 | $0.54 | **+$2.37** | **30%** |
-
-*Comisión Wompi asume pago con tarjeta (2.9% + $900 COP + IVA). Ver sección "Comisiones del Procesador de Pagos" para detalles.
-
-> Nota: Margenes mas conservadores que el modelo anterior debido a:
-> 1. Resumen semanal para todos (incluyendo Free)
-> 2. Mas moneditas por plan para mejor UX
-> 3. Estimacion de uso mas alta (usuarios mas engaged)
+| Plan | Ingreso Neto | Costo Total | Margen USD | Margen % |
+|------|--------------|-------------|------------|----------|
+| Free | $0 | $0.13 | -$0.13 | N/A |
+| Basic | $2.62 | $2.45 | **+$0.17** | **6%** |
+| Premium | $7.45 | $7.05 | **+$0.40** | **5%** |
 
 ---
 
@@ -230,339 +222,198 @@ Premium (800 moneditas):
 
 ### Escenario 1: 100 Usuarios
 
-#### Ingresos (Neto después de Wompi)
+#### Ingresos
 
-| Plan | Precio/mes | Usuarios | % | Precio Bruto | Comisión Wompi | **Ingreso Neto** |
-|------|------------|----------|---|--------------|----------------|------------------|
-| Free | $0 | 75 | 75% | $0 | $0 | $0 |
-| Basic | $2.99 | 18 | 18% | $53.82 | $6.66 | $47.16 |
-| Premium | $7.99 | 7 | 7% | $55.93 | $3.78 | $52.15 |
-| **TOTAL** | | **100** | 100% | $109.75 | $10.44 | **$99.31** |
+| Plan | Usuarios | Precio | Bruto | Wompi | **Neto** |
+|------|----------|--------|-------|-------|----------|
+| Free | 75 | $0 | $0 | $0 | $0 |
+| Basic | 18 | $2.99 | $53.82 | $6.66 | $47.16 |
+| Premium | 7 | $7.99 | $55.93 | $3.78 | $52.15 |
+| **TOTAL** | **100** | | $109.75 | $10.44 | **$99.31** |
 
 #### Costos
 
-| Tipo | Concepto | Costo |
-|------|----------|-------|
-| **FIJOS** | Railway | $5.00 |
-| | Supabase | $0.00 |
-| | Dominio ($15/año) | $1.25 |
-| | **Subtotal Fijos** | **$6.25** |
-| **VARIABLES** | Free (75 × $0.32) | $24.00 |
-| | Basic (18 × $1.52) | $27.36 |
-| | Premium (7 × $5.08) | $35.56 |
-| | Wompi (25 pagos × $0.40) | $10.00 |
-| | **Subtotal Variables** | **$96.92** |
-| **TOTAL** | | **$103.17** |
+| Tipo | Detalle | Costo |
+|------|---------|-------|
+| **Fijos** | Railway + Dominio | $6.25 |
+| **Variables** | Free (75 × $0.13) | $9.75 |
+| | Basic (18 × $2.45) | $44.10 |
+| | Premium (7 × $7.05) | $49.35 |
+| **TOTAL** | | **$109.45** |
 
 #### Resultado
 
 | Metrica | Valor |
 |---------|-------|
-| Ingreso bruto | $109.75 |
-| Costos fijos | -$6.25 |
-| Costos variables (API + Wompi) | -$96.92 |
-| **Ganancia** | **+$6.58** |
-| **Margen** | **6%** |
+| Ingreso neto | $99.31 |
+| Costos totales | $109.45 |
+| **Ganancia** | **-$10.14** |
 
-> Con costos fijos bajos ($6.25), 100 usuarios ya genera ganancia.
+> Nota: Con 100 usuarios hay perdida porque los costos fijos ($6.25) no se diluyen suficiente. Break-even ~150 usuarios.
 
 ### Escenario 2: 500 Usuarios
 
-#### Ingresos (Neto después de Wompi)
-
-| Plan | Precio/mes | Usuarios | % | Precio Bruto | Comisión Wompi | **Ingreso Neto** |
-|------|------------|----------|---|--------------|----------------|------------------|
-| Free | $0 | 350 | 70% | $0 | $0 | $0 |
-| Basic | $2.99 | 110 | 22% | $328.90 | $40.70 | $288.20 |
-| Premium | $7.99 | 40 | 8% | $319.60 | $21.60 | $298.00 |
-| **TOTAL** | | **500** | 100% | $648.50 | $62.30 | **$586.20** |
-
-#### Costos
-
-| Tipo | Concepto | Costo |
-|------|----------|-------|
-| **FIJOS** | Railway | $20.00 |
-| | Supabase | $25.00 |
-| | Dominio ($15/año) | $1.25 |
-| | **Subtotal Fijos** | **$46.25** |
-| **VARIABLES** | Free (350 × $0.32) | $112.00 |
-| | Basic (110 × $1.52) | $167.20 |
-| | Premium (40 × $5.08) | $203.20 |
-| | Wompi (150 pagos × $0.42) | $63.00 |
-| | **Subtotal Variables** | **$545.40** |
-| **TOTAL** | | **$591.65** |
-
 #### Resultado
 
 | Metrica | Valor |
 |---------|-------|
-| Ingreso bruto | $648.50 |
-| Costos fijos | -$46.25 |
-| Costos variables (API + Wompi) | -$545.40 |
-| **Ganancia** | **+$56.85** |
-| **Margen** | **9%** |
+| Ingreso neto | $586.20 |
+| Costos fijos | $46.25 |
+| Costos variables | $517.45 |
+| **Ganancia** | **+$22.50** |
+| **Margen** | **4%** |
 
 ### Escenario 3: 2000 Usuarios
 
-#### Ingresos (Neto después de Wompi)
-
-| Plan | Precio/mes | Usuarios | % | Precio Bruto | Comisión Wompi | **Ingreso Neto** |
-|------|------------|----------|---|--------------|----------------|------------------|
-| Free | $0 | 1300 | 65% | $0 | $0 | $0 |
-| Basic | $2.99 | 500 | 25% | $1,495.00 | $185.00 | $1,310.00 |
-| Premium | $7.99 | 200 | 10% | $1,598.00 | $108.00 | $1,490.00 |
-| **TOTAL** | | **2000** | 100% | $3,093.00 | $293.00 | **$2,800.00** |
-
-#### Costos
-
-| Tipo | Concepto | Costo |
-|------|----------|-------|
-| **FIJOS** | Railway | $50.00 |
-| | Supabase | $50.00 |
-| | Dominio ($15/año) | $1.25 |
-| | **Subtotal Fijos** | **$101.25** |
-| **VARIABLES** | Free (1300 × $0.32) | $416.00 |
-| | Basic (500 × $1.52) | $760.00 |
-| | Premium (200 × $5.08) | $1,016.00 |
-| | Wompi (700 pagos × $0.42) | $294.00 |
-| | **Subtotal Variables** | **$2,486.00** |
-| **TOTAL** | | **$2,587.25** |
-
 #### Resultado
 
 | Metrica | Valor |
 |---------|-------|
-| Ingreso bruto | $3,093.00 |
-| Costos fijos | -$101.25 |
-| Costos variables (API + Wompi) | -$2,486.00 |
-| **Ganancia** | **+$505.75** |
-| **Margen** | **16%** |
-
----
-
-## Comisiones del Procesador de Pagos (Wompi)
-
-### Tarifas de Wompi Colombia (Febrero 2026)
-
-| Método de Pago | Comisión | Fijo |
-|----------------|----------|------|
-| **Tarjeta crédito/débito** | 2.9% | + $900 COP |
-| **PSE (transferencia)** | 0% | $2,500 COP |
-| **Nequi** | 2.5% | $0 |
-| **Bancolombia QR** | 1.5% | $0 |
-
-> Nota: IVA del 19% aplica sobre la comisión de Wompi
-
-### Impacto por Plan (Pago con Tarjeta)
-
-| Plan | Precio COP | Comisión (2.9% + $900) | IVA (19%) | **Neto Recibido** |
-|------|------------|------------------------|-----------|-------------------|
-| **Basic** | $12,000 | $1,248 | $237 | **$10,515** |
-| **Premium** | $32,000 | $1,828 | $347 | **$29,825** |
-
-### Impacto por Plan (Pago con PSE)
-
-| Plan | Precio COP | Comisión Fija | IVA (19%) | **Neto Recibido** |
-|------|------------|---------------|-----------|-------------------|
-| **Basic** | $12,000 | $2,500 | $475 | **$9,025** |
-| **Premium** | $32,000 | $2,500 | $475 | **$29,025** |
-
-### Margen Real Ajustado (con Wompi)
-
-Usando tarjeta como método más común (~80% de pagos):
-
-#### Plan Basic ($2.99 / $12,000 COP)
-
-| Concepto | Valor |
-|----------|-------|
-| Precio bruto | $12,000 COP (~$2.99 USD) |
-| Comisión Wompi + IVA | -$1,485 COP (~$0.37 USD) |
-| **Ingreso neto** | **$10,515 COP (~$2.62 USD)** |
-| Costo APIs (moneditas) | -$1.52 USD |
-| **Margen real** | **$1.10 USD (37%)** |
-
-#### Plan Premium ($7.99 / $32,000 COP)
-
-| Concepto | Valor |
-|----------|-------|
-| Precio bruto | $32,000 COP (~$7.99 USD) |
-| Comisión Wompi + IVA | -$2,175 COP (~$0.54 USD) |
-| **Ingreso neto** | **$29,825 COP (~$7.45 USD)** |
-| Costo APIs (moneditas) | -$5.08 USD |
-| **Margen real** | **$2.37 USD (30%)** |
-
-### Comparación: Margen Bruto vs Margen Real
-
-| Plan | Margen sin Wompi | Margen con Wompi | Diferencia |
-|------|------------------|------------------|------------|
-| **Basic** | $1.47 (49%) | $1.10 (37%) | -$0.37 (-12pp) |
-| **Premium** | $2.91 (36%) | $2.37 (30%) | -$0.54 (-6pp) |
-
-> **Importante**: Los escenarios de rentabilidad en este documento usan márgenes brutos.
-> Para cálculos reales, restar ~12% adicional del ingreso por comisiones de pago.
+| Ingreso neto | $2,800.00 |
+| Costos fijos | $101.25 |
+| Costos variables | $2,379.50 |
+| **Ganancia** | **+$319.25** |
+| **Margen** | **11%** |
 
 ---
 
 ## Costos de Infraestructura
 
-### Costos Fijos vs Variables
+### Costos Fijos Actuales: $6.25/mes
 
-| Tipo | Descripcion | Ejemplo |
-|------|-------------|---------|
-| **Fijo** | No cambia con cantidad de usuarios | Hosting, dominio |
-| **Variable** | Cambia por cada operacion/usuario | APIs (Claude, WhatsApp), Wompi |
+| Servicio | Costo | Notas |
+|----------|-------|-------|
+| Railway | $5.00 | Hosting Node.js |
+| Supabase | $0.00 | Free tier |
+| Dominio | $1.25 | $15/año |
+| **TOTAL** | **$6.25** | |
 
-### Costos Fijos por Escala
+### Escalado de Costos Fijos
 
-| Usuarios | Railway | Supabase | Dominio | **Total Fijo** |
-|----------|---------|----------|---------|----------------|
-| Actual | $5 | $0 (free) | $1.25 | **$6.25** |
-| 100 | $5 | $0 (free) | $1.25 | **$6.25** |
-| 500 | $20 | $25 | $1.25 | **$46.25** |
-| 2000 | $50 | $50 | $1.25 | **$101.25** |
+| Usuarios | Railway | Supabase | Dominio | **Total** |
+|----------|---------|----------|---------|-----------|
+| 100 | $5 | $0 | $1.25 | $6.25 |
+| 500 | $20 | $25 | $1.25 | $46.25 |
+| 2000 | $50 | $50 | $1.25 | $101.25 |
 
-> Nota: Dominio = $15/año = $1.25/mes. Sin monitoring (Sentry) por ahora.
+### Costo de Infraestructura por Usuario
 
-### Detalle de Servicios Actuales
+| Escala | Costo Fijo Total | Por Usuario |
+|--------|------------------|-------------|
+| 100 usuarios | $6.25 | $0.06 |
+| 500 usuarios | $46.25 | $0.09 |
+| 2000 usuarios | $101.25 | $0.05 |
 
-| Servicio | Costo Actual | Escala | Notas |
-|----------|--------------|--------|-------|
-| **Railway** | $5/mes | $20+ con trafico | Hosting Node.js |
-| **Supabase** | $0 (free) | $25/mes >500 MAU | Base de datos |
-| **Dominio** | $1.25/mes | Fijo | $15/año |
-| **Monitoring** | $0 | - | No usando Sentry |
+---
 
-### Costos Variables por Operacion
+## Implementacion Tecnica
 
-| Operacion | Costo | Moneditas | Servicio |
-|-----------|-------|-----------|----------|
-| Mensaje texto | $0.009 | 1 | Claude API |
-| Imagen/recibo | $0.010 | 3 | Claude Vision |
-| Audio | $0.004 | 2 | Groq Whisper |
-| Resumen semanal | $0.009 | 2 | Claude API |
-| WhatsApp saliente | $0.001 | - | Meta API |
+### Archivos Clave
 
-### Costos Variables por Usuario/Mes
+```
+src/services/moneditasService.js    # Servicio principal de moneditas
+src/database/subscriptionDB.*.js    # DB con MoneditasDB
+src/handlers/messageHandler.js      # Usa checkMoneditas/consumeMoneditas
+sql/subscriptions_schema.sql        # Schema con moneditas_usage table
+```
 
-| Plan | Costo API |
-|------|-----------|
-| Free (50 moneditas) | $0.32 |
-| Basic (250 moneditas) | $1.52 |
-| Premium (800 moneditas) | $5.08 |
+### Flujo de Consumo
 
-### Comisiones Wompi (Variable por transaccion)
+```
+1. Usuario envia mensaje
+   ↓
+2. checkMoneditas(phone, OPERATION_COSTS.TEXT_MESSAGE)
+   ↓
+3. ¿Tiene 5+ moneditas?
+   → NO: Mensaje "Te quedaste sin moneditas" + upgrade CTA
+   → SI: Continuar
+   ↓
+4. Procesar mensaje con Claude API
+   ↓
+5. consumeMoneditas(phone, OPERATION_COSTS.TEXT_MESSAGE, "text_message")
+   ↓
+6. Enviar respuesta via WhatsApp
+```
+
+### Constantes de Costos
+
+```javascript
+// 1 monedita = $0.002 USD
+const OPERATION_COSTS = {
+  TEXT_MESSAGE: 5,      // $0.010
+  IMAGE_RECEIPT: 6,     // $0.012
+  AUDIO_MESSAGE: 4,     // $0.008
+  WEEKLY_SUMMARY: 5,    // $0.010
+  REMINDER: 1,          // $0.002
+};
+```
+
+### Estructura de Datos
+
+```javascript
+// Planes
+const PLANS = {
+  free: {
+    moneditasMonthly: 50,
+    historyDays: 30,
+    priceMonthly: 0,
+  },
+  basic: {
+    moneditasMonthly: 1200,
+    historyDays: 180,
+    priceMonthly: 2.99,
+  },
+  premium: {
+    moneditasMonthly: 3500,
+    historyDays: 365,
+    priceMonthly: 7.99,
+  },
+};
+```
+
+---
+
+## Comisiones Wompi
+
+### Tarifas (Colombia, Febrero 2026)
 
 | Metodo | Comision | Fijo |
 |--------|----------|------|
-| Tarjeta credito/debito | 2.9% + IVA | $900 COP |
-| PSE | 0% + IVA | $2,500 COP |
-| Nequi | 2.5% + IVA | $0 |
-| Bancolombia QR | 1.5% + IVA | $0 |
+| Tarjeta | 2.9% | + $900 COP |
+| PSE | 0% | $2,500 COP |
+| Nequi | 2.5% | $0 |
 
-| Plan | Precio | Comision Wompi | Te queda |
-|------|--------|----------------|----------|
-| Basic | $12,000 COP | ~$1,485 COP | $10,515 COP |
-| Premium | $32,000 COP | ~$2,175 COP | $29,825 COP |
+> IVA del 19% aplica sobre la comision
 
----
+### Impacto por Plan
 
-## Estrategias y Recomendaciones
-
-### Optimizacion de Costos
-
-1. **Prompt Caching** - Anthropic cachea system prompts automaticamente (~90% ahorro en tokens repetidos)
-2. **Batch API** - 50% descuento para operaciones no urgentes (resumenes)
-3. **Groq como primario** - Whisper gratis vs $0.006/min de OpenAI
-4. **Compresion de imagenes** - Redimensionar a 800px max antes de Vision
-
-### Metricas Clave a Monitorear
-
-```javascript
-// Agregar a usageMonitor.js
-- moneditas_consumed_daily
-- moneditas_by_operation_type
-- conversion_rate_free_to_paid
-- churn_rate_by_plan
-- cost_per_active_user
-```
-
-### Politicas Sugeridas
-
-1. **Rollover parcial**: 20% de moneditas no usadas pasan al siguiente mes (max 50)
-2. **Usuarios inactivos**: Pausar resumenes semanales despues de 3 meses sin actividad
-3. **Alerta de moneditas bajas**: Notificar cuando quedan <10 moneditas
-4. **Bonus por referidos**: +30 moneditas por cada amigo que se registre
-
-### Riesgos y Mitigaciones
-
-| Riesgo | Probabilidad | Impacto | Mitigacion |
-|--------|--------------|---------|------------|
-| Usuarios Free no convierten | Media | Alto | Mejorar onboarding, mostrar valor de Premium |
-| Abuso de imagenes 4K | Baja | Medio | Comprimir antes de procesar |
-| Spike de costos WhatsApp | Baja | Bajo | Colombia tiene tarifas muy bajas |
-| Claude API price increase | Media | Alto | Prompt caching, considerar Haiku para tareas simples |
-
----
-
-## Punto de Equilibrio
-
-### Usuarios Minimos para Rentabilidad
-
-Con costos fijos actuales de ~$6.25/mes (Railway $5 + Dominio $1.25):
-
-| Escenario | Usuarios Pagos Necesarios |
-|-----------|---------------------------|
-| 100% Basic | ~6 usuarios Basic |
-| 100% Premium | ~3 usuarios Premium |
-| Mix 70/30 Basic/Premium | ~5 usuarios pagos |
-| **Realista (22% Basic, 8% Premium)** | **~15 usuarios totales** |
-
-> Con costos fijos bajos, el break-even es muy accesible. Al escalar a 500+ usuarios, Supabase ($25) aumenta los fijos.
-
-### Formula de Break-even
-
-```
-Break-even usuarios = Costos Fijos / (ARPU Neto - Costo Variable por Usuario)
-
-Escenario Inicial (100 usuarios):
-- Costos Fijos = $6.25/mes
-- ARPU Bruto = $1.10 (con 75% free, 18% basic, 7% premium)
-- Comisión Wompi = ~$0.10/usuario
-- ARPU Neto = $1.00
-- Costo Variable = $0.97/usuario promedio
-
-Break-even = $6.25 / ($1.00 - $0.97) = ~208 usuarios para profit
-
-Pero como ya tienes margen positivo desde ~50 usuarios con tu mix actual.
-```
-
-### Resumen de Costos
-
-| Escala | Fijos | Variables | Total | Ingreso | Ganancia |
-|--------|-------|-----------|-------|---------|----------|
-| **100 usuarios** | $6.25 | $96.92 | $103 | $110 | **+$7** |
-| **500 usuarios** | $46.25 | $545.40 | $592 | $649 | **+$57** |
+| Plan | Precio COP | Comision + IVA | **Neto** |
+|------|------------|----------------|----------|
+| Basic | $12,000 | $1,485 | $10,515 |
+| Premium | $32,000 | $2,175 | $29,825 |
 
 ---
 
 ## Comparacion: Sistema Anterior vs Nuevo
 
-| Metrica | Limites Separados | Moneditas |
-|---------|-------------------|-----------|
-| **Complejidad para usuario** | Alta (5 contadores) | Baja (1 contador) |
-| **Margen Basic** | ~63% | ~49% |
-| **Margen Premium** | ~68% | ~36% |
-| **Costo Free user** | $0.27/mes | $0.32/mes |
-| **Valor percibido Free** | Bajo | Alto |
-| **Conversion esperada** | 10-15% | 20-30% |
-| **Retencion esperada** | Media | Alta |
+| Aspecto | Antes | Ahora |
+|---------|-------|-------|
+| Limites | 5 separados | 1 universal (moneditas) |
+| Texto | 1 "monedita" | 5 moneditas |
+| Imagen | 3 "moneditas" | 6 moneditas |
+| Audio | 2 "moneditas" | 4 moneditas |
+| Correlacion con costo | No | Si ($0.002/monedita) |
+| Budgets | Limitados | Ilimitados |
+| WhatsApp incluido | No | Si |
+| Whisper incluido | No | Si |
 
-### Por que Margenes Menores son OK
+### Por que el Cambio
 
-1. **Mayor conversion** compensa menor margen por usuario
-2. **Mejor retencion** = mayor LTV (lifetime value)
-3. **Resumen semanal** es marketing gratis (engagement)
-4. **Usuarios Free felices** = mejor word-of-mouth
+1. **Costos predecibles** - Cada monedita = costo real
+2. **Sin sorpresas** - Si user gasta todo, ya sabes el costo max
+3. **Transparente** - Puedes explicar que cubre cada monedita
+4. **Escalable** - Ajustas valor si cambian APIs
+5. **Simple** - 1 contador en vez de 5
 
 ---
 
@@ -570,11 +421,10 @@ Pero como ya tienes margen positivo desde ~50 usuarios con tu mix actual.
 
 - [Claude API Pricing](https://platform.claude.com/docs/en/about-claude/pricing)
 - [WhatsApp Business API Pricing Colombia](https://www.heltar.com/blogs/whatsapp-api-pricing-in-columbia-2025-cm73iygsn0080r1l2vyv39xpd)
-- [WhatsApp Business Platform Pricing](https://business.whatsapp.com/products/platform-pricing)
 - [Groq Pricing](https://groq.com/pricing)
 - [Supabase Pricing](https://supabase.com/pricing)
 - [Wompi Tarifas Colombia](https://wompi.com/es/co/tarifas)
 
 ---
 
-*Este analisis esta basado en precios de APIs de Febrero 2026 y patrones de uso estimados. Los costos reales pueden variar segun comportamiento de usuarios y cambios en pricing de APIs.*
+*Analisis basado en precios de APIs de Febrero 2026. Los costos reales pueden variar segun comportamiento de usuarios y cambios en pricing de APIs.*

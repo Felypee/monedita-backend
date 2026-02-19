@@ -1,29 +1,45 @@
 -- Subscription & Pricing Control Schema
 -- Run this in your Supabase SQL editor
+--
+-- Updated February 2026: New moneditas-based system
+-- 1 monedita = $0.002 USD (real cost)
+-- TEXT_MESSAGE = 5, IMAGE_RECEIPT = 6, AUDIO_MESSAGE = 4, WEEKLY_SUMMARY = 5
 
--- 1. Subscription Plans - Static plan definitions with limits
+-- 1. Subscription Plans - Static plan definitions with moneditas
 CREATE TABLE IF NOT EXISTS subscription_plans (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   price_monthly DECIMAL(10,2) DEFAULT 0,
-  -- Limits (-1 = unlimited)
-  limit_text_messages INTEGER DEFAULT 30,
-  limit_voice_messages INTEGER DEFAULT 5,
-  limit_image_messages INTEGER DEFAULT 5,
-  limit_ai_conversations INTEGER DEFAULT 10,
-  limit_budgets INTEGER DEFAULT 1,
-  can_export_csv BOOLEAN DEFAULT false,
+  -- New moneditas system (February 2026)
+  moneditas_monthly INTEGER DEFAULT 50,
+  history_days INTEGER DEFAULT 30,
+  -- Legacy limits (kept for backward compatibility, will be deprecated)
+  limit_text_messages INTEGER DEFAULT 50,
+  limit_voice_messages INTEGER DEFAULT 50,
+  limit_image_messages INTEGER DEFAULT 50,
+  limit_ai_conversations INTEGER DEFAULT 50,
+  limit_budgets INTEGER DEFAULT -1,  -- Unlimited for all plans
+  can_export_csv BOOLEAN DEFAULT true,
   can_export_pdf BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert default plans
-INSERT INTO subscription_plans (id, name, price_monthly, limit_text_messages, limit_voice_messages, limit_image_messages, limit_ai_conversations, limit_budgets, can_export_csv, can_export_pdf)
+-- Insert/update plans with new moneditas values
+INSERT INTO subscription_plans (id, name, price_monthly, moneditas_monthly, history_days, limit_text_messages, limit_voice_messages, limit_image_messages, limit_ai_conversations, limit_budgets, can_export_csv, can_export_pdf)
 VALUES
-  ('free', 'Free', 0, 30, 5, 5, 10, 1, false, false),
-  ('basic', 'Basic', 2.99, 150, 30, 20, 50, 5, true, false),
-  ('premium', 'Premium', 7.99, -1, 100, 50, -1, -1, true, true)
-ON CONFLICT (id) DO NOTHING;
+  ('free', 'Free', 0, 50, 30, 50, 50, 50, 50, -1, true, false),
+  ('basic', 'Basic', 2.99, 1200, 180, 1200, 1200, 1200, 1200, -1, true, true),
+  ('premium', 'Premium', 7.99, 3500, 365, 3500, 3500, 3500, 3500, -1, true, true)
+ON CONFLICT (id) DO UPDATE SET
+  moneditas_monthly = EXCLUDED.moneditas_monthly,
+  history_days = EXCLUDED.history_days,
+  limit_text_messages = EXCLUDED.limit_text_messages,
+  limit_voice_messages = EXCLUDED.limit_voice_messages,
+  limit_image_messages = EXCLUDED.limit_image_messages,
+  limit_ai_conversations = EXCLUDED.limit_ai_conversations,
+  limit_budgets = EXCLUDED.limit_budgets,
+  can_export_csv = EXCLUDED.can_export_csv,
+  can_export_pdf = EXCLUDED.can_export_pdf;
 
 -- 2. User Subscriptions - User's current plan and billing cycle
 CREATE TABLE IF NOT EXISTS user_subscriptions (
@@ -40,7 +56,24 @@ CREATE TABLE IF NOT EXISTS user_subscriptions (
 -- Create index for faster lookups by phone
 CREATE INDEX IF NOT EXISTS idx_user_subscriptions_phone ON user_subscriptions(phone);
 
--- 3. Usage Tracking - Monthly usage counts per message type
+-- 3. Moneditas Usage - New unified tracking table
+CREATE TABLE IF NOT EXISTS moneditas_usage (
+  id SERIAL PRIMARY KEY,
+  phone TEXT NOT NULL,
+  period_start TIMESTAMP WITH TIME ZONE NOT NULL,
+  moneditas_used INTEGER DEFAULT 0,
+  moneditas_limit INTEGER NOT NULL,
+  last_operation TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(phone, period_start)
+);
+
+-- Create indexes for moneditas_usage
+CREATE INDEX IF NOT EXISTS idx_moneditas_usage_phone ON moneditas_usage(phone);
+CREATE INDEX IF NOT EXISTS idx_moneditas_usage_phone_period ON moneditas_usage(phone, period_start);
+
+-- 4. Legacy Usage Tracking - Kept for backward compatibility, will be deprecated
 CREATE TABLE IF NOT EXISTS usage_tracking (
   id SERIAL PRIMARY KEY,
   phone TEXT NOT NULL,
@@ -85,7 +118,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- View to get user's current usage with limits
+-- View to get user's current moneditas usage
+CREATE OR REPLACE VIEW user_moneditas_status AS
+SELECT
+  us.phone,
+  us.plan_id,
+  sp.name as plan_name,
+  sp.moneditas_monthly,
+  sp.history_days,
+  COALESCE(mu.moneditas_used, 0) as moneditas_used,
+  sp.moneditas_monthly - COALESCE(mu.moneditas_used, 0) as moneditas_remaining,
+  mu.last_operation,
+  sp.can_export_csv,
+  sp.can_export_pdf
+FROM user_subscriptions us
+JOIN subscription_plans sp ON us.plan_id = sp.id
+LEFT JOIN moneditas_usage mu ON us.phone = mu.phone
+  AND mu.period_start = get_billing_period_start(us.phone)
+WHERE us.is_active = true;
+
+-- Legacy view (kept for backward compatibility)
 CREATE OR REPLACE VIEW user_usage_status AS
 SELECT
   us.phone,
@@ -121,3 +173,21 @@ LEFT JOIN usage_tracking ut_budget ON us.phone = ut_budget.phone
   AND ut_budget.usage_type = 'budget'
   AND ut_budget.period_start = get_billing_period_start(us.phone)
 WHERE us.is_active = true;
+
+-- Migration: Add moneditas columns to existing subscription_plans table
+-- Run this if you already have the table without the new columns
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'subscription_plans' AND column_name = 'moneditas_monthly'
+  ) THEN
+    ALTER TABLE subscription_plans ADD COLUMN moneditas_monthly INTEGER DEFAULT 50;
+    ALTER TABLE subscription_plans ADD COLUMN history_days INTEGER DEFAULT 30;
+
+    -- Update existing plans with correct values
+    UPDATE subscription_plans SET moneditas_monthly = 50, history_days = 30 WHERE id = 'free';
+    UPDATE subscription_plans SET moneditas_monthly = 1200, history_days = 180 WHERE id = 'basic';
+    UPDATE subscription_plans SET moneditas_monthly = 3500, history_days = 365 WHERE id = 'premium';
+  END IF;
+END $$;

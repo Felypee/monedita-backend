@@ -31,13 +31,12 @@ import {
 } from "../utils/languageUtils.js";
 import { getUserCategories } from "../utils/categoryUtils.js";
 import {
-  checkLimit,
-  trackUsage,
-  getSubscriptionStatus,
-  getLimitExceededMessage,
+  checkMoneditas,
+  consumeMoneditas,
+  getMoneditasStatus,
   getUpgradeMessage,
-  USAGE_TYPES,
-} from "../services/subscriptionService.js";
+  OPERATION_COSTS,
+} from "../services/moneditasService.js";
 
 /**
  * Handle incoming WhatsApp messages
@@ -260,6 +259,24 @@ function looksLikeName(message) {
 }
 
 /**
+ * Get moneditas exhausted message
+ */
+function getMoneditasExhaustedMessage(lang, details) {
+  const messages = {
+    en: `You've used all your moneditas (${details.used}/${details.limit}).
+
+Your moneditas reset on the next billing cycle.`,
+    es: `Se acabaron tus moneditas (${details.used}/${details.limit}).
+
+Tus moneditas se renuevan en el próximo ciclo de facturación.`,
+    pt: `Suas moneditas acabaram (${details.used}/${details.limit}).
+
+Suas moneditas renovam no próximo ciclo de cobrança.`
+  };
+  return messages[lang] || messages.en;
+}
+
+/**
  * Process batched messages (called after 10-second window)
  * @param {string} phone - User's phone number
  * @param {object} batchedMessage - Combined message object
@@ -274,23 +291,23 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
     console.log(`📨 Processing batch for ${phone}: ${messageCount} messages -> "${messageText.substring(0, 50)}..."`);
 
-    // Check text message limit before processing
-    const textLimitCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
-    if (!textLimitCheck.allowed) {
-      const status = await getSubscriptionStatus(phone);
-      const limitMsg = getLimitExceededMessage(USAGE_TYPES.TEXT, lang, textLimitCheck);
+    // Check moneditas before processing (TEXT_MESSAGE = 5 moneditas)
+    const moneditasCheck = await checkMoneditas(phone, OPERATION_COSTS.TEXT_MESSAGE);
+    if (!moneditasCheck.allowed) {
+      const status = await getMoneditasStatus(phone);
+      const exhaustedMsg = getMoneditasExhaustedMessage(lang, moneditasCheck);
       const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
       if (clearIndicator) await clearIndicator();
-      await sendTextMessage(phone, `${limitMsg}\n\n${upgradeMsg}`);
+      await sendTextMessage(phone, `${exhaustedMsg}\n\n${upgradeMsg}`);
       return;
     }
-
-    // Track text usage BEFORE processing (so this message counts)
-    await trackUsage(phone, USAGE_TYPES.TEXT);
 
     // Use the AI agent to process the combined message
     const agent = new FinanceAgent(phone, user.currency, lang);
     const response = await agent.processMessage(messageText);
+
+    // Consume moneditas AFTER successful processing
+    await consumeMoneditas(phone, OPERATION_COSTS.TEXT_MESSAGE, "text_message");
 
     // Clear the processing indicator (was set when first message arrived)
     if (clearIndicator) await clearIndicator();
@@ -308,17 +325,17 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
 /**
  * Process image message (receipt/bill OCR)
- * Charges 1 monedita per expense detected in the image
+ * Charges IMAGE_RECEIPT (6) moneditas per image processed
  */
 async function processImageMessage(phone, imageData, userCurrency, lang = 'en') {
   try {
-    // First check if user has at least 1 monedita available
-    const initialCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
-    if (!initialCheck.allowed) {
-      const status = await getSubscriptionStatus(phone);
-      const limitMsg = getLimitExceededMessage(USAGE_TYPES.TEXT, lang, initialCheck);
+    // Check moneditas before processing (IMAGE_RECEIPT = 6 moneditas)
+    const moneditasCheck = await checkMoneditas(phone, OPERATION_COSTS.IMAGE_RECEIPT);
+    if (!moneditasCheck.allowed) {
+      const status = await getMoneditasStatus(phone);
+      const exhaustedMsg = getMoneditasExhaustedMessage(lang, moneditasCheck);
       const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
-      return `${limitMsg}\n\n${upgradeMsg}`;
+      return `${exhaustedMsg}\n\n${upgradeMsg}`;
     }
 
     // Check if currency is set
@@ -333,6 +350,9 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
     const categories = await getUserCategories(phone, lang);
     const result = await processExpenseImage(buffer, mimeType, categories, userCurrency);
 
+    // Always consume moneditas for processing the image (API cost incurred)
+    await consumeMoneditas(phone, OPERATION_COSTS.IMAGE_RECEIPT, "image_receipt");
+
     if (!result.detected || result.expenses.length === 0) {
       await UnprocessedDB.create(phone, {
         type: 'image',
@@ -340,31 +360,12 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
         reason: 'no_expense_detected',
         raw_result: result,
       });
-      // Still charge 1 monedita for processing the image (API cost)
-      await trackUsage(phone, USAGE_TYPES.TEXT);
       return getMessage('image_saved_for_review', lang);
     }
 
-    // Check how many moneditas the user has available
-    const expenseCount = result.expenses.length;
-    const currentCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
-    const availableMoneditas = currentCheck.remaining === -1 ? expenseCount : currentCheck.remaining;
-
-    // Determine how many expenses we can process
-    const expensesToProcess = result.expenses.slice(0, availableMoneditas);
-    const skippedExpenses = result.expenses.slice(availableMoneditas);
-
-    if (expensesToProcess.length === 0) {
-      const status = await getSubscriptionStatus(phone);
-      return getMessage('not_enough_moneditas', lang, {
-        needed: expenseCount,
-        remaining: 0
-      }) + `\n\n${getUpgradeMessage(status.plan.id, lang)}`;
-    }
-
-    // Validate amounts for expenses we'll process
+    // Validate amounts for detected expenses
     const validationErrors = [];
-    for (const exp of expensesToProcess) {
+    for (const exp of result.expenses) {
       const validation = validateAmount(exp.amount, userCurrency);
       if (!validation.valid) {
         validationErrors.push(`• ${exp.description || exp.category}: ${validation.error}`);
@@ -375,11 +376,11 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
       return getMessage('validation_error_multi', lang) + validationErrors.join("\n");
     }
 
-    // Create expenses (only the ones we can afford)
+    // Create all expenses
     const createdExpenses = [];
     const budgetAlerts = [];
 
-    for (const exp of expensesToProcess) {
+    for (const exp of result.expenses) {
       const expense = await ExpenseDB.create(phone, {
         amount: exp.amount,
         category: exp.category,
@@ -391,11 +392,6 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
       if (budgetAlert && !budgetAlerts.includes(budgetAlert)) {
         budgetAlerts.push(budgetAlert);
       }
-    }
-
-    // Track usage: 1 monedita per expense processed
-    for (let i = 0; i < createdExpenses.length; i++) {
-      await trackUsage(phone, USAGE_TYPES.TEXT);
     }
 
     // Build response
@@ -417,13 +413,6 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
       }
     }
 
-    // Notify about skipped expenses due to insufficient moneditas
-    if (skippedExpenses.length > 0) {
-      const status = await getSubscriptionStatus(phone);
-      response += `\n⚠️ ${getMessage('expenses_skipped', lang, { count: skippedExpenses.length })}`;
-      response += `\n${getUpgradeMessage(status.plan.id, lang)}`;
-    }
-
     if (budgetAlerts.length > 0) {
       response += `\n${budgetAlerts.join("\n")}`;
     }
@@ -443,17 +432,17 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
 
 /**
  * Process audio message (voice note)
- * Charges 1 monedita per expense detected in the audio
+ * Charges AUDIO_MESSAGE (4) moneditas per audio processed
  */
 async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') {
   try {
-    // First check if user has at least 1 monedita available
-    const initialCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
-    if (!initialCheck.allowed) {
-      const status = await getSubscriptionStatus(phone);
-      const limitMsg = getLimitExceededMessage(USAGE_TYPES.TEXT, lang, initialCheck);
+    // Check moneditas before processing (AUDIO_MESSAGE = 4 moneditas)
+    const moneditasCheck = await checkMoneditas(phone, OPERATION_COSTS.AUDIO_MESSAGE);
+    if (!moneditasCheck.allowed) {
+      const status = await getMoneditasStatus(phone);
+      const exhaustedMsg = getMoneditasExhaustedMessage(lang, moneditasCheck);
       const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
-      return `${limitMsg}\n\n${upgradeMsg}`;
+      return `${exhaustedMsg}\n\n${upgradeMsg}`;
     }
 
     // Check if currency is set
@@ -468,6 +457,9 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
     const categories = await getUserCategories(phone, lang);
     const result = await processExpenseAudio(buffer, mimeType, categories);
 
+    // Always consume moneditas for processing the audio (API cost incurred)
+    await consumeMoneditas(phone, OPERATION_COSTS.AUDIO_MESSAGE, "audio_message");
+
     if (result.error) {
       return getMessage('audio_error', lang);
     }
@@ -480,34 +472,15 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
         reason: 'no_expense_detected',
         raw_result: result,
       });
-      // Still charge 1 monedita for processing the audio (API cost)
-      await trackUsage(phone, USAGE_TYPES.TEXT);
       if (result.transcription) {
         return `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n${getMessage('audio_saved_for_review', lang)}`;
       }
       return getMessage('audio_saved_for_review', lang);
     }
 
-    // Check how many moneditas the user has available
-    const expenseCount = result.expenses.length;
-    const currentCheck = await checkLimit(phone, USAGE_TYPES.TEXT);
-    const availableMoneditas = currentCheck.remaining === -1 ? expenseCount : currentCheck.remaining;
-
-    // Determine how many expenses we can process
-    const expensesToProcess = result.expenses.slice(0, availableMoneditas);
-    const skippedExpenses = result.expenses.slice(availableMoneditas);
-
-    if (expensesToProcess.length === 0) {
-      const status = await getSubscriptionStatus(phone);
-      return `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n${getMessage('not_enough_moneditas', lang, {
-        needed: expenseCount,
-        remaining: 0
-      })}\n\n${getUpgradeMessage(status.plan.id, lang)}`;
-    }
-
-    // Validate amounts for expenses we'll process
+    // Validate amounts for detected expenses
     const validationErrors = [];
-    for (const exp of expensesToProcess) {
+    for (const exp of result.expenses) {
       const validation = validateAmount(exp.amount, userCurrency);
       if (!validation.valid) {
         validationErrors.push(`• ${exp.description || exp.category}: ${validation.error}`);
@@ -518,11 +491,11 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
       return `${getMessage('audio_heard', lang)} "${result.transcription}"\n\n${getMessage('validation_error_multi', lang)}${validationErrors.join("\n")}`;
     }
 
-    // Create expenses (only the ones we can afford)
+    // Create all expenses
     const createdExpenses = [];
     const budgetAlerts = [];
 
-    for (const exp of expensesToProcess) {
+    for (const exp of result.expenses) {
       const expense = await ExpenseDB.create(phone, {
         amount: exp.amount,
         category: exp.category,
@@ -534,11 +507,6 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
       if (budgetAlert && !budgetAlerts.includes(budgetAlert)) {
         budgetAlerts.push(budgetAlert);
       }
-    }
-
-    // Track usage: 1 monedita per expense processed
-    for (let i = 0; i < createdExpenses.length; i++) {
-      await trackUsage(phone, USAGE_TYPES.TEXT);
     }
 
     // Build response
@@ -558,13 +526,6 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
         }
         response += "\n";
       }
-    }
-
-    // Notify about skipped expenses due to insufficient moneditas
-    if (skippedExpenses.length > 0) {
-      const status = await getSubscriptionStatus(phone);
-      response += `\n⚠️ ${getMessage('expenses_skipped', lang, { count: skippedExpenses.length })}`;
-      response += `\n${getUpgradeMessage(status.plan.id, lang)}`;
     }
 
     if (budgetAlerts.length > 0) {

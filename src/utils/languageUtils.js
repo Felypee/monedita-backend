@@ -143,6 +143,16 @@ Try it now! Tell me about a recent expense.`,
     upgrade_cta_free: "Get more moneditas: https://monedita.app/#pricing",
     upgrade_cta_basic: "Upgrade to Premium: https://monedita.app/#pricing",
 
+    // Moneditas system
+    moneditas_exhausted: "You've used all your moneditas ({used}/{limit}).",
+    moneditas_status: "*Moneditas:* {used}/{limit} used ({remaining} remaining)",
+    moneditas_can_do: "*You can still:*",
+    moneditas_text_ops: "text expenses",
+    moneditas_image_ops: "receipt scans",
+    moneditas_audio_ops: "voice notes",
+    history_retention: "*History:* {days} days",
+    days_history: "days of history",
+
     subscription_status_title: "Your Plan: *{plan}*",
     subscription_usage: "*Monthly Usage:*",
     subscription_features: "*Features:*",
@@ -278,6 +288,16 @@ Pregunta: "¿Cuál es mi mayor gasto?"
     upgrade_cta_free: "Consigue más moneditas: https://monedita.app/#pricing",
     upgrade_cta_basic: "Mejora a Premium: https://monedita.app/#pricing",
 
+    // Moneditas system
+    moneditas_exhausted: "Se acabaron tus moneditas ({used}/{limit}).",
+    moneditas_status: "*Moneditas:* {used}/{limit} usadas ({remaining} restantes)",
+    moneditas_can_do: "*Aún puedes:*",
+    moneditas_text_ops: "gastos por texto",
+    moneditas_image_ops: "escaneos de recibos",
+    moneditas_audio_ops: "notas de voz",
+    history_retention: "*Historial:* {days} días",
+    days_history: "días de historial",
+
     subscription_status_title: "Tu Plan: *{plan}*",
     subscription_usage: "*Uso Mensual:*",
     subscription_features: "*Funciones:*",
@@ -412,6 +432,16 @@ Experimente agora! Me conte sobre uma despesa recente.`,
 
     upgrade_cta_free: "Consiga mais moneditas: https://monedita.app/#pricing",
     upgrade_cta_basic: "Atualize para Premium: https://monedita.app/#pricing",
+
+    // Moneditas system
+    moneditas_exhausted: "Suas moneditas acabaram ({used}/{limit}).",
+    moneditas_status: "*Moneditas:* {used}/{limit} usadas ({remaining} restantes)",
+    moneditas_can_do: "*Você ainda pode:*",
+    moneditas_text_ops: "despesas por texto",
+    moneditas_image_ops: "digitalizações de recibos",
+    moneditas_audio_ops: "notas de voz",
+    history_retention: "*Histórico:* {days} dias",
+    days_history: "dias de histórico",
 
     subscription_status_title: "Seu Plano: *{plan}*",
     subscription_usage: "*Uso Mensal:*",

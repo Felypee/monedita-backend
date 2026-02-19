@@ -1,43 +1,56 @@
 /**
  * In-memory database for subscription management
  * Mirrors the Supabase implementation for local development/testing
+ *
+ * New moneditas-based system (February 2026):
+ * - 1 monedita = $0.002 USD
+ * - Costs: TEXT=5, IMAGE=6, AUDIO=4, WEEKLY_SUMMARY=5
  */
 
-// Static plan definitions
+// Static plan definitions with moneditas
 const PLANS = {
   free: {
     id: 'free',
     name: 'Free',
     priceMonthly: 0,
-    limitTextMessages: 30,
-    limitVoiceMessages: 5,
-    limitImageMessages: 5,
-    limitAiConversations: 10,
-    limitBudgets: 1,
-    canExportCsv: false,
+    moneditasMonthly: 50,      // ~$0.10 max cost
+    historyDays: 30,
+    // Legacy fields (kept for backward compatibility during migration)
+    limitTextMessages: 50,
+    limitVoiceMessages: 50,
+    limitImageMessages: 50,
+    limitAiConversations: 50,
+    limitBudgets: -1,          // Unlimited budgets for all plans
+    canExportCsv: true,        // All plans can export
     canExportPdf: false,
   },
   basic: {
     id: 'basic',
     name: 'Basic',
     priceMonthly: 2.99,
-    limitTextMessages: 150,
-    limitVoiceMessages: 30,
-    limitImageMessages: 20,
-    limitAiConversations: 50,
-    limitBudgets: 5,
+    moneditasMonthly: 1200,    // ~$2.40 max cost (neto $2.62 - margen 6%)
+    historyDays: 180,
+    // Legacy fields
+    limitTextMessages: 1200,
+    limitVoiceMessages: 1200,
+    limitImageMessages: 1200,
+    limitAiConversations: 1200,
+    limitBudgets: -1,
     canExportCsv: true,
-    canExportPdf: false,
+    canExportPdf: true,
   },
   premium: {
     id: 'premium',
     name: 'Premium',
     priceMonthly: 7.99,
-    limitTextMessages: -1, // unlimited
-    limitVoiceMessages: 100,
-    limitImageMessages: 50,
-    limitAiConversations: -1, // unlimited
-    limitBudgets: -1, // unlimited
+    moneditasMonthly: 3500,    // ~$7.00 max cost (neto $7.45 - margen 5%)
+    historyDays: 365,
+    // Legacy fields
+    limitTextMessages: 3500,
+    limitVoiceMessages: 3500,
+    limitImageMessages: 3500,
+    limitAiConversations: 3500,
+    limitBudgets: -1,
     canExportCsv: true,
     canExportPdf: true,
   },
@@ -46,7 +59,10 @@ const PLANS = {
 // User subscriptions: phone -> subscription data
 const subscriptions = new Map();
 
-// Usage tracking: phone -> { usageType -> { periodStart -> count } }
+// Moneditas usage tracking: phone -> { periodKey -> { used, lastOperation } }
+const moneditasUsage = new Map();
+
+// Legacy usage tracking (kept for backward compatibility)
 const usage = new Map();
 
 /**
@@ -155,7 +171,81 @@ export const UserSubscriptionDB = {
 };
 
 /**
- * Usage Tracking operations
+ * Moneditas Usage Tracking - New unified system
+ */
+export const MoneditasDB = {
+  /**
+   * Get the period key for storage
+   */
+  _getPeriodKey(phone) {
+    const periodStart = UserSubscriptionDB.getBillingPeriodStart(phone);
+    return periodStart.toISOString().split('T')[0]; // YYYY-MM-DD
+  },
+
+  /**
+   * Get current moneditas usage for this billing period
+   */
+  getUsage(phone) {
+    const periodKey = this._getPeriodKey(phone);
+    const userUsage = moneditasUsage.get(phone);
+    if (!userUsage || !userUsage[periodKey]) return 0;
+    return userUsage[periodKey].used || 0;
+  },
+
+  /**
+   * Increment moneditas usage
+   * @param {string} phone - User's phone number
+   * @param {number} amount - Number of moneditas to consume
+   * @param {string} operationType - Type of operation for logging
+   * @returns {number} New total usage
+   */
+  increment(phone, amount, operationType = "unknown") {
+    const periodKey = this._getPeriodKey(phone);
+
+    let userUsage = moneditasUsage.get(phone);
+    if (!userUsage) {
+      userUsage = {};
+      moneditasUsage.set(phone, userUsage);
+    }
+
+    if (!userUsage[periodKey]) {
+      userUsage[periodKey] = { used: 0, lastOperation: null };
+    }
+
+    userUsage[periodKey].used += amount;
+    userUsage[periodKey].lastOperation = operationType;
+    userUsage[periodKey].updatedAt = new Date();
+
+    return userUsage[periodKey].used;
+  },
+
+  /**
+   * Reset usage for a new billing period
+   */
+  resetPeriod(phone) {
+    const userUsage = moneditasUsage.get(phone);
+    if (userUsage) {
+      const periodKey = this._getPeriodKey(phone);
+      delete userUsage[periodKey];
+    }
+  },
+
+  /**
+   * Get usage details including last operation
+   */
+  getUsageDetails(phone) {
+    const periodKey = this._getPeriodKey(phone);
+    const userUsage = moneditasUsage.get(phone);
+    if (!userUsage || !userUsage[periodKey]) {
+      return { used: 0, lastOperation: null, periodKey };
+    }
+    return { ...userUsage[periodKey], periodKey };
+  },
+};
+
+/**
+ * Legacy Usage Tracking operations (kept for backward compatibility)
+ * Will be deprecated once migration is complete
  */
 export const UsageDB = {
   /**
@@ -221,8 +311,6 @@ export const UsageDB = {
    * Reset usage for a new billing period (usually automatic based on period key)
    */
   resetPeriod(phone) {
-    // Not really needed for in-memory since period key changes automatically
-    // But can be used for testing
     const userUsage = usage.get(phone);
     if (userUsage) {
       const periodKey = this._getPeriodKey(phone);
@@ -234,33 +322,21 @@ export const UsageDB = {
 
   /**
    * Check if user has exceeded limit for a specific type
-   * Returns { allowed: boolean, used: number, limit: number, remaining: number }
+   * Now uses moneditas system - maps to unified limit
    */
   checkLimit(phone, usageType) {
+    // Use the new moneditas system
     const plan = UserSubscriptionDB.getPlan(phone);
-    const used = this.getUsage(phone, usageType);
+    const moneditasUsed = MoneditasDB.getUsage(phone);
+    const moneditasLimit = plan.moneditasMonthly;
 
-    // Map usage type to plan limit field
-    const limitMap = {
-      text: plan.limitTextMessages,
-      voice: plan.limitVoiceMessages,
-      image: plan.limitImageMessages,
-      ai_conversation: plan.limitAiConversations,
-      budget: plan.limitBudgets,
-    };
+    // For backward compatibility, we check against moneditas limit
+    const remaining = Math.max(0, moneditasLimit - moneditasUsed);
 
-    const limit = limitMap[usageType];
-
-    // -1 means unlimited
-    if (limit === -1) {
-      return { allowed: true, used, limit: -1, remaining: -1 };
-    }
-
-    const remaining = Math.max(0, limit - used);
     return {
-      allowed: used < limit,
-      used,
-      limit,
+      allowed: remaining > 0,
+      used: moneditasUsed,
+      limit: moneditasLimit,
       remaining,
     };
   },

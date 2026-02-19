@@ -100,23 +100,21 @@ async function generatePaymentLink(phone, planId, currentPlan, lang) {
 }
 
 /**
- * Format upgrade plans with COP prices
+ * Format upgrade plans with COP prices (using moneditas system)
  */
 function formatUpgradePlansWithPrices(currentPlan, lang) {
   const messages = {
     es: `💳 *Planes Disponibles*
 
 ${currentPlan === "free" ? `📦 *Basic* - ${formatPriceCOP(SUBSCRIPTION_PLANS.basic.priceCOP)}/mes
-• 150 mensajes de texto
-• 30 mensajes de voz
-• 20 escaneos de recibos
-• 5 presupuestos
-• Exportar CSV
+• 1,200 moneditas/mes (~240 gastos)
+• 6 meses de historial
+• Presupuestos ilimitados
+• Exportar CSV y PDF
 
 ` : ""}🚀 *Premium* - ${formatPriceCOP(SUBSCRIPTION_PLANS.premium.priceCOP)}/mes
-• Mensajes de texto ilimitados
-• 100 mensajes de voz
-• 50 escaneos de recibos
+• 3,500 moneditas/mes (~700 gastos)
+• 12 meses de historial
 • Presupuestos ilimitados
 • Exportar CSV y PDF
 
@@ -126,16 +124,14 @@ ${currentPlan === "free" ? '• "Quiero Basic"\n' : ""}• "Quiero Premium"`,
     en: `💳 *Available Plans*
 
 ${currentPlan === "free" ? `📦 *Basic* - ${formatPriceCOP(SUBSCRIPTION_PLANS.basic.priceCOP)}/month
-• 150 text messages
-• 30 voice messages
-• 20 receipt scans
-• 5 budgets
-• CSV export
+• 1,200 moneditas/month (~240 expenses)
+• 6 months history
+• Unlimited budgets
+• CSV and PDF export
 
 ` : ""}🚀 *Premium* - ${formatPriceCOP(SUBSCRIPTION_PLANS.premium.priceCOP)}/month
-• Unlimited text messages
-• 100 voice messages
-• 50 receipt scans
+• 3,500 moneditas/month (~700 expenses)
+• 12 months history
 • Unlimited budgets
 • CSV and PDF export
 
@@ -145,16 +141,14 @@ ${currentPlan === "free" ? '• "I want Basic"\n' : ""}• "I want Premium"`,
     pt: `💳 *Planos Disponíveis*
 
 ${currentPlan === "free" ? `📦 *Basic* - ${formatPriceCOP(SUBSCRIPTION_PLANS.basic.priceCOP)}/mês
-• 150 mensagens de texto
-• 30 mensagens de voz
-• 20 digitalizações de recibos
-• 5 orçamentos
-• Exportar CSV
+• 1,200 moneditas/mês (~240 despesas)
+• 6 meses de histórico
+• Orçamentos ilimitados
+• Exportar CSV e PDF
 
 ` : ""}🚀 *Premium* - ${formatPriceCOP(SUBSCRIPTION_PLANS.premium.priceCOP)}/mês
-• Mensagens de texto ilimitadas
-• 100 mensagens de voz
-• 50 digitalizações de recibos
+• 3,500 moneditas/mês (~700 despesas)
+• 12 meses de histórico
 • Orçamentos ilimitados
 • Exportar CSV e PDF
 

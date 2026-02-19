@@ -1,16 +1,28 @@
 /**
  * Subscription Service - Business logic for subscription limits and usage tracking
+ *
+ * This service now uses the unified moneditas system where:
+ * - 1 monedita = $0.002 USD (real cost)
+ * - TEXT_MESSAGE = 5 moneditas
+ * - IMAGE_RECEIPT = 6 moneditas
+ * - AUDIO_MESSAGE = 4 moneditas
+ * - WEEKLY_SUMMARY = 5 moneditas
  */
 
 import {
   SubscriptionPlanDB,
   UserSubscriptionDB,
   UsageDB,
+  MoneditasDB,
 } from "../database/index.js";
 import { getMessage } from "../utils/languageUtils.js";
 
+// Re-export operation costs from moneditasService for convenience
+export { OPERATION_COSTS } from "./moneditasService.js";
+
 /**
- * Usage types that can be tracked
+ * Legacy usage types (kept for backward compatibility)
+ * New code should use OPERATION_COSTS from moneditasService.js
  */
 export const USAGE_TYPES = {
   TEXT: "text",
@@ -31,9 +43,9 @@ export async function shouldBypassLimits(phone) {
 }
 
 /**
- * Check if an action is allowed based on subscription limits
+ * Check if an action is allowed based on moneditas
  * @param {string} phone - User's phone number
- * @param {string} usageType - Type of usage (text, voice, image, ai_conversation, budget)
+ * @param {string} usageType - Type of usage (for backward compatibility)
  * @returns {Promise<{allowed: boolean, used: number, limit: number, remaining: number}>}
  */
 export async function checkLimit(phone, usageType) {
@@ -43,6 +55,7 @@ export async function checkLimit(phone, usageType) {
       return { allowed: true, used: 0, limit: -1, remaining: -1, bypassed: true };
     }
 
+    // Use new moneditas system
     const result = await UsageDB.checkLimit(phone, usageType);
     return result;
   } catch (error) {
@@ -53,7 +66,7 @@ export async function checkLimit(phone, usageType) {
 }
 
 /**
- * Track usage after a successful operation
+ * Track usage after a successful operation (legacy - use moneditasService for new code)
  * @param {string} phone - User's phone number
  * @param {string} usageType - Type of usage
  * @returns {Promise<number>} New usage count
@@ -74,6 +87,7 @@ export async function trackUsage(phone, usageType) {
 
 /**
  * Check if export is allowed for user's plan
+ * All plans now support CSV export, PDF export for basic+
  * @param {string} phone - User's phone number
  * @param {string} exportType - 'csv' or 'pdf'
  * @returns {Promise<boolean>}
@@ -94,7 +108,7 @@ export async function canExport(phone, exportType) {
 }
 
 /**
- * Get user's subscription status with plan details and current usage
+ * Get user's subscription status with plan details and moneditas usage
  * @param {string} phone - User's phone number
  * @returns {Promise<object>}
  */
@@ -102,7 +116,7 @@ export async function getSubscriptionStatus(phone) {
   try {
     const subscription = await UserSubscriptionDB.getOrCreate(phone);
     const plan = await SubscriptionPlanDB.get(subscription.planId);
-    const usage = await UsageDB.getAllUsage(phone);
+    const moneditasUsed = await MoneditasDB.getUsage(phone);
     const periodStart = await UserSubscriptionDB.getBillingPeriodStart(phone);
 
     return {
@@ -110,15 +124,29 @@ export async function getSubscriptionStatus(phone) {
         id: plan.id,
         name: plan.name,
         priceMonthly: plan.priceMonthly,
+        moneditasMonthly: plan.moneditasMonthly,
+        historyDays: plan.historyDays,
       },
+      moneditas: {
+        used: moneditasUsed,
+        limit: plan.moneditasMonthly,
+        remaining: Math.max(0, plan.moneditasMonthly - moneditasUsed),
+      },
+      // Legacy fields for backward compatibility
       limits: {
-        text: plan.limitTextMessages,
-        voice: plan.limitVoiceMessages,
-        image: plan.limitImageMessages,
-        ai_conversation: plan.limitAiConversations,
-        budget: plan.limitBudgets,
+        text: plan.moneditasMonthly,
+        voice: plan.moneditasMonthly,
+        image: plan.moneditasMonthly,
+        ai_conversation: plan.moneditasMonthly,
+        budget: -1, // Unlimited budgets
       },
-      usage,
+      usage: {
+        text: moneditasUsed,
+        voice: moneditasUsed,
+        image: moneditasUsed,
+        ai_conversation: moneditasUsed,
+        budget: 0,
+      },
       features: {
         canExportCsv: plan.canExportCsv,
         canExportPdf: plan.canExportPdf,
@@ -130,10 +158,11 @@ export async function getSubscriptionStatus(phone) {
     console.error("[subscriptionService] Error getting status:", error);
     // Return a default free plan status on error
     return {
-      plan: { id: "free", name: "Free", priceMonthly: 0 },
-      limits: { text: 30, voice: 5, image: 5, ai_conversation: 10, budget: 1 },
+      plan: { id: "free", name: "Free", priceMonthly: 0, moneditasMonthly: 50, historyDays: 30 },
+      moneditas: { used: 0, limit: 50, remaining: 50 },
+      limits: { text: 50, voice: 50, image: 50, ai_conversation: 50, budget: -1 },
       usage: { text: 0, voice: 0, image: 0, ai_conversation: 0, budget: 0 },
-      features: { canExportCsv: false, canExportPdf: false },
+      features: { canExportCsv: true, canExportPdf: false },
       error: true,
     };
   }
@@ -162,6 +191,10 @@ export async function upgradePlan(phone, planId) {
   try {
     const subscription = await UserSubscriptionDB.upgradePlan(phone, planId);
     const plan = await SubscriptionPlanDB.get(planId);
+
+    // Reset moneditas for new billing period
+    await MoneditasDB.resetPeriod(phone);
+
     return { success: true, subscription, plan };
   } catch (error) {
     console.error("[subscriptionService] Error upgrading plan:", error);
@@ -170,15 +203,15 @@ export async function upgradePlan(phone, planId) {
 }
 
 /**
- * Get localized message for limit exceeded
+ * Get localized message for limit exceeded (moneditas exhausted)
  * @param {string} usageType - Type of usage that exceeded limit
  * @param {string} lang - Language code
  * @param {object} details - { used, limit, remaining }
  * @returns {string}
  */
 export function getLimitExceededMessage(usageType, lang, details) {
-  const key = `limit_${usageType}_exceeded`;
-  return getMessage(key, lang, {
+  // Use unified moneditas message
+  return getMessage("moneditas_exhausted", lang, {
     used: details.used,
     limit: details.limit,
   });
@@ -209,27 +242,30 @@ export function formatSubscriptionStatus(status, lang) {
   const planName = status.plan.name;
   const lines = [getMessage("subscription_status_title", lang, { plan: planName })];
 
-  // Format usage for each type
-  const usageTypes = [
-    { key: "text", label: getMessage("usage_text_label", lang) },
-    { key: "voice", label: getMessage("usage_voice_label", lang) },
-    { key: "image", label: getMessage("usage_image_label", lang) },
-    { key: "ai_conversation", label: getMessage("usage_ai_label", lang) },
-    { key: "budget", label: getMessage("usage_budget_label", lang) },
-  ];
-
+  // Moneditas status
   lines.push("");
-  lines.push(getMessage("subscription_usage", lang));
+  lines.push(getMessage("moneditas_status", lang, {
+    used: status.moneditas.used,
+    limit: status.moneditas.limit,
+    remaining: status.moneditas.remaining,
+  }));
 
-  for (const { key, label } of usageTypes) {
-    const used = status.usage[key] || 0;
-    const limit = status.limits[key];
-    if (limit === -1) {
-      lines.push(`• ${label}: ${used} / ${getMessage("unlimited", lang)}`);
-    } else {
-      lines.push(`• ${label}: ${used} / ${limit}`);
-    }
+  // What can they do with remaining moneditas
+  if (status.moneditas.remaining > 0) {
+    const textOps = Math.floor(status.moneditas.remaining / 5);  // TEXT_MESSAGE cost
+    const imageOps = Math.floor(status.moneditas.remaining / 6); // IMAGE_RECEIPT cost
+    const audioOps = Math.floor(status.moneditas.remaining / 4); // AUDIO_MESSAGE cost
+
+    lines.push("");
+    lines.push(getMessage("moneditas_can_do", lang));
+    lines.push(`• ${textOps} ${getMessage("moneditas_text_ops", lang)}`);
+    lines.push(`• ${imageOps} ${getMessage("moneditas_image_ops", lang)}`);
+    lines.push(`• ${audioOps} ${getMessage("moneditas_audio_ops", lang)}`);
   }
+
+  // History retention
+  lines.push("");
+  lines.push(getMessage("history_retention", lang, { days: status.plan.historyDays }));
 
   // Features
   lines.push("");
@@ -258,19 +294,17 @@ export function formatUpgradePlans(plans, currentPlanId, lang) {
     const price = plan.priceMonthly === 0 ? getMessage("free_label", lang) : `$${plan.priceMonthly}/mo`;
     lines.push(`*${plan.name}* - ${price}`);
 
-    // Highlight key features
+    // Highlight moneditas and features
     const features = [];
-    if (plan.limitTextMessages === -1) {
-      features.push(getMessage("feature_unlimited_text", lang));
-    } else {
-      features.push(`${plan.limitTextMessages} ${getMessage("feature_text_messages", lang)}`);
+    features.push(`${plan.moneditasMonthly} moneditas/mes`);
+
+    const textOps = Math.floor(plan.moneditasMonthly / 5);
+    features.push(`~${textOps} ${getMessage("moneditas_text_ops", lang)}`);
+
+    if (plan.historyDays >= 180) {
+      features.push(`${plan.historyDays} ${getMessage("days_history", lang)}`);
     }
-    if (plan.limitVoiceMessages > 5) {
-      features.push(`${plan.limitVoiceMessages} ${getMessage("feature_voice_messages", lang)}`);
-    }
-    if (plan.canExportCsv) {
-      features.push(getMessage("feature_csv_export", lang));
-    }
+
     if (plan.canExportPdf) {
       features.push(getMessage("feature_pdf_export", lang));
     }
