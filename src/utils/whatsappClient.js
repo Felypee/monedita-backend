@@ -1,6 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
+import { formatWhatsAppMessage } from './messageUtils.js';
 
 dotenv.config();
 
@@ -10,9 +11,13 @@ const ACCESS_TOKEN = process.env.WHATSAPP_TOKEN;
 
 /**
  * Send a text message via WhatsApp
+ * Automatically truncates messages to 12 lines max
  */
 export async function sendTextMessage(to, message) {
   try {
+    // Format message: truncate to 12 lines, clean up whitespace
+    const formattedMessage = formatWhatsAppMessage(message);
+
     const response = await axios.post(
       `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
       {
@@ -20,7 +25,7 @@ export async function sendTextMessage(to, message) {
         recipient_type: 'individual',
         to: to,
         type: 'text',
-        text: { body: message }
+        text: { body: formattedMessage }
       },
       {
         headers: {
@@ -280,7 +285,9 @@ export async function sendContactCard(to, contact) {
 /**
  * Send a sticker via WhatsApp
  * @param {string} to - Recipient phone number
- * @param {string} stickerUrl - URL to the sticker (must be .webp, 512x512, max 100KB)
+ * @param {string} stickerUrl - URL to the sticker (.webp format, 512x512)
+ *   - Static stickers: max 100KB
+ *   - Animated stickers: max 500KB, must be animated WebP
  */
 export async function sendSticker(to, stickerUrl) {
   try {

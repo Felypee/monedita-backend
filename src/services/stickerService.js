@@ -1,6 +1,19 @@
 /**
  * Sticker Service
  * Manages sticker URLs and random selection for different contexts
+ *
+ * Sticker Requirements (WhatsApp):
+ * - Format: WebP (static or animated)
+ * - Dimensions: 512x512 pixels
+ * - Static stickers: max 100KB
+ * - Animated stickers: max 500KB, animated WebP format
+ *
+ * To create animated stickers:
+ * 1. Create animation as GIF or video
+ * 2. Convert to animated WebP using tools like:
+ *    - ffmpeg: ffmpeg -i input.gif -vcodec libwebp -lossless 0 -loop 0 -vf scale=512:512 output.webp
+ *    - Online: ezgif.com/gif-to-webp
+ * 3. Ensure file is under 500KB
  */
 
 import { sendSticker } from "../utils/whatsappClient.js";
