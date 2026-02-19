@@ -34,7 +34,13 @@ INSERT INTO cost_config (key, value, description) VALUES
   ('claude.tokens_voice_input', 600, 'Tokens input por audio'),
   ('claude.tokens_voice_output', 150, 'Tokens output por audio'),
   ('claude.tokens_ai_input', 2000, 'Tokens input por conversación AI'),
-  ('claude.tokens_ai_output', 500, 'Tokens output por conversación AI')
+  ('claude.tokens_ai_output', 500, 'Tokens output por conversación AI'),
+
+  -- Pagos (Wompi)
+  ('payments.wompi_fee_percent', 2.99, 'Porcentaje comisión Wompi (%)'),
+  ('payments.wompi_fee_fixed_cop', 900, 'Comisión fija Wompi (COP)'),
+  ('payments.monedita_cost_usd', 0.002, 'Costo real por monedita (USD)'),
+  ('payments.infra_per_user', 0.05, 'Infra prorrateada por usuario (USD)')
 ON CONFLICT (key) DO UPDATE SET
   value = EXCLUDED.value,
   description = EXCLUDED.description,
