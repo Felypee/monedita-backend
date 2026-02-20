@@ -6,6 +6,7 @@
 import { ExpenseDB, BudgetDB, UserDB } from "../database/index.js";
 import { validateAmount, formatAmount } from "../utils/currencyUtils.js";
 import { getMessage } from "../utils/languageUtils.js";
+import { generateSetupUrl } from "../services/statsTokenService.js";
 
 export const definition = {
   name: "log_expense",
@@ -148,10 +149,12 @@ async function getSetupReminder(phone, lang) {
     // Mark as reminded so we don't show again
     await UserDB.setSetupReminded(phone, true);
 
+    const setupUrl = generateSetupUrl(phone);
+
     const messages = {
-      en: `💡 *Tip:* Set up your categories and budgets at:\nhttps://monedita.app/setup`,
-      es: `💡 *Tip:* Configura tus categorías y presupuestos en:\nhttps://monedita.app/setup`,
-      pt: `💡 *Dica:* Configure suas categorias e orçamentos em:\nhttps://monedita.app/setup`,
+      en: `💡 *Tip:* Set up your categories and budgets:\n${setupUrl}`,
+      es: `💡 *Tip:* Configura tus categorías y presupuestos:\n${setupUrl}`,
+      pt: `💡 *Dica:* Configure suas categorias e orçamentos:\n${setupUrl}`,
     };
 
     return messages[lang] || messages.en;

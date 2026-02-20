@@ -63,6 +63,56 @@ export function generateStatsUrl(phone) {
 }
 
 /**
+ * Generate a setup token for a user
+ * @param {string} phone - User's phone number
+ * @returns {string} JWT token
+ */
+export function generateSetupToken(phone) {
+  const payload = {
+    phone,
+    type: 'setup',
+    iat: Math.floor(Date.now() / 1000),
+  };
+
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' }); // 24h for setup
+}
+
+/**
+ * Validate a setup token
+ * @param {string} token - JWT token to validate
+ * @returns {{valid: boolean, phone?: string, error?: string}}
+ */
+export function validateSetupToken(token) {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (decoded.type !== 'setup') {
+      return { valid: false, error: 'Invalid token type' };
+    }
+
+    return { valid: true, phone: decoded.phone };
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return { valid: false, error: 'Token expired' };
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return { valid: false, error: 'Invalid token' };
+    }
+    return { valid: false, error: 'Token validation failed' };
+  }
+}
+
+/**
+ * Generate full setup URL with token
+ * @param {string} phone - User's phone number
+ * @returns {string} Full URL to setup page
+ */
+export function generateSetupUrl(phone) {
+  const token = generateSetupToken(phone);
+  return `${STATS_BASE_URL}/setup?token=${token}`;
+}
+
+/**
  * Get token expiry time in human readable format
  * @returns {string}
  */
@@ -76,5 +126,8 @@ export default {
   generateStatsToken,
   validateStatsToken,
   generateStatsUrl,
+  generateSetupToken,
+  validateSetupToken,
+  generateSetupUrl,
   getTokenExpiryDescription,
 };

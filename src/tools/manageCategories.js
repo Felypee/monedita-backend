@@ -1,7 +1,9 @@
 /**
  * Tool: Manage Categories
- * Sends user to the web configuration page to manage their categories
+ * Sends user a magic link to configure their categories
  */
+
+import { generateSetupUrl } from "../services/statsTokenService.js";
 
 export const definition = {
   name: "manage_categories",
@@ -14,10 +16,12 @@ export const definition = {
 };
 
 export async function handler(phone, params, lang) {
+  const setupUrl = generateSetupUrl(phone);
+
   const messages = {
-    en: `⚙️ Set up your categories and budgets here:\nhttps://monedita.app/setup`,
-    es: `⚙️ Configura tus categorías y presupuestos aquí:\nhttps://monedita.app/setup`,
-    pt: `⚙️ Configure suas categorias e orçamentos aqui:\nhttps://monedita.app/setup`,
+    en: `⚙️ Set up your categories and budgets here:\n${setupUrl}`,
+    es: `⚙️ Configura tus categorías y presupuestos aquí:\n${setupUrl}`,
+    pt: `⚙️ Configure suas categorias e orçamentos aqui:\n${setupUrl}`,
   };
 
   return { success: true, message: messages[lang] || messages.en };
