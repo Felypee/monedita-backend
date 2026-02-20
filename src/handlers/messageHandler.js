@@ -36,8 +36,12 @@ import {
   consumeMoneditas,
   getMoneditasStatus,
   getUpgradeMessage,
-  OPERATION_COSTS,
 } from "../services/moneditasService.js";
+import {
+  calculateTotalCost,
+  formatCostLog,
+  MAX_ESTIMATES,
+} from "../services/costTracker.js";
 import { sendContextSticker, STICKER_CONTEXTS } from "../services/stickerService.js";
 
 /**
@@ -278,8 +282,8 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
     console.log(`📨 Processing batch for ${phone}: ${messageCount} messages -> "${messageText.substring(0, 50)}..."`);
 
-    // Check moneditas before processing (TEXT_MESSAGE = 5 moneditas)
-    const moneditasCheck = await checkMoneditas(phone, OPERATION_COSTS.TEXT_MESSAGE);
+    // Check moneditas before processing (use max estimate for pre-check)
+    const moneditasCheck = await checkMoneditas(phone, MAX_ESTIMATES.TEXT_MESSAGE);
     if (!moneditasCheck.allowed) {
       const status = await getMoneditasStatus(phone);
       const exhaustedMsg = getMoneditasExhaustedMessage(lang, moneditasCheck);
@@ -293,8 +297,18 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
     const agent = new FinanceAgent(phone, user.currency, lang);
     const response = await agent.processMessage(messageText);
 
-    // Consume moneditas AFTER successful processing
-    await consumeMoneditas(phone, OPERATION_COSTS.TEXT_MESSAGE, "text_message");
+    // Calculate REAL cost based on actual token usage
+    const tokenUsage = agent.getLastTokenUsage();
+    const costResult = calculateTotalCost({
+      claude: tokenUsage,
+      whatsappMessages: 1, // Response message
+    });
+
+    console.log(formatCostLog(costResult));
+
+    // Consume actual moneditas (minimum 1)
+    const actualCost = Math.max(1, costResult.totalMoneditas);
+    await consumeMoneditas(phone, actualCost, "text_message");
 
     // Clear the processing indicator (was set when first message arrived)
     if (clearIndicator) await clearIndicator();
@@ -312,12 +326,12 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
 /**
  * Process image message (receipt/bill OCR)
- * Charges IMAGE_RECEIPT (6) moneditas per image processed
+ * Charges based on actual Claude Vision tokens used
  */
 async function processImageMessage(phone, imageData, userCurrency, lang = 'en') {
   try {
-    // Check moneditas before processing (IMAGE_RECEIPT = 6 moneditas)
-    const moneditasCheck = await checkMoneditas(phone, OPERATION_COSTS.IMAGE_RECEIPT);
+    // Check moneditas before processing (use max estimate for pre-check)
+    const moneditasCheck = await checkMoneditas(phone, MAX_ESTIMATES.IMAGE_RECEIPT);
     if (!moneditasCheck.allowed) {
       const status = await getMoneditasStatus(phone);
       const exhaustedMsg = getMoneditasExhaustedMessage(lang, moneditasCheck);
@@ -337,8 +351,17 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
     const categories = await getUserCategories(phone, lang);
     const result = await processExpenseImage(buffer, mimeType, categories, userCurrency);
 
-    // Always consume moneditas for processing the image (API cost incurred)
-    await consumeMoneditas(phone, OPERATION_COSTS.IMAGE_RECEIPT, "image_receipt");
+    // Calculate REAL cost based on actual token usage
+    const costResult = calculateTotalCost({
+      claude: result._tokenUsage,
+      whatsappMessages: 1, // Response message
+    });
+
+    console.log(formatCostLog(costResult));
+
+    // Consume actual moneditas (minimum 1)
+    const actualCost = Math.max(1, costResult.totalMoneditas);
+    await consumeMoneditas(phone, actualCost, "image_receipt");
 
     if (!result.detected || result.expenses.length === 0) {
       await UnprocessedDB.create(phone, {
@@ -419,12 +442,12 @@ async function processImageMessage(phone, imageData, userCurrency, lang = 'en') 
 
 /**
  * Process audio message (voice note)
- * Charges AUDIO_MESSAGE (4) moneditas per audio processed
+ * Charges based on actual Whisper + Claude tokens used
  */
 async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') {
   try {
-    // Check moneditas before processing (AUDIO_MESSAGE = 4 moneditas)
-    const moneditasCheck = await checkMoneditas(phone, OPERATION_COSTS.AUDIO_MESSAGE);
+    // Check moneditas before processing (use max estimate for pre-check)
+    const moneditasCheck = await checkMoneditas(phone, MAX_ESTIMATES.AUDIO_MESSAGE);
     if (!moneditasCheck.allowed) {
       const status = await getMoneditasStatus(phone);
       const exhaustedMsg = getMoneditasExhaustedMessage(lang, moneditasCheck);
@@ -444,8 +467,18 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
     const categories = await getUserCategories(phone, lang);
     const result = await processExpenseAudio(buffer, mimeType, categories);
 
-    // Always consume moneditas for processing the audio (API cost incurred)
-    await consumeMoneditas(phone, OPERATION_COSTS.AUDIO_MESSAGE, "audio_message");
+    // Calculate REAL cost based on actual usage
+    const costResult = calculateTotalCost({
+      claude: result._tokenUsage,
+      whisper: result._whisperUsage,
+      whatsappMessages: 1, // Response message
+    });
+
+    console.log(formatCostLog(costResult));
+
+    // Consume actual moneditas (minimum 1)
+    const actualCost = Math.max(1, costResult.totalMoneditas);
+    await consumeMoneditas(phone, actualCost, "audio_message");
 
     if (result.error) {
       return getMessage('audio_error', lang);

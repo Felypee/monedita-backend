@@ -1,13 +1,16 @@
 /**
  * Media Processing Utilities
- * - Images: Uses Claude Vision API for OCR (no extra cost)
+ * - Images: Uses Claude Vision API for OCR (tokens tracked for dynamic pricing)
  * - Audio: Uses OpenAI Whisper API (very cheap) or Groq (free tier)
+ *
+ * Returns token/duration usage for dynamic monedita calculation
  */
 
 import axios from "axios";
 import FormData from "form-data";
 import dotenv from "dotenv";
 import { trackUsage, isAllowed } from "./usageMonitor.js";
+import { estimateAudioDuration } from "../services/costTracker.js";
 
 dotenv.config();
 
@@ -123,18 +126,30 @@ Examples of good responses:
       }
     );
 
+    // Capture token usage for dynamic cost calculation
+    const tokenUsage = response.data.usage || { input_tokens: 0, output_tokens: 0 };
+
     const result = response.data.content[0].text;
     const cleaned = result
       .replace(/```json\n?/g, "")
       .replace(/```\n?/g, "")
       .trim();
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+
+    // Add token usage to result
+    return {
+      ...parsed,
+      _tokenUsage: {
+        inputTokens: tokenUsage.input_tokens,
+        outputTokens: tokenUsage.output_tokens,
+      },
+    };
   } catch (error) {
     console.error(
       "Error processing image:",
       error.response?.data || error.message
     );
-    return { detected: false, expenses: [] };
+    return { detected: false, expenses: [], _tokenUsage: null };
   }
 }
 
@@ -143,7 +158,7 @@ Examples of good responses:
  * Tries Groq first (free), falls back to OpenAI (cheap)
  * @param {Buffer} audioBuffer - The audio data
  * @param {string} mimeType - The audio MIME type
- * @returns {Promise<string>} - The transcribed text
+ * @returns {Promise<{text: string, provider: 'groq'|'openai', durationSeconds: number}>}
  */
 export async function transcribeAudio(audioBuffer, mimeType) {
   // Check daily API limit (DDoS/cost protection)
@@ -153,10 +168,14 @@ export async function transcribeAudio(audioBuffer, mimeType) {
   }
   trackUsage('whisper_calls');
 
+  // Estimate audio duration from buffer size
+  const durationSeconds = estimateAudioDuration(audioBuffer.length);
+
   // Try Groq first (free tier available)
   if (GROQ_API_KEY) {
     try {
-      return await transcribeWithGroq(audioBuffer, mimeType);
+      const text = await transcribeWithGroq(audioBuffer, mimeType);
+      return { text, provider: 'groq', durationSeconds };
     } catch (error) {
       console.log("Groq transcription failed, trying OpenAI...");
     }
@@ -164,7 +183,8 @@ export async function transcribeAudio(audioBuffer, mimeType) {
 
   // Fall back to OpenAI Whisper
   if (OPENAI_API_KEY) {
-    return await transcribeWithOpenAI(audioBuffer, mimeType);
+    const text = await transcribeWithOpenAI(audioBuffer, mimeType);
+    return { text, provider: 'openai', durationSeconds };
   }
 
   throw new Error(
@@ -252,13 +272,14 @@ function getAudioExtension(mimeType) {
  * Process audio message: transcribe and extract expenses
  * @param {Buffer} audioBuffer - The audio data
  * @param {string} mimeType - The audio MIME type
- * @returns {Promise<{transcription: string, detected: boolean, expenses: Array}>}
+ * @returns {Promise<{transcription: string, detected: boolean, expenses: Array, _whisperUsage: object, _tokenUsage: object}>}
  */
 export async function processExpenseAudio(audioBuffer, mimeType, categories = null) {
   try {
     // First, transcribe the audio
-    const transcription = await transcribeAudio(audioBuffer, mimeType);
-    console.log(`📝 Transcription: ${transcription}`);
+    const whisperResult = await transcribeAudio(audioBuffer, mimeType);
+    const transcription = whisperResult.text;
+    console.log(`📝 Transcription (${whisperResult.provider}): ${transcription}`);
 
     const categoryList = categories ? categories.join(', ') : 'food, transport, shopping, entertainment, bills, health, other';
 
@@ -292,6 +313,9 @@ If no expenses mentioned, return: {"detected": false, "expenses": []}`;
       }
     );
 
+    // Capture token usage for dynamic cost calculation
+    const tokenUsage = response.data.usage || { input_tokens: 0, output_tokens: 0 };
+
     const result = response.data.content[0].text;
     const cleaned = result
       .replace(/```json\n?/g, "")
@@ -302,6 +326,15 @@ If no expenses mentioned, return: {"detected": false, "expenses": []}`;
     return {
       transcription,
       ...expenseData,
+      _whisperUsage: {
+        provider: whisperResult.provider,
+        durationSeconds: whisperResult.durationSeconds,
+        isGroq: whisperResult.provider === 'groq',
+      },
+      _tokenUsage: {
+        inputTokens: tokenUsage.input_tokens,
+        outputTokens: tokenUsage.output_tokens,
+      },
     };
   } catch (error) {
     console.error(
@@ -313,6 +346,8 @@ If no expenses mentioned, return: {"detected": false, "expenses": []}`;
       detected: false,
       expenses: [],
       error: error.message,
+      _whisperUsage: null,
+      _tokenUsage: null,
     };
   }
 }

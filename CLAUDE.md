@@ -154,28 +154,52 @@ For payments (Wompi):
 - Expense categories: `food`, `transport`, `shopping`, `entertainment`, `bills`, `health`, `other`
 - Claude model: `claude-sonnet-4-20250514`
 - Tool handlers return `{ success: boolean, message: string|null }`
-- Moneditas system: each operation consumes tokens (1 for text, 2 for audio, 3 for images)
+- Moneditas system: dynamic pricing based on actual API token usage (see below)
 
 ## Subscription Tiers (Moneditas System)
 
 The app uses a token-based system called "moneditas" instead of separate limits per feature.
 
-| Feature | Free | Basic ($5.99) | Premium ($12.99) |
-|---------|------|---------------|------------------|
-| Moneditas/month | 100 | 1,200 | 3,500 |
+| Feature | Free | Basic ($2.99) | Premium ($8.99) |
+|---------|------|---------------|-----------------|
+| Moneditas/month | 50 | 1,200 | 3,500 |
 | Budgets | Unlimited | Unlimited | Unlimited |
 | Weekly Summary | Yes | Yes | Yes |
 | Visual Report Page | Yes | Yes | Yes |
 | History | 30 days | 6 months | 12 months |
 
-### Moneditas Consumption
+### Moneditas Consumption (Dynamic Pricing)
 
-| Action | Cost |
-|--------|------|
-| Log expense (text) | 5 moneditas |
-| Process receipt (image) | 6 moneditas |
-| Process audio | 4 moneditas |
-| Weekly summary | 5 moneditas |
-| Reminder message | 1 monedita |
+Moneditas are calculated dynamically based on **actual API usage**, not fixed costs:
+
+```
+1 monedita = $0.002 USD
+
+Cost formula:
+  claude_cost = (input_tokens × $3/M) + (output_tokens × $15/M)
+  whatsapp_cost = messages × $0.0008
+  whisper_cost = minutes × $0.006 (OpenAI only, Groq is FREE)
+
+  total_moneditas = ceil(total_cost / $0.002)
+```
+
+**Typical costs (vary based on complexity):**
+| Action | Tokens (approx) | Moneditas |
+|--------|-----------------|-----------|
+| Simple expense | ~800 in / 150 out | 2-3 |
+| Complex query | ~1500 in / 400 out | 4-6 |
+| Receipt (1 item) | ~1000 in / 200 out | 3-4 |
+| Receipt (10 items) | ~1000 in / 600 out | 5-7 |
+| Audio (30s, Groq) | ~600 in / 150 out | 2-3 |
+| Audio (30s, OpenAI) | +whisper cost | 3-5 |
+
+**Pre-check estimates** (max cost used to verify user has moneditas before processing):
+- TEXT_MESSAGE: 10 moneditas
+- IMAGE_RECEIPT: 12 moneditas
+- AUDIO_MESSAGE: 8 moneditas
+
+Key files:
+- `src/services/costTracker.js` - Dynamic cost calculation
+- `src/services/moneditasService.js` - Moneditas balance & consumption
 
 See `docs/COST_ANALYSIS.md` for detailed pricing analysis and profitability calculations.

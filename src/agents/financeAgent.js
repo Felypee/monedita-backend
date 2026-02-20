@@ -21,6 +21,15 @@ export class FinanceAgent {
     this.userPhone = userPhone;
     this.userCurrency = userCurrency;
     this.userLanguage = userLanguage;
+    this.lastTokenUsage = null; // Tracks tokens from last API call
+  }
+
+  /**
+   * Get token usage from the last processMessage call
+   * @returns {{inputTokens: number, outputTokens: number} | null}
+   */
+  getLastTokenUsage() {
+    return this.lastTokenUsage;
   }
 
   /**
@@ -130,6 +139,13 @@ When logging expenses:
           },
         },
       );
+
+      // Capture token usage for dynamic cost calculation
+      const tokenUsage = response.data.usage || { input_tokens: 0, output_tokens: 0 };
+      this.lastTokenUsage = {
+        inputTokens: tokenUsage.input_tokens,
+        outputTokens: tokenUsage.output_tokens,
+      };
 
       // Process the response
       const content = response.data.content;
