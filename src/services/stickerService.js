@@ -64,6 +64,9 @@ export function getRandomSticker(context) {
  * @returns {Promise<boolean>} - True if sent successfully
  */
 export async function sendContextSticker(phone, context) {
+  // Temporarily disabled
+  return false;
+
   const stickerUrl = getRandomSticker(context);
   if (!stickerUrl) {
     console.log(`[sticker] No sticker found for context: ${context}`);
