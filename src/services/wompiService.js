@@ -29,15 +29,15 @@ export const SUBSCRIPTION_PLANS = {
   basic: {
     id: "basic",
     name: "Basic",
-    priceUSD: 2.99,
-    priceCOP: 12000, // ~$2.99 USD
+    priceUSD: 3.99,
+    priceCOP: 16000, // ~$3.99 USD
     description: "1,200 moneditas/mes, 6 meses historial, exportar CSV/PDF",
   },
   premium: {
     id: "premium",
     name: "Premium",
-    priceUSD: 8.99,
-    priceCOP: 36000, // ~$8.99 USD
+    priceUSD: 9.99,
+    priceCOP: 40000, // ~$9.99 USD
     description: "3,500 moneditas/mes, 12 meses historial, exportar PDF",
   },
 };

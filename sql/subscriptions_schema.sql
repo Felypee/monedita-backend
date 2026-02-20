@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
 INSERT INTO subscription_plans (id, name, price_monthly, moneditas_monthly, history_days, limit_text_messages, limit_voice_messages, limit_image_messages, limit_ai_conversations, limit_budgets, can_export_csv, can_export_pdf)
 VALUES
   ('free', 'Free', 0, 200, 30, 200, 200, 200, 200, -1, true, false),
-  ('basic', 'Basic', 2.99, 1200, 180, 1200, 1200, 1200, 1200, -1, true, true),
-  ('premium', 'Premium', 8.99, 3500, 365, 3500, 3500, 3500, 3500, -1, true, true)
+  ('basic', 'Basic', 3.99, 1200, 180, 1200, 1200, 1200, 1200, -1, true, true),
+  ('premium', 'Premium', 9.99, 3500, 365, 3500, 3500, 3500, 3500, -1, true, true)
 ON CONFLICT (id) DO UPDATE SET
   moneditas_monthly = EXCLUDED.moneditas_monthly,
   history_days = EXCLUDED.history_days,

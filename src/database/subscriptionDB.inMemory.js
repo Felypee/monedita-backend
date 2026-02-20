@@ -27,7 +27,7 @@ const PLANS = {
   basic: {
     id: 'basic',
     name: 'Basic',
-    priceMonthly: 2.99,
+    priceMonthly: 3.99,
     moneditasMonthly: 1200,    // ~$2.40 max cost (neto $2.62 - margen 6%)
     historyDays: 180,
     // Legacy fields
@@ -42,7 +42,7 @@ const PLANS = {
   premium: {
     id: 'premium',
     name: 'Premium',
-    priceMonthly: 8.99,
+    priceMonthly: 9.99,
     moneditasMonthly: 3500,    // ~$7.00 max cost (neto $7.91 - margen 11%)
     historyDays: 365,
     // Legacy fields
