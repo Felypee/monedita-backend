@@ -201,7 +201,7 @@ Meta cambió de "por conversación" a "por mensaje" para mensajes iniciados por 
 
 *Groq + Claude para procesar transcripción
 
-### Escenario: Usuario Basic ($2.99/mes)
+### Escenario: Usuario Basic ($5.99/mes)
 
 | Operación | Cantidad | Costo Unitario | Total |
 |-----------|----------|----------------|-------|
@@ -211,9 +211,9 @@ Meta cambió de "por conversación" a "por mensaje" para mensajes iniciados por 
 | WhatsApp | 170 | $0.00 | $0.00 |
 | **TOTAL** | | | **$0.84** |
 
-**Margen: $2.99 - $0.84 = $2.15 (72%)**
+**Margen: $5.99 - $0.84 = $5.15 (86%)**
 
-### Escenario: Usuario Premium ($7.99/mes)
+### Escenario: Usuario Premium ($12.99/mes)
 
 | Operación | Cantidad | Costo Unitario | Total |
 |-----------|----------|----------------|-------|
@@ -223,7 +223,7 @@ Meta cambió de "por conversación" a "por mensaje" para mensajes iniciados por 
 | WhatsApp | 650 | $0.00 | $0.00 |
 | **TOTAL** | | | **$3.20** |
 
-**Margen: $7.99 - $3.20 = $4.79 (60%)**
+**Margen: $12.99 - $3.20 = $9.79 (75%)**
 
 ---
 
@@ -294,8 +294,8 @@ Si un usuario hace solo preguntas complejas sin registrar gastos:
 ## Conclusión
 
 Con los límites actuales, Monedita tiene márgenes saludables:
-- **Free:** Costo ~$0.18/usuario/mes (subsidiado para conversión)
-- **Basic:** Margen ~72% ($2.15 de $2.99)
-- **Premium:** Margen ~60% ($4.79 de $7.99)
+- **Free:** Costo ~$0.20/usuario/mes (subsidiado para conversión)
+- **Basic:** Margen ~86% ($5.15 de $5.99)
+- **Premium:** Margen ~75% ($9.79 de $12.99)
 
 El modelo actual de límites por tipo de operación es efectivo para controlar costos sin necesidad de implementar un sistema de créditos complejo.

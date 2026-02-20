@@ -160,9 +160,9 @@ For payments (Wompi):
 
 The app uses a token-based system called "moneditas" instead of separate limits per feature.
 
-| Feature | Free | Basic ($2.99) | Premium ($8.99) |
-|---------|------|---------------|-----------------|
-| Moneditas/month | 50 | 1,200 | 3,500 |
+| Feature | Free | Basic ($5.99) | Premium ($12.99) |
+|---------|------|---------------|------------------|
+| Moneditas/month | 100 | 1,200 | 3,500 |
 | Budgets | Unlimited | Unlimited | Unlimited |
 | Weekly Summary | Yes | Yes | Yes |
 | Visual Report Page | Yes | Yes | Yes |
@@ -172,10 +172,10 @@ The app uses a token-based system called "moneditas" instead of separate limits 
 
 | Action | Cost |
 |--------|------|
-| Log expense (text) | 1 monedita |
-| Process receipt (image) | 3 moneditas |
-| Process audio | 2 moneditas |
-| Weekly summary | 2 moneditas |
+| Log expense (text) | 5 moneditas |
+| Process receipt (image) | 6 moneditas |
+| Process audio | 4 moneditas |
+| Weekly summary | 5 moneditas |
 | Reminder message | 1 monedita |
 
 See `docs/COST_ANALYSIS.md` for detailed pricing analysis and profitability calculations.
