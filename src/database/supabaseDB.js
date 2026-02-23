@@ -222,6 +222,8 @@ export const ExpenseDB = {
             category: expenseData.category || "uncategorized",
             description: expenseData.description || "",
             date: expenseData.date || new Date().toISOString(),
+            source: expenseData.source || "manual",
+            external_id: expenseData.external_id || null,
           },
         ])
         .select()
@@ -238,6 +240,18 @@ export const ExpenseDB = {
       console.error("[supabase] create(expense) failed:", err?.message || err);
       throw err;
     }
+  },
+
+  async getByExternalId(phone, externalId) {
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("*")
+      .eq("phone", phone)
+      .eq("external_id", externalId)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return data;
   },
 
   async getByUser(phone) {

@@ -3,6 +3,7 @@
 import * as InMemory from "./inMemoryDB.js";
 import * as SubscriptionInMemory from "./subscriptionDB.inMemory.js";
 import * as PaymentSourceInMemory from "./paymentSourceDB.inMemory.js";
+import * as BankLinkInMemory from "./bankLinkDB.inMemory.js";
 
 const driver = (process.env.DB_DRIVER || "inmemory").toLowerCase();
 
@@ -16,6 +17,8 @@ let UsageDB = SubscriptionInMemory.UsageDB;
 let MoneditasDB = SubscriptionInMemory.MoneditasDB;
 let PaymentSourceDB = PaymentSourceInMemory.PaymentSourceDB;
 let BillingHistoryDB = PaymentSourceInMemory.BillingHistoryDB;
+let BankLinkDB = BankLinkInMemory.BankLinkDB;
+let BankImportUsageDB = BankLinkInMemory.BankImportUsageDB;
 let testConnection = () => Promise.resolve(true);
 let supabase = null;
 
@@ -45,6 +48,11 @@ if (driver === "supabase" || driver === "supa") {
     const PaymentSourceSupabase = await import("./paymentSourceDB.supabase.js");
     PaymentSourceDB = PaymentSourceSupabase.PaymentSourceDB;
     BillingHistoryDB = PaymentSourceSupabase.BillingHistoryDB;
+
+    // Load bank link DBs from Supabase
+    const BankLinkSupabase = await import("./bankLinkDB.supabase.js");
+    BankLinkDB = BankLinkSupabase.BankLinkDB;
+    BankImportUsageDB = BankLinkSupabase.BankImportUsageDB;
   } catch (err) {
     // If dynamic import fails, keep using in-memory and warn
     console.warn(
@@ -67,6 +75,8 @@ export {
   MoneditasDB,
   PaymentSourceDB,
   BillingHistoryDB,
+  BankLinkDB,
+  BankImportUsageDB,
   testConnection,
   supabase,
 };

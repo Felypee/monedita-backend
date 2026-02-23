@@ -173,6 +173,14 @@ Try it now! Tell me about a recent expense.`,
     feature_csv_export: "CSV export",
     feature_pdf_export: "PDF export",
     upgrade_instructions: "To upgrade, visit: monedita.app/upgrade",
+
+    // Open Banking
+    bank_feature_premium: "Open Banking is a Premium feature. Upgrade to connect your bank.",
+    bank_connected: "Bank connected successfully! Say 'sync bank' to import transactions.",
+    bank_disconnected: "Bank has been disconnected.",
+    bank_sync_complete: "Imported {count} transactions from your bank.",
+    bank_sync_none: "No new transactions found.",
+    bank_limit_reached: "You've reached your monthly limit of {limit} bank transactions.",
   },
 
   es: {
@@ -318,6 +326,14 @@ Pregunta: "¿Cuál es mi mayor gasto?"
     feature_csv_export: "Exportar CSV",
     feature_pdf_export: "Exportar PDF",
     upgrade_instructions: "Para mejorar, visita: monedita.app/upgrade",
+
+    // Open Banking
+    bank_feature_premium: "Open Banking es una función Premium. Mejora para conectar tu banco.",
+    bank_connected: "¡Banco conectado exitosamente! Di 'sincronizar banco' para importar transacciones.",
+    bank_disconnected: "El banco ha sido desconectado.",
+    bank_sync_complete: "Se importaron {count} transacciones de tu banco.",
+    bank_sync_none: "No se encontraron transacciones nuevas.",
+    bank_limit_reached: "Has alcanzado tu límite mensual de {limit} transacciones bancarias.",
   },
 
   pt: {
@@ -463,6 +479,14 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     feature_csv_export: "Exportar CSV",
     feature_pdf_export: "Exportar PDF",
     upgrade_instructions: "Para atualizar, visite: monedita.app/upgrade",
+
+    // Open Banking
+    bank_feature_premium: "Open Banking é um recurso Premium. Atualize para conectar seu banco.",
+    bank_connected: "Banco conectado com sucesso! Diga 'sincronizar banco' para importar transações.",
+    bank_disconnected: "O banco foi desconectado.",
+    bank_sync_complete: "Importadas {count} transações do seu banco.",
+    bank_sync_none: "Nenhuma transação nova encontrada.",
+    bank_limit_reached: "Você atingiu seu limite mensal de {limit} transações bancárias.",
   },
 };
 

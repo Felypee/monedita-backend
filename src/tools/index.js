@@ -22,6 +22,10 @@ import showStats from "./showStats.js";
 import sendContact from "./sendContact.js";
 import manageSubscription from "./manageSubscription.js";
 import manageCategories from "./manageCategories.js";
+import connectBank from "./connectBank.js";
+import syncTransactions from "./syncTransactions.js";
+import bankStatus from "./bankStatus.js";
+import disconnectBank from "./disconnectBank.js";
 
 // Registry of all available tools
 const tools = {
@@ -44,6 +48,10 @@ const tools = {
   send_contact: sendContact,
   manage_subscription: manageSubscription,
   manage_categories: manageCategories,
+  connect_bank: connectBank,
+  sync_transactions: syncTransactions,
+  bank_status: bankStatus,
+  disconnect_bank: disconnectBank,
 };
 
 /**

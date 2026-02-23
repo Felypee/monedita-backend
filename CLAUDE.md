@@ -57,7 +57,11 @@ src/tools/
 ├── setCurrency.js        # Set user currency
 ├── subscriptionStatus.js # Show plan & usage
 ├── upgradeInfo.js        # Upgrade options + payment links
-└── helpInfo.js           # Welcome/help message
+├── helpInfo.js           # Welcome/help message
+├── connectBank.js        # Connect bank via Belvo (Premium)
+├── syncTransactions.js   # Import bank transactions
+├── bankStatus.js         # Show connected banks
+└── disconnectBank.js     # Remove bank connection
 ```
 
 Each tool exports:
@@ -88,6 +92,14 @@ Each tool exports:
 3. User clicks link → pays on Wompi checkout page
 4. Wompi sends webhook to `/webhook/wompi` → plan is upgraded
 5. User receives confirmation message via WhatsApp
+
+### Open Banking Flow (Belvo) - Premium Only
+1. User types "connect bank" or "conectar banco" → `connect_bank` tool checks Premium plan
+2. If Premium, generates Belvo widget URL and sends via WhatsApp
+3. User clicks link → authenticates with their bank via Belvo Connect widget
+4. Belvo sends webhook to `/webhook/belvo` → bank_link is saved
+5. User can then "sync bank" → `sync_transactions` imports expenses with source=bank_import
+6. Transactions are auto-categorized using merchant patterns and MCC codes
 
 ### MCP Server (mcp-servers/expense-analytics/)
 Standalone MCP server providing analytics tools: `analyze_spending_trends`, `predict_budget_overrun`, `get_category_insights`, `compare_to_average`. Currently returns simulated data.
@@ -150,6 +162,13 @@ For payments (Wompi):
 - `WHATSAPP_BOT_NUMBER` - WhatsApp number for redirect after payment (e.g., 573001234567)
 - `WOMPI_REDIRECT_URL` - Optional custom redirect URL (default: WhatsApp link with bot number)
 
+For Open Banking (Belvo):
+- `BELVO_SECRET_ID` - Belvo API secret ID
+- `BELVO_SECRET_PASSWORD` - Belvo API secret password
+- `BELVO_ENV` - "sandbox" or "production" (default: sandbox)
+- `BELVO_WEBHOOK_SECRET` - Belvo webhook signature verification secret
+- `BELVO_REDIRECT_URL` - Redirect URL after bank connection (default: https://monedita.app/bank-connected)
+
 ## Code Patterns
 
 - ES modules (`"type": "module"` in package.json)
@@ -171,6 +190,7 @@ The app uses a token-based system called "moneditas" instead of separate limits 
 | Weekly Summary | Yes | Yes | Yes |
 | Visual Report Page | Yes | Yes | Yes |
 | History | 30 days | 6 months | 12 months |
+| Open Banking | No | No | 1 bank, 500 trans/mo |
 
 ### Moneditas Consumption (Dynamic Pricing)
 

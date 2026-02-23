@@ -134,14 +134,21 @@ export const ExpenseDB = {
       category: expenseData.category || 'uncategorized',
       description: expenseData.description || '',
       date: expenseData.date || new Date(),
+      source: expenseData.source || 'manual',
+      external_id: expenseData.external_id || null,
       createdAt: new Date()
     };
-    
+
     const userExpenses = expenses.get(phone) || [];
     userExpenses.push(expense);
     expenses.set(phone, userExpenses);
-    
+
     return expense;
+  },
+
+  getByExternalId(phone, externalId) {
+    const userExpenses = expenses.get(phone) || [];
+    return userExpenses.find(e => e.external_id === externalId);
   },
 
   getByUser(phone) {

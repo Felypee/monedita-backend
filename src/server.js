@@ -13,6 +13,7 @@ import {
   sendExpenseReminder,
 } from './services/reminderService.js';
 import { handleWompiWebhook } from './handlers/wompiWebhookHandler.js';
+import { handleBelvoWebhook } from './handlers/belvoWebhookHandler.js';
 import {
   startBillingScheduler,
   triggerRenewals,
@@ -81,6 +82,13 @@ const webhookLimiter = rateLimit({
 const wompiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
+  message: { error: 'Rate limit exceeded' },
+});
+
+// Belvo webhook limit: 20 per minute
+const belvoLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
   message: { error: 'Rate limit exceeded' },
 });
 
@@ -159,6 +167,22 @@ app.post('/webhook/wompi', wompiLimiter, async (req, res) => {
     res.sendStatus(200);
   } catch (error) {
     console.error('[wompi webhook] Error:', error);
+    res.sendStatus(500);
+  }
+});
+
+// Belvo Open Banking webhook (with rate limiting)
+app.post('/webhook/belvo', belvoLimiter, express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const signature = req.headers['x-belvo-signature'];
+    const rawBody = req.body.toString();
+    const payload = JSON.parse(rawBody);
+
+    await handleBelvoWebhook(payload, signature, rawBody);
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('[belvo webhook] Error:', error);
     res.sendStatus(500);
   }
 });
