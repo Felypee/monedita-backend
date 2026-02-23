@@ -21,6 +21,7 @@ import {
 import { getUsageStats } from './utils/usageMonitor.js';
 import statsRoutes from './routes/statsRoutes.js';
 import setupRoutes from './routes/setupRoutes.js';
+import subscribeRoutes from './routes/subscribeRoutes.js';
 
 dotenv.config();
 
@@ -93,6 +94,9 @@ app.use(statsRoutes);
 
 // Setup routes (for web-based category/budget configuration)
 app.use(setupRoutes);
+
+// Subscribe routes (for subscription tokenization flow)
+app.use(subscribeRoutes);
 
 // Usage stats endpoint (protected)
 app.get('/api/usage', (req, res) => {

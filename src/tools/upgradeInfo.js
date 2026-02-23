@@ -9,10 +9,10 @@ import {
   getAvailablePlans,
 } from "../services/subscriptionService.js";
 import {
-  createPaymentLink,
   formatPriceCOP,
   SUBSCRIPTION_PLANS,
 } from "../services/wompiService.js";
+import { generateSubscribeUrl } from "../services/subscribeTokenService.js";
 
 export const definition = {
   name: "upgrade_info",
@@ -43,9 +43,9 @@ export async function handler(phone, params, lang, userCurrency) {
       };
     }
 
-    // If user selected a specific plan, generate payment link
+    // If user selected a specific plan, generate subscribe URL
     if (params.selectedPlan) {
-      return await generatePaymentLink(phone, params.selectedPlan, currentPlan, lang);
+      return generateSubscriptionLink(phone, params.selectedPlan, currentPlan, lang);
     }
 
     // Show available plans
@@ -60,9 +60,9 @@ export async function handler(phone, params, lang, userCurrency) {
 }
 
 /**
- * Generate a payment link for the selected plan
+ * Generate a subscribe URL for the selected plan (tokenization widget)
  */
-async function generatePaymentLink(phone, planId, currentPlan, lang) {
+function generateSubscriptionLink(phone, planId, currentPlan, lang) {
   // Can't downgrade
   if (planId === "basic" && currentPlan === "basic") {
     return {
@@ -79,22 +79,15 @@ async function generatePaymentLink(phone, planId, currentPlan, lang) {
     };
   }
 
-  // Create payment link with Wompi
-  const result = await createPaymentLink(phone, planId);
-
-  if (!result.success) {
-    return {
-      success: false,
-      message: getLocalizedMessage("payment_error", lang, { error: result.error })
-    };
-  }
+  // Generate subscribe URL with tokenization widget
+  const subscribeUrl = generateSubscribeUrl(phone, planId);
 
   return {
     success: true,
-    message: getLocalizedMessage("payment_link", lang, {
+    message: getLocalizedMessage("subscribe_link", lang, {
       plan: plan.name,
       price: formatPriceCOP(plan.priceCOP),
-      url: result.paymentUrl
+      url: subscribeUrl
     })
   };
 }
@@ -169,45 +162,54 @@ function getLocalizedMessage(key, lang, params = {}) {
       already_on_plan: "Ya tienes el plan {plan}.",
       unknown_plan: "Plan no reconocido. Los planes disponibles son Basic y Premium.",
       payment_error: "Error generando link de pago: {error}. Por favor intenta de nuevo.",
-      payment_link: `💳 *Pagar {plan}*
+      subscribe_link: `💳 *Suscribirse a {plan}*
 
-Precio: *{price}*
+Precio: *{price}/mes*
 
-Haz clic aquí para pagar de forma segura:
+Abre este enlace para ingresar tu tarjeta:
 {url}
 
-El link expira en 24 horas.
-Tu plan se activará automáticamente al confirmar el pago.`
+✓ Pago seguro con Wompi
+✓ Se renueva automáticamente cada mes
+✓ Puedes cancelar cuando quieras
+
+El enlace expira en 15 minutos.`
     },
     en: {
       already_premium: "You already have the Premium plan. Thank you for your support!",
       already_on_plan: "You already have the {plan} plan.",
       unknown_plan: "Plan not recognized. Available plans are Basic and Premium.",
       payment_error: "Error generating payment link: {error}. Please try again.",
-      payment_link: `💳 *Pay for {plan}*
+      subscribe_link: `💳 *Subscribe to {plan}*
 
-Price: *{price}*
+Price: *{price}/month*
 
-Click here to pay securely:
+Open this link to enter your card:
 {url}
 
-The link expires in 24 hours.
-Your plan will be activated automatically upon payment confirmation.`
+✓ Secure payment with Wompi
+✓ Auto-renews monthly
+✓ Cancel anytime
+
+Link expires in 15 minutes.`
     },
     pt: {
       already_premium: "Você já tem o plano Premium. Obrigado pelo seu apoio!",
       already_on_plan: "Você já tem o plano {plan}.",
       unknown_plan: "Plano não reconhecido. Os planos disponíveis são Basic e Premium.",
       payment_error: "Erro ao gerar link de pagamento: {error}. Por favor, tente novamente.",
-      payment_link: `💳 *Pagar {plan}*
+      subscribe_link: `💳 *Assinar {plan}*
 
-Preço: *{price}*
+Preço: *{price}/mês*
 
-Clique aqui para pagar com segurança:
+Abra este link para inserir seu cartão:
 {url}
 
-O link expira em 24 horas.
-Seu plano será ativado automaticamente após a confirmação do pagamento.`
+✓ Pagamento seguro com Wompi
+✓ Renova automaticamente todo mês
+✓ Cancele quando quiser
+
+O link expira em 15 minutos.`
     }
   };
 
