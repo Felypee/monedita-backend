@@ -26,6 +26,11 @@ import connectBank from "./connectBank.js";
 import syncTransactions from "./syncTransactions.js";
 import bankStatus from "./bankStatus.js";
 import disconnectBank from "./disconnectBank.js";
+import createGroup from "./createGroup.js";
+import logSharedExpense from "./logSharedExpense.js";
+import showBalances from "./showBalances.js";
+import settleDebt from "./settleDebt.js";
+import showGroups from "./showGroups.js";
 
 // Registry of all available tools
 const tools = {
@@ -52,6 +57,11 @@ const tools = {
   sync_transactions: syncTransactions,
   bank_status: bankStatus,
   disconnect_bank: disconnectBank,
+  create_group: createGroup,
+  log_shared_expense: logSharedExpense,
+  show_balances: showBalances,
+  settle_debt: settleDebt,
+  show_groups: showGroups,
 };
 
 /**

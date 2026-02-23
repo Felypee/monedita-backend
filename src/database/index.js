@@ -4,6 +4,7 @@ import * as InMemory from "./inMemoryDB.js";
 import * as SubscriptionInMemory from "./subscriptionDB.inMemory.js";
 import * as PaymentSourceInMemory from "./paymentSourceDB.inMemory.js";
 import * as BankLinkInMemory from "./bankLinkDB.inMemory.js";
+import * as SharedExpensesInMemory from "./sharedExpensesDB.inMemory.js";
 
 const driver = (process.env.DB_DRIVER || "inmemory").toLowerCase();
 
@@ -19,6 +20,10 @@ let PaymentSourceDB = PaymentSourceInMemory.PaymentSourceDB;
 let BillingHistoryDB = PaymentSourceInMemory.BillingHistoryDB;
 let BankLinkDB = BankLinkInMemory.BankLinkDB;
 let BankImportUsageDB = BankLinkInMemory.BankImportUsageDB;
+let ExpenseGroupDB = SharedExpensesInMemory.ExpenseGroupDB;
+let GroupMemberDB = SharedExpensesInMemory.GroupMemberDB;
+let SharedExpenseDB = SharedExpensesInMemory.SharedExpenseDB;
+let ExpenseSplitDB = SharedExpensesInMemory.ExpenseSplitDB;
 let testConnection = () => Promise.resolve(true);
 let supabase = null;
 
@@ -53,6 +58,13 @@ if (driver === "supabase" || driver === "supa") {
     const BankLinkSupabase = await import("./bankLinkDB.supabase.js");
     BankLinkDB = BankLinkSupabase.BankLinkDB;
     BankImportUsageDB = BankLinkSupabase.BankImportUsageDB;
+
+    // Load shared expenses DBs from Supabase
+    const SharedExpensesSupabase = await import("./sharedExpensesDB.supabase.js");
+    ExpenseGroupDB = SharedExpensesSupabase.ExpenseGroupDB;
+    GroupMemberDB = SharedExpensesSupabase.GroupMemberDB;
+    SharedExpenseDB = SharedExpensesSupabase.SharedExpenseDB;
+    ExpenseSplitDB = SharedExpensesSupabase.ExpenseSplitDB;
   } catch (err) {
     // If dynamic import fails, keep using in-memory and warn
     console.warn(
@@ -77,6 +89,10 @@ export {
   BillingHistoryDB,
   BankLinkDB,
   BankImportUsageDB,
+  ExpenseGroupDB,
+  GroupMemberDB,
+  SharedExpenseDB,
+  ExpenseSplitDB,
   testConnection,
   supabase,
 };

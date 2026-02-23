@@ -6,6 +6,7 @@
 import express from 'express';
 import { UserDB, BudgetDB } from '../database/index.js';
 import { validateSetupToken } from '../services/statsTokenService.js';
+import { getDefaultCategories } from '../utils/categoryUtils.js';
 
 const router = express.Router();
 
@@ -131,39 +132,9 @@ router.post('/api/setup', requireSetupToken, async (req, res) => {
 router.get('/api/setup/categories', (req, res) => {
   const lang = req.query.lang || 'es';
 
-  const categories = {
-    en: [
-      { id: 'food', name: 'Food', emoji: '🍔' },
-      { id: 'transport', name: 'Transport', emoji: '🚗' },
-      { id: 'shopping', name: 'Shopping', emoji: '🛒' },
-      { id: 'entertainment', name: 'Entertainment', emoji: '🎬' },
-      { id: 'bills', name: 'Bills', emoji: '📄' },
-      { id: 'health', name: 'Health', emoji: '💊' },
-      { id: 'other', name: 'Other', emoji: '📦' },
-    ],
-    es: [
-      { id: 'comida', name: 'Comida', emoji: '🍔' },
-      { id: 'transporte', name: 'Transporte', emoji: '🚗' },
-      { id: 'compras', name: 'Compras', emoji: '🛒' },
-      { id: 'entretenimiento', name: 'Entretenimiento', emoji: '🎬' },
-      { id: 'servicios', name: 'Servicios', emoji: '📄' },
-      { id: 'salud', name: 'Salud', emoji: '💊' },
-      { id: 'otros', name: 'Otros', emoji: '📦' },
-    ],
-    pt: [
-      { id: 'comida', name: 'Comida', emoji: '🍔' },
-      { id: 'transporte', name: 'Transporte', emoji: '🚗' },
-      { id: 'compras', name: 'Compras', emoji: '🛒' },
-      { id: 'entretenimento', name: 'Entretenimento', emoji: '🎬' },
-      { id: 'contas', name: 'Contas', emoji: '📄' },
-      { id: 'saude', name: 'Saúde', emoji: '💊' },
-      { id: 'outros', name: 'Outros', emoji: '📦' },
-    ],
-  };
-
   res.json({
     language: lang,
-    categories: categories[lang] || categories.es,
+    categories: getDefaultCategories(lang),
   });
 });
 

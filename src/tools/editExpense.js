@@ -8,6 +8,8 @@ import { ExpenseDB } from "../database/index.js";
 import { validateAmount, formatAmount } from "../utils/currencyUtils.js";
 import { getMessage } from "../utils/languageUtils.js";
 import { resolveDateRange, getPeriodLabel } from "../utils/dateUtils.js";
+import { getUserCategories, getCategoryNames } from "../utils/categoryUtils.js";
+import { validateCategory } from "../schemas/expenseSchema.js";
 
 export const definition = {
   name: "edit_expense",
@@ -165,6 +167,24 @@ export async function handler(phone, params, lang, userCurrency) {
     }
   }
 
+  // Validate new category if provided
+  let normalizedCategory = null;
+  if (newCategory) {
+    const allowedCategories = await getUserCategories(phone, lang);
+    const categoryValidation = validateCategory(newCategory, allowedCategories);
+
+    if (!categoryValidation.valid) {
+      const categoryNames = getCategoryNames(allowedCategories);
+      const messages = {
+        en: `"${newCategory}" is not a valid category.\n\nAvailable categories: ${categoryNames}`,
+        es: `"${newCategory}" no es una categoría válida.\n\nCategorías disponibles: ${categoryNames}`,
+        pt: `"${newCategory}" não é uma categoria válida.\n\nCategorias disponíveis: ${categoryNames}`,
+      };
+      return { success: false, message: messages[lang] || messages.en };
+    }
+    normalizedCategory = categoryValidation.matchedCategory.id;
+  }
+
   // Build update object
   const updates = {};
   const changes = [];
@@ -173,9 +193,9 @@ export async function handler(phone, params, lang, userCurrency) {
     updates.amount = newAmount;
     changes.push(`${getLocalizedMessage('amount', lang)}: ${formatAmount(newAmount, userCurrency)}`);
   }
-  if (newCategory) {
-    updates.category = newCategory.toLowerCase();
-    changes.push(`${getLocalizedMessage('category', lang)}: ${newCategory.toLowerCase()}`);
+  if (normalizedCategory) {
+    updates.category = normalizedCategory;
+    changes.push(`${getLocalizedMessage('category', lang)}: ${normalizedCategory}`);
   }
   if (newDescription) {
     updates.description = newDescription;

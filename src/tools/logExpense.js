@@ -7,6 +7,8 @@ import { ExpenseDB, BudgetDB, UserDB } from "../database/index.js";
 import { validateAmount, formatAmount } from "../utils/currencyUtils.js";
 import { getMessage } from "../utils/languageUtils.js";
 import { generateSetupUrl } from "../services/statsTokenService.js";
+import { getUserCategories, getCategoryNames } from "../utils/categoryUtils.js";
+import { validateExpenses } from "../schemas/expenseSchema.js";
 
 export const definition = {
   name: "log_expense",
@@ -56,9 +58,36 @@ export async function handler(phone, params, lang, userCurrency) {
   // Note: Usage is tracked in messageHandler.js before calling the agent
   // No need to check/track here to avoid double charging
 
-  // Validate all amounts first
+  // Get user's allowed categories
+  const allowedCategories = await getUserCategories(phone, lang);
+
+  // Validate categories using Zod schema
+  const categoryValidation = validateExpenses(expenses, allowedCategories);
+
+  // If there are invalid categories, ask user to clarify
+  if (!categoryValidation.valid && categoryValidation.invalidExpenses.length > 0) {
+    const invalidExp = categoryValidation.invalidExpenses[0];
+    const categoryNames = getCategoryNames(allowedCategories);
+
+    const messages = {
+      en: `I couldn't classify "${invalidExp.original.description || 'this expense'}" (${formatAmount(invalidExp.original.amount, userCurrency)}).\n\nWhich category should I use?\n${categoryNames}`,
+      es: `No pude clasificar "${invalidExp.original.description || 'este gasto'}" (${formatAmount(invalidExp.original.amount, userCurrency)}).\n\n¿En qué categoría lo pongo?\n${categoryNames}`,
+      pt: `Não consegui classificar "${invalidExp.original.description || 'esta despesa'}" (${formatAmount(invalidExp.original.amount, userCurrency)}).\n\nQual categoria devo usar?\n${categoryNames}`,
+    };
+
+    return {
+      success: false,
+      message: messages[lang] || messages.en,
+      sticker: 'thinking',
+    };
+  }
+
+  // Use validated expenses with normalized category IDs
+  const validatedExpenses = categoryValidation.validExpenses;
+
+  // Validate all amounts
   const validationErrors = [];
-  for (const exp of expenses) {
+  for (const exp of validatedExpenses) {
     const validation = validateAmount(exp.amount, userCurrency);
     if (!validation.valid) {
       validationErrors.push(`• ${exp.description || exp.category}: ${validation.error}`);
@@ -76,7 +105,7 @@ export async function handler(phone, params, lang, userCurrency) {
   const createdExpenses = [];
   const budgetAlerts = [];
 
-  for (const exp of expenses) {
+  for (const exp of validatedExpenses) {
     const expense = await ExpenseDB.create(phone, {
       amount: exp.amount,
       category: exp.category,

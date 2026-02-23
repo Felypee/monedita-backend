@@ -7,6 +7,7 @@ import { getMessage } from "../utils/languageUtils.js";
 import { getContextForClaude, addMessage } from "../services/conversationContext.js";
 import { trackUsage as trackDailyUsage, isAllowed } from "../utils/usageMonitor.js";
 import { sendContextSticker } from "../services/stickerService.js";
+import { getUserCategories, getCategoryNames, getCategoryIds } from "../utils/categoryUtils.js";
 
 dotenv.config();
 
@@ -57,6 +58,9 @@ export class FinanceAgent {
     const totalSpent = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
     const totalBudget = budgets.reduce((sum, b) => sum + parseFloat(b.amount || 0), 0);
 
+    // Get user's categories (custom or defaults for their language)
+    const userCategories = await getUserCategories(this.userPhone, this.userLanguage);
+
     return {
       expenses,
       budgets,
@@ -64,6 +68,9 @@ export class FinanceAgent {
       totalSpent,
       totalBudget,
       month: now.toLocaleString("default", { month: "long", year: "numeric" }),
+      userCategories,
+      categoryNames: getCategoryNames(userCategories),
+      categoryIds: getCategoryIds(userCategories),
     };
   }
 
@@ -88,6 +95,9 @@ Current user context for ${financialContext.month}:
 - Total budget: ${financialContext.totalBudget.toFixed(2)}
 - Categories used: ${Object.keys(financialContext.categorySummary).join(', ') || 'None yet'}
 
+User's available categories: ${financialContext.categoryNames}
+Category IDs to use in tools: ${financialContext.categoryIds.join(', ')}
+
 Recent expenses: ${financialContext.expenses.slice(-3).map(e => `${e.category}: ${e.amount}`).join(', ') || 'None'}
 Active budgets: ${financialContext.budgets.map(b => `${b.category}: ${b.amount}`).join(', ') || 'None'}
 
@@ -95,15 +105,23 @@ IMPORTANT INSTRUCTIONS:
 1. Analyze the user's message to determine their intent
 2. Use the appropriate tool to fulfill their request
 3. For expense logging, extract ALL expenses mentioned (can be multiple)
-4. For categories, use: food, transport, shopping, entertainment, bills, health, other
+4. For categories, ONLY use the category IDs listed above: ${financialContext.categoryIds.join(', ')}
 5. CRITICAL: Keep responses SHORT - maximum 10 lines. This is WhatsApp, users read on mobile
 6. Respond in the same language as the user's message
 7. Use conversation history for context when needed
 
 When logging expenses:
 - Parse amounts as numbers (e.g., "50 dollars" → 50, "mil pesos" → 1000)
-- Detect category from context (lunch → food, uber → transport, etc.)
-- Include description from the message`;
+- Detect category from context using ONLY the user's available categories
+- Map user intent to the closest matching category ID (e.g., "lunch" → "${financialContext.categoryIds[0] || 'food'}", "uber" → "${financialContext.categoryIds[1] || 'transport'}")
+- Include description from the message
+
+For shared/split expenses:
+- If user mentions "share", "split", "divide" with a group or people → use log_shared_expense
+- If user wants to create a group → use create_group
+- If user asks who owes them or their balances → use show_balances
+- If user says they paid someone → use settle_debt
+- If user wants to see their groups → use show_groups`;
 
     // Build messages array with conversation history + current message
     const messages = [
@@ -232,7 +250,15 @@ When logging expenses:
   async detectExpenses(message, categories = null) {
     // This is now handled by the tool-based system
     // Kept for any code that might still call it directly
-    const categoryList = categories ? categories.join(', ') : 'food, transport, shopping, entertainment, bills, health, other';
+    let categoryList;
+    if (categories) {
+      categoryList = Array.isArray(categories)
+        ? categories.map(c => typeof c === 'string' ? c : c.id).join(', ')
+        : categories;
+    } else {
+      const userCategories = await getUserCategories(this.userPhone, this.userLanguage);
+      categoryList = getCategoryIds(userCategories).join(', ');
+    }
     const systemPrompt = `Extract ALL expense information from user messages. A single message may contain multiple expenses.
 Return ONLY a JSON object with: {"detected": boolean, "expenses": [...]}
 Each expense in the array should have: amount (number), category (string), description (string).
