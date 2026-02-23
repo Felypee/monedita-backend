@@ -190,7 +190,14 @@ export async function sendReaction(to, messageId, emoji) {
 }
 
 /**
- * Show "processing" indicator using reaction
+ * Emoji sequence for processing indicator - tells a story:
+ * waiting → thinking → processing → idea → magic → done!
+ */
+const PROCESSING_SEQUENCE = ['⏳', '💭', '🧠', '💡', '✨', '🔮', '🤔', '🔄'];
+const ROTATION_INTERVAL_MS = 1500; // Rotate every 1.5 seconds
+
+/**
+ * Show "processing" indicator using rotating emoji reactions
  * Returns a function to clear the indicator when done
  * @param {string} to - Recipient phone number
  * @param {string} messageId - Message ID to react to
@@ -202,13 +209,38 @@ export async function showProcessingIndicator(to, messageId) {
     return () => {};
   }
 
-  // Add ⏳ reaction to show processing
-  await sendReaction(to, messageId, '⏳');
-  console.log(`[whatsapp] Processing indicator shown for ${to}`);
+  let currentIndex = 0;
+  let isActive = true;
+
+  // Show first emoji immediately
+  await sendReaction(to, messageId, PROCESSING_SEQUENCE[0]);
+  console.log(`[whatsapp] Processing indicator started for ${to}`);
+
+  // Rotate emojis every 1.5s
+  const intervalId = setInterval(async () => {
+    if (!isActive) return;
+
+    currentIndex = (currentIndex + 1) % PROCESSING_SEQUENCE.length;
+    try {
+      await sendReaction(to, messageId, PROCESSING_SEQUENCE[currentIndex]);
+    } catch (err) {
+      // Ignore rotation errors, don't break the flow
+    }
+  }, ROTATION_INTERVAL_MS);
 
   // Return function to clear the indicator
   return async () => {
-    await sendReaction(to, messageId, '');  // Empty string removes reaction
+    isActive = false;
+    clearInterval(intervalId);
+
+    // Show ✅ briefly before clearing
+    try {
+      await sendReaction(to, messageId, '✅');
+      await new Promise(r => setTimeout(r, 400));
+      await sendReaction(to, messageId, '');
+    } catch (err) {
+      // Ignore cleanup errors
+    }
     console.log(`[whatsapp] Processing indicator cleared for ${to}`);
   };
 }
