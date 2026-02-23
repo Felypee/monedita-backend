@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Management
+
+This project uses **GitHub Issues and Projects** for task tracking (not Jira). Use `gh issue list`, `gh issue view`, and `gh project` commands to manage tasks.
+
 ## Project Overview
 
 Monedita is a WhatsApp-based AI expense manager that uses Claude for natural language expense tracking and financial insights. Users interact via WhatsApp to log expenses, set budgets, and get spending summaries.
