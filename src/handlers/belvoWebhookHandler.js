@@ -10,7 +10,7 @@
  */
 
 import { BankLinkDB, UserDB } from "../database/index.js";
-import { verifyWebhookSignature, getLink } from "../services/belvoService.js";
+import { getLink } from "../services/belvoService.js";
 import { sendTextMessage } from "../utils/whatsappClient.js";
 
 // Webhook messages for different languages
@@ -70,20 +70,18 @@ function getWebhookMessage(key, lang, params = {}) {
 /**
  * Handle incoming Belvo webhook event
  * @param {object} payload - Webhook payload from Belvo
- * @param {string} signature - X-Belvo-Signature header
- * @param {string} rawBody - Raw request body for signature verification
+ * @param {string} token - Authorization Bearer token
  */
-export async function handleBelvoWebhook(payload, signature, rawBody) {
+export async function handleBelvoWebhook(payload, token) {
   console.log("[belvo webhook] ========================================");
   console.log("[belvo webhook] Received event:", payload.event_type || payload.webhook_type);
   console.log("[belvo webhook] Payload:", JSON.stringify(payload, null, 2));
 
-  // Verify signature in production
-  if (process.env.NODE_ENV === "production") {
-    if (!verifyWebhookSignature(rawBody, signature)) {
-      console.error("[belvo webhook] Invalid signature");
-      throw new Error("Invalid webhook signature");
-    }
+  // Verify token in production
+  const expectedToken = process.env.BELVO_WEBHOOK_SECRET;
+  if (expectedToken && token !== expectedToken) {
+    console.error("[belvo webhook] Invalid token");
+    throw new Error("Invalid webhook token");
   }
 
   const eventType = payload.event_type || payload.webhook_type;

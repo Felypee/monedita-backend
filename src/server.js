@@ -172,13 +172,13 @@ app.post('/webhook/wompi', wompiLimiter, async (req, res) => {
 });
 
 // Belvo Open Banking webhook (with rate limiting)
-app.post('/webhook/belvo', belvoLimiter, express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/webhook/belvo', belvoLimiter, async (req, res) => {
   try {
-    const signature = req.headers['x-belvo-signature'];
-    const rawBody = req.body.toString();
-    const payload = JSON.parse(rawBody);
+    // Belvo sends Authorization: Bearer <token>
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.replace('Bearer ', '');
 
-    await handleBelvoWebhook(payload, signature, rawBody);
+    await handleBelvoWebhook(req.body, token);
 
     res.sendStatus(200);
   } catch (error) {
