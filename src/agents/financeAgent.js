@@ -112,9 +112,11 @@ IMPORTANT INSTRUCTIONS:
 
 When logging expenses:
 - Parse amounts as numbers (e.g., "50 dollars" → 50, "mil pesos" → 1000)
-- Detect category from context using ONLY the user's available categories
-- Map user intent to the closest matching category ID (e.g., "lunch" → "${financialContext.categoryIds[0] || 'food'}", "uber" → "${financialContext.categoryIds[1] || 'transport'}")
-- Include description from the message
+- CRITICAL: Only call log_expense when you can CLEARLY identify the category from context
+- If the user just says an amount without context (e.g., "gasté 50mil", "pagué 200k"), DO NOT guess - ASK which category
+- Map clear intents to categories: almuerzo/comida → ${financialContext.categoryIds[0] || 'comida'}, uber/taxi → ${financialContext.categoryIds[1] || 'transporte'}
+- When unsure, respond: "¿En qué categoría lo registro?\n${financialContext.categoryNames}"
+- NEVER default to "otros" without asking first
 
 For shared/split expenses:
 - If user mentions "share", "split", "divide" with a group or people → use log_shared_expense

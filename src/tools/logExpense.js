@@ -12,13 +12,27 @@ import { validateExpenses } from "../schemas/expenseSchema.js";
 
 export const definition = {
   name: "log_expense",
-  description: "Log one or more expenses. Use when user mentions spending money, purchases, payments, or costs. Examples: 'spent 50 on groceries', 'lunch was 15 dollars', 'uber 12, coffee 5'",
+  description: `Log one or more expenses. ONLY use this tool when you have BOTH amount AND a clear category.
+
+IMPORTANT: If the user does NOT specify a category or it's unclear, DO NOT call this tool. Instead, ask the user which category to use.
+
+Good examples (clear category - use this tool):
+- "gasté 50 en almuerzo" → category: comida ✓
+- "uber 12mil" → category: transporte ✓
+- "pagué la luz 85k" → category: servicios ✓
+
+Bad examples (unclear category - DO NOT use this tool, ask first):
+- "gasté 214000" → NO category mentioned, ASK USER
+- "pagué 50mil" → unclear what for, ASK USER
+- "compré algo por 30k" → "algo" is too vague, ASK USER
+
+When category is unclear, respond with: "¿En qué categoría lo registro? [list categories]"`,
   input_schema: {
     type: "object",
     properties: {
       expenses: {
         type: "array",
-        description: "List of expenses to log",
+        description: "List of expenses to log. ONLY include expenses where category is CLEAR from context.",
         items: {
           type: "object",
           properties: {
@@ -28,14 +42,14 @@ export const definition = {
             },
             category: {
               type: "string",
-              description: "Category: food, transport, shopping, entertainment, bills, health, or other"
+              description: "Category ID from user's available categories. Must be clearly identifiable from the message context."
             },
             description: {
               type: "string",
               description: "Brief description of the expense"
             }
           },
-          required: ["amount", "category"]
+          required: ["amount", "category", "description"]
         }
       }
     },
@@ -80,6 +94,29 @@ export async function handler(phone, params, lang, userCurrency) {
       message: messages[lang] || messages.en,
       sticker: 'thinking',
     };
+  }
+
+  // Safety net: Reject "otros/other" category without explicit description
+  // This catches cases where Claude defaulted to "otros" without asking
+  const genericCategories = ['otros', 'other', 'otro'];
+  for (const exp of categoryValidation.validExpenses) {
+    const isGenericCategory = genericCategories.includes(exp.category.toLowerCase());
+    const hasVagueDescription = !exp.description || exp.description.length < 3 ||
+      ['gasto', 'pago', 'compra', 'expense', 'payment'].includes(exp.description.toLowerCase());
+
+    if (isGenericCategory && hasVagueDescription) {
+      const categoryNames = getCategoryNames(allowedCategories);
+      const messages = {
+        en: `I need more details for ${formatAmount(exp.amount, userCurrency)}.\n\nWhich category?\n${categoryNames}`,
+        es: `Necesito más detalles para ${formatAmount(exp.amount, userCurrency)}.\n\n¿En qué categoría lo registro?\n${categoryNames}`,
+        pt: `Preciso de mais detalhes para ${formatAmount(exp.amount, userCurrency)}.\n\nQual categoria?\n${categoryNames}`,
+      };
+      return {
+        success: false,
+        message: messages[lang] || messages.es,
+        sticker: 'thinking',
+      };
+    }
   }
 
   // Use validated expenses with normalized category IDs
