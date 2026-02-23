@@ -51,7 +51,13 @@ export async function processExpenseImage(imageBuffer, mimeType, categories = nu
     mediaType = "image/jpeg";
   }
 
-  const categoryList = categories ? categories.join(', ') : 'food, transport, shopping, entertainment, bills, health, other';
+  // Handle both array of strings and array of {id, name} objects
+  let categoryList;
+  if (categories && categories.length > 0) {
+    categoryList = categories.map(c => typeof c === 'string' ? c : c.id).join(', ');
+  } else {
+    categoryList = 'comida, transporte, compras, entretenimiento, servicios, salud, otros';
+  }
 
   // Build currency context for the prompt
   let currencyContext = '';
@@ -78,10 +84,12 @@ If the image shows a receipt or bill:
 
 If no expenses can be detected, return: {"detected": false, "expenses": []}
 
-Examples of good responses:
-- Receipt from McDonald's for $15.50 → {"detected": true, "expenses": [{"amount": 15.50, "category": "food", "description": "McDonald's"}]}
-- Uber receipt for $23 → {"detected": true, "expenses": [{"amount": 23, "category": "transport", "description": "Uber ride"}]}
-- Electric bill for $85 → {"detected": true, "expenses": [{"amount": 85, "category": "bills", "description": "electric bill"}]}`;
+Examples - use category IDs from the list above:
+- Receipt from McDonald's → {"detected": true, "expenses": [{"amount": 15.50, "category": "comida", "description": "McDonald's"}]}
+- Uber receipt → {"detected": true, "expenses": [{"amount": 23, "category": "transporte", "description": "Uber"}]}
+- Electric bill → {"detected": true, "expenses": [{"amount": 85, "category": "servicios", "description": "luz"}]}
+
+IMPORTANT: Use ONLY the category IDs provided above (${categoryList}). Do not use English categories.`;
 
   try {
     // Check daily API limit (DDoS/cost protection)
@@ -281,7 +289,13 @@ export async function processExpenseAudio(audioBuffer, mimeType, categories = nu
     const transcription = whisperResult.text;
     console.log(`📝 Transcription (${whisperResult.provider}): ${transcription}`);
 
-    const categoryList = categories ? categories.join(', ') : 'food, transport, shopping, entertainment, bills, health, other';
+    // Handle both array of strings and array of {id, name} objects
+    let categoryList;
+    if (categories && categories.length > 0) {
+      categoryList = categories.map(c => typeof c === 'string' ? c : c.id).join(', ');
+    } else {
+      categoryList = 'comida, transporte, compras, entretenimiento, servicios, salud, otros';
+    }
 
     // Then extract expenses from the transcription using Claude
     const systemPrompt = `Extract ALL expense information from the transcribed voice message.
@@ -290,10 +304,11 @@ Each expense should have: amount (number), category (string), description (strin
 
 Categories: ${categoryList}
 
-Examples:
-"Gasté mil pesos en el almuerzo" → {"detected": true, "expenses": [{"amount": 1000, "category": "food", "description": "almuerzo"}]}
-"I spent 50 dollars on groceries and 20 on gas" → {"detected": true, "expenses": [{"amount": 50, "category": "food", "description": "groceries"}, {"amount": 20, "category": "transport", "description": "gas"}]}
+Examples - use category IDs from the list above:
+"Gasté mil pesos en el almuerzo" → {"detected": true, "expenses": [{"amount": 1000, "category": "comida", "description": "almuerzo"}]}
+"50 de mercado y 20 de gasolina" → {"detected": true, "expenses": [{"amount": 50, "category": "compras", "description": "mercado"}, {"amount": 20, "category": "transporte", "description": "gasolina"}]}
 
+IMPORTANT: Use ONLY the category IDs provided above (${categoryList}). Do not use English categories.
 If no expenses mentioned, return: {"detected": false, "expenses": []}`;
 
     const response = await axios.post(
