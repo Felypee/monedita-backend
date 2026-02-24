@@ -46,20 +46,25 @@ export async function createWidgetToken(phone) {
   }
 
   try {
-    // Use the widget token endpoint for Connect Widget
+    // Use the WIDGET TOKEN endpoint (not /api/token/)
+    // Docs: https://developers.belvo.com/docs/connect-widget#create-an-access-token
     const apiUrl = process.env.BELVO_ENV === "production"
       ? "https://api.belvo.com"
       : "https://sandbox.belvo.com";
 
-    const response = await fetch(`${apiUrl}/api/token/`, {
+    const response = await fetch(`${apiUrl}/api/widget-token/`, {
       method: "POST",
       headers: {
+        "Authorization": getAuthHeader(),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        id: process.env.BELVO_SECRET_ID,
-        password: process.env.BELVO_SECRET_PASSWORD,
-        scopes: "read_institutions,write_links,read_links",
+        widget: {
+          branding: {
+            company_name: "Monedita"
+          }
+        },
+        external_id: phone,
       }),
     });
 
@@ -67,10 +72,10 @@ export async function createWidgetToken(phone) {
 
     if (!response.ok) {
       console.error("[belvo] Error creating widget token:", data);
-      return { success: false, error: data.message || "Error al crear token" };
+      return { success: false, error: data.message || data.detail || "Error al crear token" };
     }
 
-    console.log("[belvo] Widget token created for:", phone);
+    console.log("[belvo] Widget token created for:", phone, "token:", data.access?.substring(0, 20) + "...");
     return {
       success: true,
       widgetToken: data.access,
