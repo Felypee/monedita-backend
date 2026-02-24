@@ -190,15 +190,16 @@ export async function sendReaction(to, messageId, emoji) {
 }
 
 /**
- * Emoji sequence for processing indicator - tells a story:
- * waiting → thinking → processing → idea → magic → done!
+ * Processing indicator - only 2 emojis to avoid notification spam (Issue #13)
+ * Flow: ⏳ (start) → 💭 (after 3s) → ✅ (done)
  */
-const PROCESSING_SEQUENCE = ['⏳', '💭', '🧠', '💡', '✨', '🔮', '🤔', '🔄'];
-const ROTATION_INTERVAL_MS = 1500; // Rotate every 1.5 seconds
+const PROCESSING_EMOJIS = ['⏳', '💭'];
+const ROTATION_INTERVAL_MS = 3000; // Change every 3 seconds
+const MAX_ROTATIONS = 1; // Only rotate once (2 emojis total)
 
 /**
- * Show "processing" indicator using rotating emoji reactions
- * Returns a function to clear the indicator when done
+ * Show "processing" indicator using minimal emoji reactions
+ * Only 2 emojis + final checkmark to reduce notification spam
  * @param {string} to - Recipient phone number
  * @param {string} messageId - Message ID to react to
  * @returns {Function} - Call this to remove the reaction
@@ -209,35 +210,33 @@ export async function showProcessingIndicator(to, messageId) {
     return () => {};
   }
 
-  let currentIndex = 0;
+  let rotationCount = 0;
   let isActive = true;
+  let timeoutId = null;
 
   // Show first emoji immediately
-  await sendReaction(to, messageId, PROCESSING_SEQUENCE[0]);
+  await sendReaction(to, messageId, PROCESSING_EMOJIS[0]);
   console.log(`[whatsapp] Processing indicator started for ${to}`);
 
-  // Rotate emojis every 1.5s
-  const intervalId = setInterval(async () => {
-    if (!isActive) return;
-
-    currentIndex = (currentIndex + 1) % PROCESSING_SEQUENCE.length;
+  // Schedule second emoji after 3 seconds (only once)
+  timeoutId = setTimeout(async () => {
+    if (!isActive || rotationCount >= MAX_ROTATIONS) return;
+    rotationCount++;
     try {
-      await sendReaction(to, messageId, PROCESSING_SEQUENCE[currentIndex]);
+      await sendReaction(to, messageId, PROCESSING_EMOJIS[1]);
     } catch (err) {
-      // Ignore rotation errors, don't break the flow
+      // Ignore rotation errors
     }
   }, ROTATION_INTERVAL_MS);
 
   // Return function to clear the indicator
   return async () => {
     isActive = false;
-    clearInterval(intervalId);
+    if (timeoutId) clearTimeout(timeoutId);
 
-    // Show ✅ briefly before clearing
+    // Show ✅ as final indicator
     try {
       await sendReaction(to, messageId, '✅');
-      await new Promise(r => setTimeout(r, 400));
-      await sendReaction(to, messageId, '');
     } catch (err) {
       // Ignore cleanup errors
     }

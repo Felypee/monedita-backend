@@ -111,8 +111,9 @@ export async function createPaymentSource(phone, cardToken, cardInfo = {}) {
       source: savedSource,
     };
   } catch (error) {
-    console.error("[wompi recurring] Error:", error);
-    return { success: false, error: "Error de conexión con Wompi" };
+    console.error("[wompi recurring] createPaymentSource Error:", error.message || error);
+    console.error("[wompi recurring] Full error:", JSON.stringify(error, null, 2));
+    return { success: false, error: error.message || "Error de conexión con Wompi" };
   }
 }
 
@@ -223,8 +224,9 @@ export async function chargeRecurringPayment(phone, planId) {
       };
     }
   } catch (error) {
-    console.error("[wompi recurring] Error:", error);
-    return { success: false, error: "Error de conexión con Wompi" };
+    console.error("[wompi recurring] chargeRecurringPayment Error:", error.message || error);
+    console.error("[wompi recurring] Full error:", JSON.stringify(error, null, 2));
+    return { success: false, error: error.message || "Error de conexión con Wompi" };
   }
 }
 

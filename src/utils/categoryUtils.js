@@ -10,6 +10,10 @@ import { UserDB } from '../database/index.js';
 /**
  * Default categories with full structure (id, name, emoji) per language
  */
+/**
+ * Default categories WITHOUT generic "other" category (Issue #11)
+ * If expense doesn't fit, Claude will ask the user to specify
+ */
 export const DEFAULT_CATEGORIES = {
   en: [
     { id: 'food', name: 'Food', emoji: '🍔' },
@@ -18,7 +22,6 @@ export const DEFAULT_CATEGORIES = {
     { id: 'entertainment', name: 'Entertainment', emoji: '🎬' },
     { id: 'bills', name: 'Bills', emoji: '📄' },
     { id: 'health', name: 'Health', emoji: '💊' },
-    { id: 'other', name: 'Other', emoji: '📦' },
   ],
   es: [
     { id: 'comida', name: 'Comida', emoji: '🍔' },
@@ -27,7 +30,6 @@ export const DEFAULT_CATEGORIES = {
     { id: 'entretenimiento', name: 'Entretenimiento', emoji: '🎬' },
     { id: 'servicios', name: 'Servicios', emoji: '📄' },
     { id: 'salud', name: 'Salud', emoji: '💊' },
-    { id: 'otros', name: 'Otros', emoji: '📦' },
   ],
   pt: [
     { id: 'comida', name: 'Comida', emoji: '🍔' },
@@ -36,7 +38,6 @@ export const DEFAULT_CATEGORIES = {
     { id: 'entretenimento', name: 'Entretenimento', emoji: '🎬' },
     { id: 'contas', name: 'Contas', emoji: '📄' },
     { id: 'saude', name: 'Saúde', emoji: '💊' },
-    { id: 'outros', name: 'Outros', emoji: '📦' },
   ],
 };
 

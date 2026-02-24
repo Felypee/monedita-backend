@@ -151,6 +151,33 @@ export const ExpenseDB = {
     return userExpenses.find(e => e.external_id === externalId);
   },
 
+  /**
+   * Find duplicate expense by amount, date (±24h), and similar description
+   */
+  findDuplicate(phone, { amount, date, description }) {
+    const userExpenses = expenses.get(phone) || [];
+    const targetDate = new Date(date);
+    const dayBefore = new Date(targetDate.getTime() - 24 * 60 * 60 * 1000);
+    const dayAfter = new Date(targetDate.getTime() + 24 * 60 * 60 * 1000);
+
+    const matches = userExpenses.filter(e => {
+      const expDate = new Date(e.date);
+      return e.amount === amount && expDate >= dayBefore && expDate <= dayAfter;
+    });
+
+    if (matches.length === 0) return null;
+
+    if (description) {
+      const normalizedDesc = description.toLowerCase().trim();
+      const match = matches.find(e =>
+        e.description && e.description.toLowerCase().trim().includes(normalizedDesc.substring(0, 10))
+      );
+      if (match) return match;
+    }
+
+    return matches[0];
+  },
+
   getByUser(phone) {
     return expenses.get(phone) || [];
   },

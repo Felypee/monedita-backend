@@ -31,6 +31,7 @@ import logSharedExpense from "./logSharedExpense.js";
 import showBalances from "./showBalances.js";
 import settleDebt from "./settleDebt.js";
 import showGroups from "./showGroups.js";
+import importExpenses from "./importExpenses.js";
 
 // Registry of all available tools
 const tools = {
@@ -62,6 +63,7 @@ const tools = {
   show_balances: showBalances,
   settle_debt: settleDebt,
   show_groups: showGroups,
+  import_expenses: importExpenses,
 };
 
 /**

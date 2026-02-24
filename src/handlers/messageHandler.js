@@ -139,8 +139,8 @@ export async function handleIncomingMessage(message, phone) {
       }
     }
 
-    // For non-text messages (image, audio, interactive), flush any pending batch first
-    if (message.type === "image" || message.type === "audio") {
+    // For non-text messages (image, audio, document, interactive), flush any pending batch first
+    if (message.type === "image" || message.type === "audio" || message.type === "document") {
       flushBatch(phone);
     }
 
@@ -180,6 +180,10 @@ export async function handleIncomingMessage(message, phone) {
     } else if (message.type === "audio") {
       console.log(`🎤 Audio from ${phone}`);
       response = await processAudioMessage(phone, message.audio, user.currency, lang);
+
+    } else if (message.type === "document") {
+      console.log(`📄 Document from ${phone}: ${message.document.filename}`);
+      response = await processDocumentMessage(phone, message.document, user.currency, lang);
 
     } else {
       if (clearIndicator) await clearIndicator();
@@ -274,6 +278,52 @@ Suas moneditas renovam no próximo ciclo de cobrança.`
 }
 
 /**
+ * Check if user is confirming/canceling a pending Excel import
+ */
+async function checkPendingImportConfirmation(phone, messageText, lang, userCurrency) {
+  try {
+    const { hasPendingImport, handler, cancelImport } = await import('../tools/importExpenses.js');
+
+    if (!hasPendingImport(phone)) {
+      return null; // No pending import
+    }
+
+    const text = messageText.toLowerCase().trim();
+
+    // Check for confirmation
+    const confirmPhrases = ['sí', 'si', 'yes', 'sim', 'ok', 'dale', 'confirmar', 'importar'];
+    const cancelPhrases = ['no', 'cancelar', 'cancel', 'não', 'nao'];
+
+    if (confirmPhrases.some(p => text.includes(p))) {
+      const result = await handler(phone, { confirm: true }, lang, userCurrency);
+      return result.message;
+    }
+
+    if (cancelPhrases.some(p => text.includes(p))) {
+      cancelImport(phone);
+      const messages = {
+        en: "Import canceled.",
+        es: "Importación cancelada.",
+        pt: "Importação cancelada."
+      };
+      return messages[lang] || messages.es;
+    }
+
+    // If there's a pending import but user sent something else, remind them
+    const messages = {
+      en: "You have a pending import. Reply 'yes' to confirm or 'no' to cancel.",
+      es: "Tienes una importación pendiente. Responde 'sí' para confirmar o 'no' para cancelar.",
+      pt: "Você tem uma importação pendente. Responda 'sim' para confirmar ou 'não' para cancelar."
+    };
+    return messages[lang] || messages.es;
+
+  } catch (error) {
+    console.error('[checkPendingImportConfirmation] Error:', error);
+    return null;
+  }
+}
+
+/**
  * Process batched messages (called after 10-second window)
  * @param {string} phone - User's phone number
  * @param {object} batchedMessage - Combined message object
@@ -287,6 +337,14 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
     const messageCount = batchedMessage.messageCount || 1;
 
     console.log(`📨 Processing batch for ${phone}: ${messageCount} messages -> "${messageText.substring(0, 50)}..."`);
+
+    // Check if user is confirming/canceling a pending Excel import
+    const importConfirmResult = await checkPendingImportConfirmation(phone, messageText, lang, user.currency);
+    if (importConfirmResult) {
+      if (clearIndicator) await clearIndicator();
+      await sendTextMessage(phone, importConfirmResult);
+      return;
+    }
 
     // Check moneditas before processing (use max estimate for pre-check)
     const moneditasCheck = await checkMoneditas(phone, MAX_ESTIMATES.TEXT_MESSAGE);
@@ -568,6 +626,50 @@ async function processAudioMessage(phone, audioData, userCurrency, lang = 'en') 
       content: error.message,
     });
     return getMessage('audio_error', lang);
+  }
+}
+
+/**
+ * Process document message (Excel/CSV import)
+ */
+async function processDocumentMessage(phone, documentData, userCurrency, lang = 'en') {
+  try {
+    // Check if currency is set
+    if (!userCurrency) {
+      return getMessage('currency_not_set', lang);
+    }
+
+    const filename = documentData.filename || '';
+    const mimeType = documentData.mime_type || '';
+
+    // Check if it's an Excel or CSV file
+    const isExcel = mimeType.includes('spreadsheet') ||
+                    mimeType.includes('excel') ||
+                    mimeType.includes('csv') ||
+                    filename.endsWith('.xlsx') ||
+                    filename.endsWith('.xls') ||
+                    filename.endsWith('.csv');
+
+    if (!isExcel) {
+      const messages = {
+        en: "I can only import Excel (.xlsx, .xls) or CSV files. Please send one of those formats.",
+        es: "Solo puedo importar archivos Excel (.xlsx, .xls) o CSV. Por favor envía uno de esos formatos.",
+        pt: "Só posso importar arquivos Excel (.xlsx, .xls) ou CSV. Por favor envie um desses formatos."
+      };
+      return messages[lang] || messages.es;
+    }
+
+    // Import the tool directly
+    const { handler } = await import('../tools/importExpenses.js');
+
+    // Call the import handler with the media ID
+    const result = await handler(phone, { mediaId: documentData.id }, lang, userCurrency);
+
+    return result.message;
+
+  } catch (error) {
+    console.error("Error processing document:", error);
+    return getMessage('error_generic', lang);
   }
 }
 

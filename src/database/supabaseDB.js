@@ -254,6 +254,39 @@ export const ExpenseDB = {
     return data;
   },
 
+  /**
+   * Find duplicate expense by amount, date (±24h), and similar description
+   * Used for Excel import deduplication
+   */
+  async findDuplicate(phone, { amount, date, description }) {
+    const targetDate = new Date(date);
+    const dayBefore = new Date(targetDate.getTime() - 24 * 60 * 60 * 1000);
+    const dayAfter = new Date(targetDate.getTime() + 24 * 60 * 60 * 1000);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("*")
+      .eq("phone", phone)
+      .eq("amount", amount)
+      .gte("date", dayBefore.toISOString())
+      .lte("date", dayAfter.toISOString());
+
+    if (error) throw error;
+    if (!data || data.length === 0) return null;
+
+    // If description matches (fuzzy), it's a duplicate
+    if (description) {
+      const normalizedDesc = description.toLowerCase().trim();
+      const match = data.find(e =>
+        e.description && e.description.toLowerCase().trim().includes(normalizedDesc.substring(0, 10))
+      );
+      if (match) return match;
+    }
+
+    // If same amount on same day, likely duplicate
+    return data[0];
+  },
+
   async getByUser(phone) {
     const { data, error } = await supabase
       .from("expenses")

@@ -132,10 +132,17 @@ IMPORTANT INSTRUCTIONS:
 CATEGORY RULES (CRITICAL - YOU MUST FOLLOW THESE):
 - You can ONLY use these category IDs: ${allowedCategoryIds.join(', ')}
 - "otros/other" is NOT available - if no category fits clearly, you MUST ask the user
-- If user says just an amount without context (e.g., "gasté 50mil", "pagué 200k"), DO NOT call log_expense - respond asking "¿En qué categoría lo registro?"
+- If user says just an amount without context (e.g., "gasté 50mil", "pagué 200k"), DO NOT call log_expense
 - Only call log_expense when category is OBVIOUS from context
 - Map clear intents: almuerzo/comida → ${allowedCategoryIds[0] || 'comida'}, uber/taxi → ${allowedCategoryIds[1] || 'transporte'}
-- When category is unclear, respond: "¿En qué categoría lo registro?\n${financialContext.categoryNames}"
+
+WHEN CATEGORY IS UNCLEAR (Issue #11 - give hints):
+- If you have a GUESS about the category, suggest it: "¿Lo registro en [suggested category]? O dime otra: ${financialContext.categoryNames}"
+- If you have NO IDEA, ask with options: "¿En cuál categoría? ${financialContext.categoryNames}"
+- Examples:
+  - "pagué 50mil" → "¿50mil de qué? ¿Servicios, comida, transporte...?"
+  - "gasté en el centro comercial" → "Parece compras 🛒 ¿Lo registro ahí?"
+  - "300k del carro" → "¿Es transporte (gasolina, parqueadero) o una compra/repuesto?"
 
 When logging expenses:
 - Parse amounts as numbers (e.g., "50 dollars" → 50, "mil pesos" → 1000)
