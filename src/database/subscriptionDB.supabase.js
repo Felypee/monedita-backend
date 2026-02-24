@@ -54,6 +54,9 @@ export const SubscriptionPlanDB = {
       limitBudgets: row.limit_budgets,
       canExportCsv: row.can_export_csv,
       canExportPdf: row.can_export_pdf,
+      // Open Banking limits
+      bankConnections: row.bank_connections || 0,
+      bankTransactionsPerMonth: row.bank_transactions_per_month || 0,
     };
   },
 
