@@ -197,9 +197,8 @@ export async function handler(phone, params, lang, userCurrency) {
     };
   }
 
-  // Generate the widget page URL (hosted on our server)
-  const baseUrl = process.env.BACKEND_URL || "https://budget-agent-production.up.railway.app";
-  const widgetUrl = `${baseUrl}/connect-bank.html?session=${sessionResult.sessionId}`;
+  // Generate the widget page URL (hosted on monedita.app)
+  const widgetUrl = `https://monedita.app/connect-bank.html?session=${sessionResult.sessionId}`;
 
   return {
     success: true,
