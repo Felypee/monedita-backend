@@ -22,6 +22,7 @@ const WOMPI_API_URL = process.env.WOMPI_ENV === "production"
 
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY;
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
+const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET;
 
 // Retry schedule: day 1, day 3, day 7
 const RETRY_DAYS = [1, 3, 7];
@@ -148,6 +149,10 @@ export async function chargeRecurringPayment(phone, planId) {
       status: 'pending',
     });
 
+    // Calculate integrity signature: SHA256(reference + amount + currency + secret)
+    const signatureString = `${reference}${amountInCents}COP${WOMPI_INTEGRITY_SECRET}`;
+    const signature = crypto.createHash('sha256').update(signatureString).digest('hex');
+
     const transactionBody = {
       amount_in_cents: amountInCents,
       currency: "COP",
@@ -156,6 +161,9 @@ export async function chargeRecurringPayment(phone, planId) {
       payment_source_id: parseInt(paymentSource.wompiPaymentSourceId),
       payment_method: {
         installments: 1,  // Single payment, no installments
+      },
+      signature: {
+        integrity: signature,
       },
     };
 
