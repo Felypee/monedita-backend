@@ -59,6 +59,7 @@ export async function createWidgetToken(phone) {
       body: JSON.stringify({
         id: process.env.BELVO_SECRET_ID,
         password: process.env.BELVO_SECRET_PASSWORD,
+        scopes: "read_institutions,write_links,read_links",
       }),
     });
 

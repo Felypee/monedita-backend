@@ -6,7 +6,7 @@ import { checkLimit, trackUsage, getSubscriptionStatus, getLimitExceededMessage,
 import { getMessage } from "../utils/languageUtils.js";
 import { getContextForClaude, addMessage } from "../services/conversationContext.js";
 import { trackUsage as trackDailyUsage, isAllowed } from "../utils/usageMonitor.js";
-import { sendContextSticker } from "../services/stickerService.js";
+import { sendContextStickerWithLimit } from "../services/stickerService.js";
 import { getUserCategories, getCategoryNames, getCategoryIds } from "../utils/categoryUtils.js";
 
 dotenv.config();
@@ -215,10 +215,10 @@ For shared/split expenses:
 
       // If tools were called, return their results
       if (toolResults.length > 0) {
-        // Send stickers if any tool returned one
+        // Send stickers if any tool returned one (rate limited to 1/hour)
         for (const result of toolResults) {
           if (result.sticker) {
-            await sendContextSticker(this.userPhone, result.sticker);
+            await sendContextStickerWithLimit(this.userPhone, result.sticker);
           }
         }
 
