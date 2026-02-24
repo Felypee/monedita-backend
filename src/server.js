@@ -37,12 +37,22 @@ const PORT = process.env.PORT || 3000;
 // Trust proxy for accurate IP detection (required for Vercel, Railway, etc.)
 app.set('trust proxy', 1);
 
-// CORS configuration for stats page
+// CORS configuration
 app.use(cors({
-  origin: ['https://monedita.app', 'http://localhost:3000', 'http://localhost:5500'],
-  methods: ['GET', 'POST'],
-  credentials: true
+  origin: [
+    'https://monedita.app',
+    'https://www.monedita.app',
+    'http://localhost:3000',
+    'http://localhost:5500',
+    /\.vercel\.app$/  // Allow Vercel preview deployments
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use(bodyParser.json());
 
