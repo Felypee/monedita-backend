@@ -83,6 +83,26 @@ export class FinanceAgent {
     const financialContext = await this.getFinancialContext();
     const tools = getToolDefinitions();
 
+    // Filter out "otros/other/outro" from available categories
+    // This forces Claude to ask when category is unclear instead of defaulting to "otros"
+    const otrosVariants = ['otros', 'other', 'outro', 'misc', 'miscellaneous', 'general'];
+    const allowedCategoryIds = financialContext.categoryIds.filter(c =>
+      !otrosVariants.includes(c.toLowerCase())
+    );
+
+    // Inject enum constraint into log_expense tool schema
+    // This makes it physically impossible for Claude to send invalid categories
+    const logExpenseTool = tools.find(t => t.name === 'log_expense');
+    if (logExpenseTool && allowedCategoryIds.length > 0) {
+      // Deep clone to avoid mutating the original definition
+      logExpenseTool.input_schema = JSON.parse(JSON.stringify(logExpenseTool.input_schema));
+      logExpenseTool.input_schema.properties.expenses.items.properties.category = {
+        type: "string",
+        enum: allowedCategoryIds,
+        description: "Category ID - MUST be one of the enum values. If none fits clearly, DO NOT call this tool."
+      };
+    }
+
     // Get conversation history (max 20 messages)
     const conversationHistory = getContextForClaude(this.userPhone);
 
@@ -96,7 +116,7 @@ Current user context for ${financialContext.month}:
 - Categories used: ${Object.keys(financialContext.categorySummary).join(', ') || 'None yet'}
 
 User's available categories: ${financialContext.categoryNames}
-Category IDs to use in tools: ${financialContext.categoryIds.join(', ')}
+ALLOWED category IDs (ONLY these): ${allowedCategoryIds.join(', ')}
 
 Recent expenses: ${financialContext.expenses.slice(-3).map(e => `${e.category}: ${e.amount}`).join(', ') || 'None'}
 Active budgets: ${financialContext.budgets.map(b => `${b.category}: ${b.amount}`).join(', ') || 'None'}
@@ -105,18 +125,20 @@ IMPORTANT INSTRUCTIONS:
 1. Analyze the user's message to determine their intent
 2. Use the appropriate tool to fulfill their request
 3. For expense logging, extract ALL expenses mentioned (can be multiple)
-4. For categories, ONLY use the category IDs listed above: ${financialContext.categoryIds.join(', ')}
-5. CRITICAL: Keep responses SHORT - maximum 10 lines. This is WhatsApp, users read on mobile
-6. Respond in the same language as the user's message
-7. Use conversation history for context when needed
+4. CRITICAL: Keep responses SHORT - maximum 10 lines. This is WhatsApp, users read on mobile
+5. Respond in the same language as the user's message
+6. Use conversation history for context when needed
+
+CATEGORY RULES (CRITICAL - YOU MUST FOLLOW THESE):
+- You can ONLY use these category IDs: ${allowedCategoryIds.join(', ')}
+- "otros/other" is NOT available - if no category fits clearly, you MUST ask the user
+- If user says just an amount without context (e.g., "gasté 50mil", "pagué 200k"), DO NOT call log_expense - respond asking "¿En qué categoría lo registro?"
+- Only call log_expense when category is OBVIOUS from context
+- Map clear intents: almuerzo/comida → ${allowedCategoryIds[0] || 'comida'}, uber/taxi → ${allowedCategoryIds[1] || 'transporte'}
+- When category is unclear, respond: "¿En qué categoría lo registro?\n${financialContext.categoryNames}"
 
 When logging expenses:
 - Parse amounts as numbers (e.g., "50 dollars" → 50, "mil pesos" → 1000)
-- CRITICAL: Only call log_expense when you can CLEARLY identify the category from context
-- If the user just says an amount without context (e.g., "gasté 50mil", "pagué 200k"), DO NOT guess - ASK which category
-- Map clear intents to categories: almuerzo/comida → ${financialContext.categoryIds[0] || 'comida'}, uber/taxi → ${financialContext.categoryIds[1] || 'transporte'}
-- When unsure, respond: "¿En qué categoría lo registro?\n${financialContext.categoryNames}"
-- NEVER default to "otros" without asking first
 
 For shared/split expenses:
 - If user mentions "share", "split", "divide" with a group or people → use log_shared_expense

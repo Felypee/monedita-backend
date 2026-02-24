@@ -96,20 +96,40 @@ export async function handler(phone, params, lang, userCurrency) {
     };
   }
 
-  // Safety net: Reject "otros/other" category without explicit description
-  // This catches cases where Claude defaulted to "otros" without asking
-  const genericCategories = ['otros', 'other', 'otro'];
+  // Safety net: ALWAYS reject "otros/other" variants
+  // The enum constraint in financeAgent should prevent this, but this is a backup
+  // We never want to save expenses with a generic "otros" category
+  const genericCategories = ['otros', 'other', 'outro', 'misc', 'miscellaneous', 'general'];
+
   for (const exp of categoryValidation.validExpenses) {
     const isGenericCategory = genericCategories.includes(exp.category.toLowerCase());
-    const hasVagueDescription = !exp.description || exp.description.length < 3 ||
-      ['gasto', 'pago', 'compra', 'expense', 'payment'].includes(exp.description.toLowerCase());
 
-    if (isGenericCategory && hasVagueDescription) {
+    // Always reject generic categories - no exceptions
+    if (isGenericCategory) {
       const categoryNames = getCategoryNames(allowedCategories);
       const messages = {
-        en: `I need more details for ${formatAmount(exp.amount, userCurrency)}.\n\nWhich category?\n${categoryNames}`,
-        es: `Necesito más detalles para ${formatAmount(exp.amount, userCurrency)}.\n\n¿En qué categoría lo registro?\n${categoryNames}`,
-        pt: `Preciso de mais detalhes para ${formatAmount(exp.amount, userCurrency)}.\n\nQual categoria?\n${categoryNames}`,
+        en: `I can't use "${exp.category}" as a category.\n\nWhich category should I use for ${formatAmount(exp.amount, userCurrency)}?\n${categoryNames}`,
+        es: `No puedo usar "${exp.category}" como categoría.\n\n¿En qué categoría registro ${formatAmount(exp.amount, userCurrency)}?\n${categoryNames}`,
+        pt: `Não posso usar "${exp.category}" como categoria.\n\nEm qual categoria registro ${formatAmount(exp.amount, userCurrency)}?\n${categoryNames}`,
+      };
+      return {
+        success: false,
+        message: messages[lang] || messages.es,
+        sticker: 'thinking',
+      };
+    }
+
+    // Also reject vague descriptions that suggest uncertainty
+    const hasVagueDescription = !exp.description || exp.description.length < 3 ||
+      ['gasto', 'pago', 'compra', 'expense', 'payment', 'algo', 'cosa', 'thing'].includes(exp.description.toLowerCase().trim());
+
+    // If description is vague AND category seems auto-assigned, ask for clarification
+    if (hasVagueDescription) {
+      const categoryNames = getCategoryNames(allowedCategories);
+      const messages = {
+        en: `I need a bit more context for ${formatAmount(exp.amount, userCurrency)}.\n\nWhat was it for? Or which category?\n${categoryNames}`,
+        es: `Necesito un poco más de contexto para ${formatAmount(exp.amount, userCurrency)}.\n\n¿En qué fue? O ¿qué categoría?\n${categoryNames}`,
+        pt: `Preciso de um pouco mais de contexto para ${formatAmount(exp.amount, userCurrency)}.\n\nNo que foi? Ou qual categoria?\n${categoryNames}`,
       };
       return {
         success: false,
