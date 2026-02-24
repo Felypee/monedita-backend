@@ -9,9 +9,11 @@
  * - TRANSACTIONS_CREATED: New transactions available
  */
 
-import { BankLinkDB, UserDB } from "../database/index.js";
-import { getLink } from "../services/belvoService.js";
+import { BankLinkDB, BankImportUsageDB, ExpenseDB, UserDB, UserSubscriptionDB, SubscriptionPlanDB } from "../database/index.js";
+import { getLink, getTransactions, formatDateForBelvo } from "../services/belvoService.js";
+import { categorizeTransaction } from "../services/transactionCategorizer.js";
 import { sendTextMessage } from "../utils/whatsappClient.js";
+import { formatAmount } from "../utils/currencyUtils.js";
 
 // Webhook messages for different languages
 const WEBHOOK_MESSAGES = {
@@ -20,7 +22,15 @@ const WEBHOOK_MESSAGES = {
 
 {institution} has been successfully connected to your Monedita account.
 
-Say "sync bank" to import your recent transactions.`,
+From now on, your transactions will be imported automatically.`,
+
+    link_success_with_sync: `*Bank Connected!*
+
+{institution} has been successfully connected.
+
+*{count}* transactions imported ({total}).
+
+From now on, new transactions will be imported automatically.`,
 
     link_error: `*Bank Connection Failed*
 
@@ -33,7 +43,15 @@ Please try again by saying "connect bank".`,
 
 {institution} ha sido conectado exitosamente a tu cuenta de Monedita.
 
-Di "sincronizar banco" para importar tus transacciones recientes.`,
+A partir de ahora, tus transacciones se importarán automáticamente.`,
+
+    link_success_with_sync: `*¡Banco Conectado!*
+
+{institution} ha sido conectado exitosamente.
+
+Se importaron *{count}* transacciones ({total}).
+
+A partir de ahora, las nuevas transacciones se importarán automáticamente.`,
 
     link_error: `*Conexión Bancaria Fallida*
 
@@ -46,7 +64,15 @@ Por favor intenta de nuevo diciendo "conectar banco".`,
 
 {institution} foi conectado com sucesso à sua conta Monedita.
 
-Diga "sincronizar banco" para importar suas transações recentes.`,
+A partir de agora, suas transações serão importadas automaticamente.`,
+
+    link_success_with_sync: `*Banco Conectado!*
+
+{institution} foi conectado com sucesso.
+
+*{count}* transações importadas ({total}).
+
+A partir de agora, novas transações serão importadas automaticamente.`,
 
     link_error: `*Conexão Bancária Falhou*
 
@@ -123,6 +149,7 @@ export async function handleBelvoWebhook(payload, token) {
 
 /**
  * Handle LINK_CREATED event
+ * Saves the bank link and auto-syncs transactions from TODAY only
  * @param {object} data - Event data
  */
 async function handleLinkCreated(data) {
@@ -172,22 +199,132 @@ async function handleLinkCreated(data) {
       console.log(`[belvo webhook] Created new bank link: ${linkId}`);
     }
 
-    // Notify user via WhatsApp
+    // Get user info
     const user = await UserDB.get(phone);
     const lang = user?.language || "es";
+    const userCurrency = user?.currency || "COP";
 
-    await sendTextMessage(
-      phone,
-      getWebhookMessage("link_success", lang, {
-        institution: institutionName,
-      })
-    );
+    // AUTO-SYNC: Import transactions from TODAY only (not historical)
+    const syncResult = await autoSyncTransactions(phone, linkId, institutionName, userCurrency);
 
-    console.log(`[belvo webhook] ✅ Successfully processed LINK_CREATED for ${phone}`);
+    // Notify user via WhatsApp
+    if (syncResult.count > 0) {
+      await sendTextMessage(
+        phone,
+        getWebhookMessage("link_success_with_sync", lang, {
+          institution: institutionName,
+          count: syncResult.count,
+          total: syncResult.totalFormatted,
+        })
+      );
+    } else {
+      await sendTextMessage(
+        phone,
+        getWebhookMessage("link_success", lang, {
+          institution: institutionName,
+        })
+      );
+    }
+
+    console.log(`[belvo webhook] ✅ Successfully processed LINK_CREATED for ${phone} (synced ${syncResult.count} transactions)`);
   } catch (error) {
     console.error("[belvo webhook] Error processing LINK_CREATED:", error);
     throw error;
   }
+}
+
+/**
+ * Auto-sync transactions from TODAY only (no historical data)
+ * @param {string} phone - User's phone number
+ * @param {string} linkId - Belvo link ID
+ * @param {string} institution - Institution name
+ * @param {string} currency - User's currency
+ * @returns {Promise<{count: number, total: number, totalFormatted: string}>}
+ */
+async function autoSyncTransactions(phone, linkId, institution, currency) {
+  let totalImported = 0;
+  let totalAmount = 0;
+
+  try {
+    // Get user's plan limits
+    const subscription = await UserSubscriptionDB.getOrCreate(phone);
+    const plan = await SubscriptionPlanDB.get(subscription.planId);
+    const monthlyLimit = plan.bank_transactions_per_month || plan.bankTransactionsPerMonth || 500;
+
+    // Sync only TODAY's transactions (from midnight)
+    const today = new Date();
+    const dateStr = formatDateForBelvo(today);
+
+    console.log(`[belvo webhook] Auto-syncing transactions from ${dateStr}`);
+
+    // Fetch transactions from Belvo (today only)
+    const transactions = await getTransactions(linkId, dateStr, dateStr);
+
+    if (!transactions || transactions.length === 0) {
+      console.log("[belvo webhook] No transactions found for today");
+      return { count: 0, total: 0, totalFormatted: formatAmount(0, currency) };
+    }
+
+    console.log(`[belvo webhook] Found ${transactions.length} transactions for today`);
+
+    // Filter and process transactions
+    for (const transaction of transactions) {
+      // Skip income (positive amounts)
+      if (transaction.amount >= 0) continue;
+
+      // Skip pending transactions
+      if (transaction.status === "PENDING") continue;
+
+      // Check if we've hit the limit
+      const currentUsage = await BankImportUsageDB.getUsage(phone);
+      if (currentUsage >= monthlyLimit) {
+        console.log("[belvo webhook] Monthly limit reached, stopping sync");
+        break;
+      }
+
+      // Check if transaction already exists (by external_id)
+      const externalId = `belvo_${transaction.id}`;
+      const expenses = await ExpenseDB.getByUser(phone);
+      const exists = expenses.some(e => e.external_id === externalId);
+
+      if (exists) {
+        continue;
+      }
+
+      // Categorize transaction
+      const category = categorizeTransaction(transaction);
+
+      // Create expense
+      const expenseData = {
+        amount: Math.abs(transaction.amount),
+        category,
+        description: transaction.description || transaction.merchant?.name || "",
+        date: new Date(transaction.value_date || transaction.accounting_date),
+        source: "bank_import",
+        external_id: externalId,
+      };
+
+      await ExpenseDB.create(phone, expenseData);
+
+      // Track usage
+      await BankImportUsageDB.increment(phone, 1);
+
+      totalImported++;
+      totalAmount += expenseData.amount;
+    }
+
+    // Update last sync timestamp
+    await BankLinkDB.updateLastSync(linkId);
+
+  } catch (error) {
+    console.error("[belvo webhook] Error auto-syncing:", error);
+  }
+
+  return {
+    count: totalImported,
+    total: totalAmount,
+    totalFormatted: formatAmount(totalAmount, currency),
+  };
 }
 
 /**
