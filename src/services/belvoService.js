@@ -46,33 +46,46 @@ export async function createWidgetToken(phone) {
   }
 
   try {
-    // Use the WIDGET TOKEN endpoint (not /api/token/)
-    // Docs: https://developers.belvo.com/docs/connect-widget#create-an-access-token
+    // Docs: https://developers.belvo.com/apis/belvoopenapispec/widget-access-token
     const apiUrl = process.env.BELVO_ENV === "production"
       ? "https://api.belvo.com"
       : "https://sandbox.belvo.com";
 
-    const response = await fetch(`${apiUrl}/api/widget-token/`, {
+    const requestBody = {
+      id: BELVO_SECRET_ID,
+      password: BELVO_SECRET_PASSWORD,
+      scopes: "read_institutions,write_links,read_links",
+      fetch_resources: ["ACCOUNTS", "TRANSACTIONS"],
+      credentials_storage: "store",
+      stale_in: "365d",
+    };
+
+    console.log("[belvo] Creating widget token for:", phone);
+    console.log("[belvo] Request URL:", `${apiUrl}/api/token/`);
+
+    const response = await fetch(`${apiUrl}/api/token/`, {
       method: "POST",
       headers: {
-        "Authorization": getAuthHeader(),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        widget: {
-          branding: {
-            company_name: "Monedita"
-          }
-        },
-        external_id: phone,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log("[belvo] Response status:", response.status);
+    console.log("[belvo] Response body:", responseText.substring(0, 200));
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("[belvo] Response is not JSON:", responseText.substring(0, 500));
+      return { success: false, error: "Respuesta inválida de Belvo" };
+    }
 
     if (!response.ok) {
       console.error("[belvo] Error creating widget token:", data);
-      return { success: false, error: data.message || data.detail || "Error al crear token" };
+      return { success: false, error: data.message || data.detail || JSON.stringify(data) };
     }
 
     console.log("[belvo] Widget token created for:", phone, "token:", data.access?.substring(0, 20) + "...");
