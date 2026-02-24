@@ -148,25 +148,29 @@ export async function chargeRecurringPayment(phone, planId) {
       status: 'pending',
     });
 
+    const transactionBody = {
+      amount_in_cents: amountInCents,
+      currency: "COP",
+      customer_email: `${phone}@monedita.app`,
+      reference,
+      payment_source_id: parseInt(paymentSource.wompiPaymentSourceId),
+    };
+
+    console.log("[wompi recurring] Creating transaction:", JSON.stringify(transactionBody, null, 2));
+
     const response = await fetch(`${WOMPI_API_URL}/transactions`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${WOMPI_PRIVATE_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        amount_in_cents: amountInCents,
-        currency: "COP",
-        customer_email: `${phone}@monedita.app`,
-        reference,
-        payment_source_id: paymentSource.wompiPaymentSourceId,
-      }),
+      body: JSON.stringify(transactionBody),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("[wompi recurring] Error charging payment:", data);
+      console.error("[wompi recurring] Error charging payment:", JSON.stringify(data, null, 2));
 
       // Update billing record with failure
       await BillingHistoryDB.update(billingRecord.id, {
