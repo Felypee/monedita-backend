@@ -43,6 +43,7 @@ import {
   MAX_ESTIMATES,
 } from "../services/costTracker.js";
 import { sendContextSticker, STICKER_CONTEXTS } from "../services/stickerService.js";
+import { sendWelcomeAudio } from "../services/welcomeAudioService.js";
 
 /**
  * Handle incoming WhatsApp messages
@@ -96,9 +97,14 @@ export async function handleIncomingMessage(message, phone) {
       // Send vCard so they can save the contact
       await sendMoneditaContactCard(phone, lang);
 
-      // Then send welcome message
-      const welcomeMsg = getWelcomeMessage(lang);
-      await sendTextMessage(phone, welcomeMsg);
+      // Send welcome audio (if available for this language)
+      const audioSent = await sendWelcomeAudio(phone, lang);
+
+      // Also send text message for accessibility (and if audio isn't available)
+      if (!audioSent) {
+        const welcomeMsg = getWelcomeMessage(lang);
+        await sendTextMessage(phone, welcomeMsg);
+      }
       return; // Wait for them to respond with their name
     }
 

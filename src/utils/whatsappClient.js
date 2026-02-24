@@ -344,6 +344,39 @@ export async function sendSticker(to, stickerUrl) {
 }
 
 /**
+ * Send an audio message via WhatsApp
+ * @param {string} to - Recipient phone number
+ * @param {string} audioUrl - URL to the audio file (MP3, OGG, or AMR format)
+ * @returns {Promise<object>} - WhatsApp API response
+ */
+export async function sendAudio(to, audioUrl) {
+  try {
+    const response = await axios.post(
+      `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+      {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: to,
+        type: 'audio',
+        audio: {
+          link: audioUrl
+        }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error sending audio:', error.response?.data || error.message);
+    return null; // Don't throw, audio is optional enhancement
+  }
+}
+
+/**
  * Download media from WhatsApp
  * @param {string} mediaId - The media ID from the message
  * @returns {Promise<{buffer: Buffer, mimeType: string}>}
