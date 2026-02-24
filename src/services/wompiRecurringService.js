@@ -154,6 +154,9 @@ export async function chargeRecurringPayment(phone, planId) {
       customer_email: `${phone}@monedita.app`,
       reference,
       payment_source_id: parseInt(paymentSource.wompiPaymentSourceId),
+      payment_method: {
+        installments: 1,  // Single payment, no installments
+      },
     };
 
     console.log("[wompi recurring] Creating transaction:", JSON.stringify(transactionBody, null, 2));
