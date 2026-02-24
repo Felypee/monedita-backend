@@ -46,28 +46,19 @@ export async function createWidgetToken(phone) {
   }
 
   try {
-    const response = await fetch(`${BELVO_API_URL}/api/token/`, {
+    // Use the widget token endpoint for Connect Widget
+    const apiUrl = process.env.BELVO_ENV === "production"
+      ? "https://api.belvo.com"
+      : "https://sandbox.belvo.com";
+
+    const response = await fetch(`${apiUrl}/api/token/`, {
       method: "POST",
       headers: {
-        "Authorization": getAuthHeader(),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        id: BELVO_SECRET_ID,
-        password: BELVO_SECRET_PASSWORD,
-        scopes: "read_institutions,write_links,read_links,read_accounts,read_transactions",
-        // Widget configuration
-        widget: {
-          branding: {
-            company_name: "Monedita",
-          },
-          callback_urls: {
-            success: `${BELVO_REDIRECT_URL}?status=success&phone=${phone}`,
-            error: `${BELVO_REDIRECT_URL}?status=error&phone=${phone}`,
-            exit: `${BELVO_REDIRECT_URL}?status=exit&phone=${phone}`,
-          },
-          external_id: phone,
-        },
+        id: process.env.BELVO_SECRET_ID,
+        password: process.env.BELVO_SECRET_PASSWORD,
       }),
     });
 
