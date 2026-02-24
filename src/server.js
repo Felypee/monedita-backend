@@ -23,6 +23,7 @@ import { getUsageStats } from './utils/usageMonitor.js';
 import statsRoutes from './routes/statsRoutes.js';
 import setupRoutes from './routes/setupRoutes.js';
 import subscribeRoutes from './routes/subscribeRoutes.js';
+import bankRoutes from './routes/bankRoutes.js';
 
 dotenv.config();
 
@@ -105,6 +106,9 @@ app.use(setupRoutes);
 
 // Subscribe routes (for subscription tokenization flow)
 app.use(subscribeRoutes);
+
+// Bank routes (for Open Banking widget)
+app.use(bankRoutes);
 
 // Usage stats endpoint (protected)
 app.get('/api/usage', (req, res) => {

@@ -5,11 +5,8 @@
  */
 
 import { BankLinkDB, UserSubscriptionDB, SubscriptionPlanDB } from "../database/index.js";
-import {
-  isBelvoConfigured,
-  createWidgetToken,
-  getWidgetUrl,
-} from "../services/belvoService.js";
+import { isBelvoConfigured } from "../services/belvoService.js";
+import { createWidgetSession } from "../routes/bankRoutes.js";
 import { getMessage } from "../utils/languageUtils.js";
 
 export const definition = {
@@ -189,19 +186,20 @@ export async function handler(phone, params, lang, userCurrency) {
     };
   }
 
-  // Create widget token
-  const tokenResult = await createWidgetToken(phone);
+  // Create widget session
+  const sessionResult = await createWidgetSession(phone);
 
-  if (!tokenResult.success) {
-    console.error("[connectBank] Failed to create widget token:", tokenResult.error);
+  if (!sessionResult.success) {
+    console.error("[connectBank] Failed to create widget session:", sessionResult.error);
     return {
       success: false,
       message: getBankMessage("widget_error", lang),
     };
   }
 
-  // Generate widget URL
-  const widgetUrl = getWidgetUrl(phone, tokenResult.widgetToken);
+  // Generate the widget page URL (hosted on our server)
+  const baseUrl = process.env.BACKEND_URL || "https://budget-agent-production.up.railway.app";
+  const widgetUrl = `${baseUrl}/connect-bank.html?session=${sessionResult.sessionId}`;
 
   return {
     success: true,
