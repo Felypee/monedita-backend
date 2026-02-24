@@ -59,6 +59,7 @@ export async function createWidgetToken(phone) {
       credentials_storage: "store",
       stale_in: "365d",
       country_codes: ["CO", "MX", "BR"],  // Colombia, Mexico, Brazil
+      institution_types: ["retail"],       // Only banking (not fiscal/employment)
     };
 
     console.log("[belvo] Creating widget token for:", phone);
