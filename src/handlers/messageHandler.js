@@ -346,6 +346,18 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
       return;
     }
 
+    // TEST: Trigger welcome audio with keyword (for testing purposes)
+    if (messageText.toLowerCase().trim() === "test audio") {
+      if (clearIndicator) await clearIndicator();
+      const audioSent = await sendWelcomeAudio(phone, lang);
+      if (audioSent) {
+        await sendTextMessage(phone, "✅ Audio de prueba enviado");
+      } else {
+        await sendTextMessage(phone, "❌ No se pudo enviar el audio");
+      }
+      return;
+    }
+
     // Check moneditas before processing (use max estimate for pre-check)
     const moneditasCheck = await checkMoneditas(phone, MAX_ESTIMATES.TEXT_MESSAGE);
     if (!moneditasCheck.allowed) {
