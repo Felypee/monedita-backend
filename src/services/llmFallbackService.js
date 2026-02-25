@@ -243,7 +243,7 @@ async function callOpenAI(systemPrompt, messages, tools) {
  */
 export async function callWithFallback(systemPrompt, messages, tools) {
   const providers = [
-    // { name: 'claude', fn: callClaude }, // TEST: disabled to test Gemini
+    { name: 'claude', fn: callClaude },
     { name: 'gemini', fn: callGemini },
     { name: 'openai', fn: callOpenAI },
   ];
