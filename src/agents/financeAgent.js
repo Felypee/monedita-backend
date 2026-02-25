@@ -9,6 +9,7 @@ import { trackUsage as trackDailyUsage, isAllowed } from "../utils/usageMonitor.
 import { sendContextStickerWithLimit } from "../services/stickerService.js";
 import { getUserCategories, getCategoryNames, getCategoryIds } from "../utils/categoryUtils.js";
 import { generateSetupUrl } from "../services/statsTokenService.js";
+import { callWithFallback } from "../services/llmFallbackService.js";
 
 dotenv.config();
 
@@ -189,33 +190,22 @@ For shared/split expenses:
       // Track the API call
       trackDailyUsage('claude_calls');
 
-      const response = await axios.post(
-        ANTHROPIC_API_URL,
-        {
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1024,
-          system: systemPrompt,
-          tools: tools,
-          messages: messages,
-        },
-        {
-          headers: {
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-          },
-        },
-      );
+      // Call LLM with automatic fallback (Claude → Gemini → OpenAI)
+      const response = await callWithFallback(systemPrompt, messages, tools);
 
       // Capture token usage for dynamic cost calculation
-      const tokenUsage = response.data.usage || { input_tokens: 0, output_tokens: 0 };
       this.lastTokenUsage = {
-        inputTokens: tokenUsage.input_tokens,
-        outputTokens: tokenUsage.output_tokens,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
       };
 
+      // Log which provider was used
+      if (response.provider !== 'claude') {
+        console.log(`[financeAgent] Used fallback provider: ${response.provider}`);
+      }
+
       // Process the response
-      const content = response.data.content;
+      const content = response.content;
       let toolResults = [];
       let textResponse = null;
 
@@ -285,7 +275,7 @@ For shared/split expenses:
       return getMessage('error_generic', this.userLanguage);
     } catch (error) {
       console.error(
-        "Error calling Anthropic API:",
+        "[financeAgent] All LLM providers failed:",
         error.response?.data || error.message,
       );
       return getMessage('error_generic', this.userLanguage);
