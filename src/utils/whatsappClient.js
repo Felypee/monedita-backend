@@ -198,22 +198,30 @@ const ROTATION_INTERVAL_MS = 3000; // Change every 3 seconds
 const MAX_ROTATIONS = 1; // Only rotate once (2 emojis total)
 
 /**
- * Show "processing" indicator
- * Just marks message as read (WhatsApp Cloud API doesn't have typing indicator)
+ * Show "processing" indicator using 💭 reaction
  * @param {string} to - Recipient phone number
- * @param {string} messageId - Message ID to mark as read
- * @returns {Function} - Cleanup function (no-op for now)
+ * @param {string} messageId - Message ID to react to
+ * @returns {Function} - Call this to remove the reaction
  */
 export async function showProcessingIndicator(to, messageId) {
-  // Mark message as read to show we received it
-  if (messageId) {
-    await markAsRead(messageId);
+  if (!messageId) {
+    console.log('[whatsapp] No messageId for processing indicator');
+    return () => {};
   }
-  console.log(`[whatsapp] Processing started for ${to}`);
 
-  // Return cleanup function
+  // Show 💭 while processing
+  await sendReaction(to, messageId, '💭');
+  console.log(`[whatsapp] Processing indicator started for ${to}`);
+
+  // Return function to remove the reaction
   return async () => {
-    console.log(`[whatsapp] Processing completed for ${to}`);
+    try {
+      // Empty string removes the reaction
+      await sendReaction(to, messageId, '');
+    } catch (err) {
+      // Ignore cleanup errors
+    }
+    console.log(`[whatsapp] Processing indicator cleared for ${to}`);
   };
 }
 
