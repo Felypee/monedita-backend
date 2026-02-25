@@ -45,6 +45,9 @@ import {
 import { sendContextSticker, STICKER_CONTEXTS } from "../services/stickerService.js";
 import { sendWelcomeAudio } from "../services/welcomeAudioService.js";
 
+// In-memory backup for test commands (phone -> categories)
+const testCategoryBackups = new Map();
+
 /**
  * Handle incoming WhatsApp messages
  * Uses message batching (10s window) for text messages
@@ -349,9 +352,27 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
     // TEST: Simulate new user without categories (for testing purposes)
     if (messageText.toLowerCase().trim() === "test nuevo") {
       if (clearIndicator) await clearIndicator();
-      // Clear user's categories to simulate new user
+      // Backup categories before clearing
+      const currentCategories = await UserDB.getCategories(phone) || [];
+      if (currentCategories.length > 0) {
+        testCategoryBackups.set(phone, currentCategories);
+      }
       await UserDB.setCategories(phone, []);
-      await sendTextMessage(phone, "✅ Categorías borradas. Ahora envía un gasto para probar el flujo de usuario nuevo.");
+      await sendTextMessage(phone, "✅ Categorías guardadas en backup. Envía un gasto para probar.\n\nEscribe *test restaurar* para recuperarlas.");
+      return;
+    }
+
+    // TEST: Restore backed up categories
+    if (messageText.toLowerCase().trim() === "test restaurar") {
+      if (clearIndicator) await clearIndicator();
+      const backup = testCategoryBackups.get(phone);
+      if (backup && backup.length > 0) {
+        await UserDB.setCategories(phone, backup);
+        testCategoryBackups.delete(phone);
+        await sendTextMessage(phone, `✅ Categorías restauradas (${backup.length})`);
+      } else {
+        await sendTextMessage(phone, "❌ No hay backup para restaurar");
+      }
       return;
     }
 
