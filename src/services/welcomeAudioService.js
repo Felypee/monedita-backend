@@ -18,7 +18,7 @@ const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 const AUDIO_DIR = path.join(__dirname, "../../public/audio");
 
 // Audio version for cache busting (increment when audio files change)
-const AUDIO_VERSION = "v2";
+const AUDIO_VERSION = "v3";
 
 // Welcome audio files by language (with cache busting)
 const WELCOME_AUDIO = {

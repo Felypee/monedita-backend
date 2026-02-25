@@ -33,8 +33,8 @@ const WELCOME_MESSAGES = {
 };
 
 // ElevenLabs voice IDs
-// Bella: sweet, soft, young female voice - energetic and tender
-const VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Bella
+// Freya: young, expressive, warm - great for multilingual
+const VOICE_ID = "jsCqWAovK2LkecY7zXl4"; // Freya
 
 async function generateAudio(lang, text) {
   console.log(`Generating ${lang} audio...`);
@@ -52,9 +52,9 @@ async function generateAudio(lang, text) {
         text: text,
         model_id: "eleven_multilingual_v2",
         voice_settings: {
-          stability: 0.4,
-          similarity_boost: 0.85,
-          style: 0.7,
+          stability: 0.6,
+          similarity_boost: 0.75,
+          style: 0.3,
           use_speaker_boost: true,
         },
       }),
