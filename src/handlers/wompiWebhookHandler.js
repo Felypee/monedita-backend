@@ -228,38 +228,35 @@ Digite *upgrade* para ver as opções de pagamento.`,
 function getPlanFeatures(planId, lang) {
   const features = {
     basic: {
-      es: `• 150 mensajes de texto/mes
-• 30 mensajes de voz/mes
-• 20 escaneos de recibos/mes
-• 5 presupuestos
+      es: `• 1,200 moneditas/mes
+• Presupuestos ilimitados
+• Historial de 6 meses
 • Exportar a CSV`,
-      en: `• 150 text messages/month
-• 30 voice messages/month
-• 20 receipt scans/month
-• 5 budgets
+      en: `• 1,200 moneditas/month
+• Unlimited budgets
+• 6 months history
 • Export to CSV`,
-      pt: `• 150 mensagens de texto/mês
-• 30 mensagens de voz/mês
-• 20 digitalizações de recibos/mês
-• 5 orçamentos
+      pt: `• 1.200 moneditas/mês
+• Orçamentos ilimitados
+• Histórico de 6 meses
 • Exportar para CSV`,
     },
     premium: {
-      es: `• Mensajes de texto ilimitados
-• 100 mensajes de voz/mes
-• 50 escaneos de recibos/mes
+      es: `• 3,500 moneditas/mes
 • Presupuestos ilimitados
-• Exportar a CSV y PDF`,
-      en: `• Unlimited text messages
-• 100 voice messages/month
-• 50 receipt scans/month
+• Historial de 12 meses
+• Conexión bancaria (Open Banking)
+• Exportar a CSV`,
+      en: `• 3,500 moneditas/month
 • Unlimited budgets
-• Export to CSV and PDF`,
-      pt: `• Mensagens de texto ilimitadas
-• 100 mensagens de voz/mês
-• 50 digitalizações de recibos/mês
+• 12 months history
+• Bank connection (Open Banking)
+• Export to CSV`,
+      pt: `• 3.500 moneditas/mês
 • Orçamentos ilimitados
-• Exportar para CSV e PDF`,
+• Histórico de 12 meses
+• Conexão bancária (Open Banking)
+• Exportar para CSV`,
     },
   };
 
