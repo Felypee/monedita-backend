@@ -33,8 +33,8 @@ const WELCOME_MESSAGES = {
 };
 
 // ElevenLabs voice IDs
-// Josh: young American male, friendly and casual
-const VOICE_ID = "TxGEqnHWrfWFTfGW9XjX"; // Josh
+// Charlie: young Australian male, casual and upbeat
+const VOICE_ID = "IKne3meq5aSn9XLyUdCD"; // Charlie
 
 async function generateAudio(lang, text) {
   console.log(`Generating ${lang} audio...`);
@@ -52,9 +52,9 @@ async function generateAudio(lang, text) {
         text: text,
         model_id: "eleven_multilingual_v2",
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8,
-          style: 0.5,
+          stability: 0.35,
+          similarity_boost: 0.85,
+          style: 0.75,
           use_speaker_boost: true,
         },
       }),
