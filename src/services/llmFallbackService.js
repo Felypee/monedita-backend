@@ -245,7 +245,7 @@ export async function callWithFallback(systemPrompt, messages, tools) {
   const providers = [
     { name: 'claude', fn: callClaude },
     { name: 'gemini', fn: callGemini },
-    { name: 'openai', fn: callOpenAI },
+    // { name: 'openai', fn: callOpenAI }, // Disabled - no credits
   ];
 
   let lastError = null;
