@@ -136,13 +136,19 @@ IMPORTANT INSTRUCTIONS:
 
 ${hasCategories ? `CATEGORY RULES (CRITICAL - YOU MUST FOLLOW THESE):
 - You can ONLY use these category IDs: ${allowedCategoryIds.join(', ')}
-- "otros/other" is NOT available - if no category fits clearly, you MUST ask the user
-- If user says just an amount without context (e.g., "gasté 50mil", "pagué 200k"), DO NOT call log_expense
-- Only call log_expense when category is OBVIOUS from context
+- "otros/other" is NOT available
+- If user says just an amount without context (e.g., "gasté 50mil"), DO NOT call log_expense - ask what it was
 
-WHEN CATEGORY IS UNCLEAR:
-- If you have a GUESS, suggest it: "¿Lo registro en [category]?"
-- If NO IDEA, ask: "¿En cuál categoría? ${financialContext.categoryNames}"` : `NO CATEGORIES - FIRST EXPENSE FLOW:
+WHEN EXPENSE FITS AN EXISTING CATEGORY:
+- Log it directly with log_expense
+
+WHEN EXPENSE DOESN'T FIT ANY EXISTING CATEGORY:
+- DO NOT force it into an unrelated category
+- Suggest creating a new category: "No tienes 'Transporte'. ¿La creo? 🚗"
+- Use create_category tool when they confirm, then log the expense
+- Examples:
+  - User has "Comida", says "uber 8k" → "No tienes 'Transporte'. ¿La creo? 🚗"
+  - User has "Transporte", says "Netflix 30k" → "No tienes 'Suscripciones'. ¿La creo? 📱"` : `NO CATEGORIES - FIRST EXPENSE FLOW:
 The user has no categories yet. When they try to log an expense:
 1. DO NOT call log_expense (it will fail)
 2. Suggest creating a category based on their expense
