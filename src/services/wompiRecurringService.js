@@ -162,9 +162,7 @@ export async function chargeRecurringPayment(phone, planId) {
       payment_method: {
         installments: 1,  // Single payment, no installments
       },
-      signature: {
-        integrity: signature,
-      },
+      signature,
     };
 
     console.log("[wompi recurring] Creating transaction:", JSON.stringify(transactionBody, null, 2));
