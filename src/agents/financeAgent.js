@@ -8,6 +8,7 @@ import { getContextForClaude, addMessage } from "../services/conversationContext
 import { trackUsage as trackDailyUsage, isAllowed } from "../utils/usageMonitor.js";
 import { sendContextStickerWithLimit } from "../services/stickerService.js";
 import { getUserCategories, getCategoryNames, getCategoryIds } from "../utils/categoryUtils.js";
+import { generateSetupUrl } from "../services/statsTokenService.js";
 
 dotenv.config();
 
@@ -106,6 +107,10 @@ export class FinanceAgent {
     // Get conversation history (max 20 messages)
     const conversationHistory = getContextForClaude(this.userPhone);
 
+    // Generate setup URL for users without categories
+    const setupUrl = generateSetupUrl(this.userPhone);
+    const hasCategories = allowedCategoryIds.length > 0;
+
     const systemPrompt = `You are Monedita, a helpful AI expense manager via WhatsApp.
 You help users track expenses, manage budgets, and understand their spending.
 
@@ -115,8 +120,8 @@ Current user context for ${financialContext.month}:
 - Total budget: ${financialContext.totalBudget.toFixed(2)}
 - Categories used: ${Object.keys(financialContext.categorySummary).join(', ') || 'None yet'}
 
-User's available categories: ${financialContext.categoryNames}
-ALLOWED category IDs (ONLY these): ${allowedCategoryIds.join(', ')}
+${hasCategories ? `User's available categories: ${financialContext.categoryNames}
+ALLOWED category IDs (ONLY these): ${allowedCategoryIds.join(', ')}` : `USER HAS NO CATEGORIES YET`}
 
 Recent expenses: ${financialContext.expenses.slice(-3).map(e => `${e.category}: ${e.amount}`).join(', ') || 'None'}
 Active budgets: ${financialContext.budgets.map(b => `${b.category}: ${b.amount}`).join(', ') || 'None'}
@@ -125,24 +130,31 @@ IMPORTANT INSTRUCTIONS:
 1. Analyze the user's message to determine their intent
 2. Use the appropriate tool to fulfill their request
 3. For expense logging, extract ALL expenses mentioned (can be multiple)
-4. CRITICAL: Keep responses SHORT - maximum 10 lines. This is WhatsApp, users read on mobile
+4. CRITICAL: Keep responses SHORT - maximum 3-4 lines. This is WhatsApp, users read on mobile
 5. Respond in the same language as the user's message
 6. Use conversation history for context when needed
 
-CATEGORY RULES (CRITICAL - YOU MUST FOLLOW THESE):
+${hasCategories ? `CATEGORY RULES (CRITICAL - YOU MUST FOLLOW THESE):
 - You can ONLY use these category IDs: ${allowedCategoryIds.join(', ')}
 - "otros/other" is NOT available - if no category fits clearly, you MUST ask the user
 - If user says just an amount without context (e.g., "gasté 50mil", "pagué 200k"), DO NOT call log_expense
 - Only call log_expense when category is OBVIOUS from context
-- Map clear intents: almuerzo/comida → ${allowedCategoryIds[0] || 'comida'}, uber/taxi → ${allowedCategoryIds[1] || 'transporte'}
 
-WHEN CATEGORY IS UNCLEAR (Issue #11 - give hints):
-- If you have a GUESS about the category, suggest it: "¿Lo registro en [suggested category]? O dime otra: ${financialContext.categoryNames}"
-- If you have NO IDEA, ask with options: "¿En cuál categoría? ${financialContext.categoryNames}"
-- Examples:
-  - "pagué 50mil" → "¿50mil de qué? ¿Servicios, comida, transporte...?"
-  - "gasté en el centro comercial" → "Parece compras 🛒 ¿Lo registro ahí?"
-  - "300k del carro" → "¿Es transporte (gasolina, parqueadero) o una compra/repuesto?"
+WHEN CATEGORY IS UNCLEAR:
+- If you have a GUESS, suggest it: "¿Lo registro en [category]?"
+- If NO IDEA, ask: "¿En cuál categoría? ${financialContext.categoryNames}"` : `NO CATEGORIES - FIRST EXPENSE FLOW:
+The user has no categories yet. When they try to log an expense:
+1. DO NOT call log_expense (it will fail)
+2. Suggest creating a category based on their expense
+3. Be brief and friendly
+
+Example responses (adapt to context):
+- "almuerzo 15mil" → "¡Vamos a crear tu primera categoría! ¿La llamamos 'Comida' 🍔?"
+- "uber 8k" → "Primero creemos una categoría. ¿Te parece 'Transporte' 🚗?"
+- "50mil" → "¿En qué gastaste? Así creamos tu primera categoría"
+
+After they confirm, use create_category tool to create it, then log the expense.
+Alternative: They can also configure categories here: ${setupUrl}`}
 
 When logging expenses:
 - Parse amounts as numbers (e.g., "50 dollars" → 50, "mil pesos" → 1000)

@@ -346,15 +346,12 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
       return;
     }
 
-    // TEST: Trigger welcome audio with keyword (for testing purposes)
-    if (messageText.toLowerCase().trim() === "test audio") {
+    // TEST: Simulate new user without categories (for testing purposes)
+    if (messageText.toLowerCase().trim() === "test nuevo") {
       if (clearIndicator) await clearIndicator();
-      const audioSent = await sendWelcomeAudio(phone, lang);
-      if (audioSent) {
-        await sendTextMessage(phone, "✅ Audio de prueba enviado");
-      } else {
-        await sendTextMessage(phone, "❌ No se pudo enviar el audio");
-      }
+      // Clear user's categories to simulate new user
+      await UserDB.setCategories(phone, []);
+      await sendTextMessage(phone, "✅ Categorías borradas. Ahora envía un gasto para probar el flujo de usuario nuevo.");
       return;
     }
 

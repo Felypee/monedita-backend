@@ -60,9 +60,10 @@ export function getDefaultCategoryIds(language) {
 }
 
 /**
- * Get user's categories (custom if set, otherwise defaults for their language)
+ * Get user's categories (custom only - no defaults)
+ * Users must create their own categories or Claude will suggest based on expenses
  * @param {string} phone - User phone number
- * @param {string} language - Language code
+ * @param {string} language - Language code (unused but kept for API compatibility)
  * @returns {Promise<Array<{id: string, name: string, emoji: string}>>} Array of category objects
  */
 export async function getUserCategories(phone, language) {
@@ -79,10 +80,10 @@ export async function getUserCategories(phone, language) {
       });
     }
   } catch (err) {
-    // Gracefully handle missing column or DB errors — fall back to defaults
-    console.warn('[categoryUtils] Could not load custom categories, using defaults:', err.message || err);
+    console.warn('[categoryUtils] Could not load custom categories:', err.message || err);
   }
-  return getDefaultCategories(language);
+  // No defaults - user must create categories or Claude will suggest
+  return [];
 }
 
 /**
