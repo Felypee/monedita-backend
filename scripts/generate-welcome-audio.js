@@ -33,8 +33,8 @@ const WELCOME_MESSAGES = {
 };
 
 // ElevenLabs voice IDs
-// Freya: young, expressive, warm - great for multilingual
-const VOICE_ID = "jsCqWAovK2LkecY7zXl4"; // Freya
+// Josh: young American male, friendly and casual
+const VOICE_ID = "TxGEqnHWrfWFTfGW9XjX"; // Josh
 
 async function generateAudio(lang, text) {
   console.log(`Generating ${lang} audio...`);
@@ -52,9 +52,9 @@ async function generateAudio(lang, text) {
         text: text,
         model_id: "eleven_multilingual_v2",
         voice_settings: {
-          stability: 0.6,
-          similarity_boost: 0.75,
-          style: 0.3,
+          stability: 0.5,
+          similarity_boost: 0.8,
+          style: 0.5,
           use_speaker_boost: true,
         },
       }),
