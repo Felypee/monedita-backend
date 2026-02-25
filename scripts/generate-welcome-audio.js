@@ -2,16 +2,15 @@
 /**
  * Generate Welcome Audio Files
  *
- * Uses OpenAI TTS to generate welcome messages in multiple languages.
+ * Uses ElevenLabs TTS to generate welcome messages in multiple languages.
  * Run once to create the audio files, then deploy them with the app.
  *
  * Usage: node scripts/generate-welcome-audio.js
  *
- * Requires: OPENAI_API_KEY environment variable
- * Cost: ~$0.02 total (3 languages x ~400 chars each at $15/1M chars)
+ * Requires: ELEVENLABS_API_KEY environment variable
+ * Cost: Free tier has 10k chars/month (we use ~1,200 chars total)
  */
 
-import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -39,27 +38,37 @@ Só me diga quanto gastou e em quê, e eu cuido do resto.
 Qual é o seu nome?`,
 };
 
-// Voice settings per language
-const VOICE_SETTINGS = {
-  es: { voice: "nova", speed: 1.0 },    // Nova: warm, friendly female voice
-  en: { voice: "nova", speed: 1.0 },
-  pt: { voice: "nova", speed: 1.0 },
-};
+// ElevenLabs voice IDs
+// Rachel: warm, friendly female voice (works well for all languages)
+const VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // Rachel
 
-async function generateAudio(lang, text, settings) {
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
+async function generateAudio(lang, text) {
   console.log(`Generating ${lang} audio...`);
 
-  const response = await openai.audio.speech.create({
-    model: "tts-1",           // Use tts-1-hd for higher quality
-    voice: settings.voice,
-    input: text,
-    speed: settings.speed,
-    response_format: "mp3",
-  });
+  const response = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+    {
+      method: "POST",
+      headers: {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": process.env.ELEVENLABS_API_KEY,
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`ElevenLabs API error: ${response.status} - ${error}`);
+  }
 
   const buffer = Buffer.from(await response.arrayBuffer());
   const filepath = path.join(AUDIO_DIR, `welcome-${lang}.mp3`);
@@ -72,9 +81,9 @@ async function generateAudio(lang, text, settings) {
 
 async function main() {
   // Check for API key
-  if (!process.env.OPENAI_API_KEY) {
-    console.error("Error: OPENAI_API_KEY environment variable is required");
-    console.error("Get your key at: https://platform.openai.com/api-keys");
+  if (!process.env.ELEVENLABS_API_KEY) {
+    console.error("Error: ELEVENLABS_API_KEY environment variable is required");
+    console.error("Get your free key at: https://elevenlabs.io");
     process.exit(1);
   }
 
@@ -83,26 +92,24 @@ async function main() {
     fs.mkdirSync(AUDIO_DIR, { recursive: true });
   }
 
-  console.log("Generating welcome audio files...\n");
+  console.log("Generating welcome audio files with ElevenLabs...\n");
 
   const languages = Object.keys(WELCOME_MESSAGES);
   let totalChars = 0;
 
   for (const lang of languages) {
     const text = WELCOME_MESSAGES[lang];
-    const settings = VOICE_SETTINGS[lang];
     totalChars += text.length;
 
     try {
-      await generateAudio(lang, text, settings);
+      await generateAudio(lang, text);
     } catch (error) {
       console.error(`  Error generating ${lang}:`, error.message);
     }
   }
 
   console.log(`\nDone! Generated ${languages.length} audio files.`);
-  console.log(`Total characters: ${totalChars}`);
-  console.log(`Estimated cost: $${((totalChars / 1_000_000) * 15).toFixed(4)}`);
+  console.log(`Total characters used: ${totalChars}`);
 }
 
 main().catch(console.error);
