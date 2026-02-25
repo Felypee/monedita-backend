@@ -23,24 +23,18 @@ const __dirname = path.dirname(__filename);
 
 const AUDIO_DIR = path.join(__dirname, "../public/audio");
 
-// Welcome messages by language (shorter versions for audio)
+// Welcome messages by language (shorter, friendly versions)
 const WELCOME_MESSAGES = {
-  es: `¡Hola! Bienvenido a Monedita, tu asistente de gastos con inteligencia artificial.
-Solo dime cuánto gastaste y en qué, y yo me encargo del resto.
-¿Cómo te llamas?`,
+  es: `¡Hola! Hoy es un buen momento para empezar a controlar tus gastos. ¿Cómo te llamas?`,
 
-  en: `Hi! Welcome to Monedita, your AI expense assistant.
-Just tell me how much you spent and on what, and I'll take care of the rest.
-What's your name?`,
+  en: `Hi! Today is a great day to start tracking your expenses. What's your name?`,
 
-  pt: `Oi! Bem-vindo ao Monedita, seu assistente de despesas com inteligência artificial.
-Só me diga quanto gastou e em quê, e eu cuido do resto.
-Qual é o seu nome?`,
+  pt: `Oi! Hoje é um bom momento para começar a controlar seus gastos. Qual é o seu nome?`,
 };
 
 // ElevenLabs voice IDs
-// Rachel: warm, friendly female voice (works well for all languages)
-const VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // Rachel
+// Bella: sweet, soft, young female voice - energetic and tender
+const VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Bella
 
 async function generateAudio(lang, text) {
   console.log(`Generating ${lang} audio...`);
@@ -58,8 +52,10 @@ async function generateAudio(lang, text) {
         text: text,
         model_id: "eleven_multilingual_v2",
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
+          stability: 0.4,
+          similarity_boost: 0.85,
+          style: 0.7,
+          use_speaker_boost: true,
         },
       }),
     }
