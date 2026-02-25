@@ -17,11 +17,14 @@ const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 // Path to audio files
 const AUDIO_DIR = path.join(__dirname, "../../public/audio");
 
-// Welcome audio files by language
+// Audio version for cache busting (increment when audio files change)
+const AUDIO_VERSION = "v2";
+
+// Welcome audio files by language (with cache busting)
 const WELCOME_AUDIO = {
-  es: `${SERVER_URL}/audio/welcome-es.mp3`,
-  en: `${SERVER_URL}/audio/welcome-en.mp3`,
-  pt: `${SERVER_URL}/audio/welcome-pt.mp3`,
+  es: `${SERVER_URL}/audio/welcome-es.mp3?${AUDIO_VERSION}`,
+  en: `${SERVER_URL}/audio/welcome-en.mp3?${AUDIO_VERSION}`,
+  pt: `${SERVER_URL}/audio/welcome-pt.mp3?${AUDIO_VERSION}`,
 };
 
 /**
