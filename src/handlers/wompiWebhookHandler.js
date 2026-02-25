@@ -13,7 +13,7 @@ import {
   SUBSCRIPTION_PLANS,
 } from "../services/wompiService.js";
 import { createPaymentSource } from "../services/wompiRecurringService.js";
-import { UserSubscriptionDB } from "../database/index.js";
+import { UserSubscriptionDB, BillingHistoryDB } from "../database/index.js";
 import { sendTextMessage } from "../utils/whatsappClient.js";
 import { getMessage } from "../utils/languageUtils.js";
 import { UserDB } from "../database/index.js";
@@ -69,7 +69,16 @@ export async function handleWompiWebhook(payload, signature, timestamp) {
     return;
   }
 
+  // If no pending payment by link, check if it's a recurring payment by reference
   if (!pendingPayment) {
+    // Check if this is a recurring payment (reference contains "monedita_recurring_")
+    const reference = transaction.reference;
+    if (reference && reference.includes("monedita_recurring_")) {
+      console.log("[wompi webhook] Processing recurring payment confirmation");
+      await handleRecurringPaymentWebhook(transaction);
+      return;
+    }
+
     console.error("[wompi webhook] No pending payment found for link:", paymentLinkId);
     return;
   }
@@ -255,6 +264,72 @@ function getPlanFeatures(planId, lang) {
   };
 
   return features[planId]?.[lang] || features[planId]?.es || "";
+}
+
+/**
+ * Handle webhook for recurring payments (payment_source charges)
+ * @param {object} transaction - Transaction data from webhook
+ */
+async function handleRecurringPaymentWebhook(transaction) {
+  const reference = transaction.reference;
+  const status = transaction.status;
+  const transactionId = transaction.id;
+
+  console.log(`[wompi webhook] Recurring payment ${transactionId}: ${status}`);
+
+  // Parse reference: monedita_recurring_premium_573114740716_1771987308735
+  const parts = reference.split("_");
+  if (parts.length < 4) {
+    console.error("[wompi webhook] Invalid recurring reference format:", reference);
+    return;
+  }
+
+  const planId = parts[2];
+  const phone = parts[3];
+  const plan = SUBSCRIPTION_PLANS[planId];
+
+  if (!plan) {
+    console.error("[wompi webhook] Unknown plan in recurring payment:", planId);
+    return;
+  }
+
+  // Find billing record by reference or transaction ID
+  const billingRecords = await BillingHistoryDB.getByPhone(phone, 5);
+  const billingRecord = billingRecords.find(
+    (r) => r.wompiTransactionId === transactionId || r.status === "pending"
+  );
+
+  if (status === "APPROVED") {
+    console.log(`[wompi webhook] ✅ Recurring payment approved for ${phone}`);
+
+    // Update billing record if found
+    if (billingRecord) {
+      await BillingHistoryDB.update(billingRecord.id, {
+        status: "approved",
+        wompiTransactionId: transactionId,
+      });
+    }
+
+    // Notify user
+    const user = await UserDB.get(phone);
+    const lang = user?.language || "es";
+    await notifyPaymentSuccess(phone, plan, lang);
+
+  } else if (status === "DECLINED" || status === "ERROR") {
+    console.log(`[wompi webhook] ❌ Recurring payment failed for ${phone}: ${status}`);
+
+    // Update billing record
+    if (billingRecord) {
+      await BillingHistoryDB.update(billingRecord.id, {
+        status: "declined",
+        wompiTransactionId: transactionId,
+        errorMessage: `Webhook: ${status}`,
+      });
+    }
+
+    // Notify user
+    await notifyPaymentFailed(phone, status);
+  }
 }
 
 export default { handleWompiWebhook };

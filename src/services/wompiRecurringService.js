@@ -201,26 +201,30 @@ export async function chargeRecurringPayment(phone, planId) {
 
     console.log(`[wompi recurring] Transaction ${transaction.id}: ${status}`);
 
-    if (status === "APPROVED") {
-      // Update billing record
+    if (status === "APPROVED" || status === "PENDING") {
+      // PENDING is normal - Wompi processes async and sends webhook when done
+      // We treat it as success and the webhook will confirm
       await BillingHistoryDB.update(billingRecord.id, {
-        status: 'approved',
+        status: status === "APPROVED" ? 'approved' : 'pending',
         wompiTransactionId: transaction.id,
       });
 
-      // Extend subscription
+      // Extend subscription (even for PENDING - webhook will confirm)
       await extendSubscription(phone, planId);
 
-      // Notify user
-      await notifyRenewalSuccess(phone, plan);
+      // Only notify if already approved (webhook will notify for PENDING)
+      if (status === "APPROVED") {
+        await notifyRenewalSuccess(phone, plan);
+      }
 
       return {
         success: true,
         transactionId: transaction.id,
         billingId: billingRecord.id,
+        status,
       };
     } else {
-      // Payment not approved
+      // Payment failed (DECLINED, ERROR, etc.)
       await BillingHistoryDB.update(billingRecord.id, {
         status: 'declined',
         wompiTransactionId: transaction.id,
