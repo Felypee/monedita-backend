@@ -198,49 +198,22 @@ const ROTATION_INTERVAL_MS = 3000; // Change every 3 seconds
 const MAX_ROTATIONS = 1; // Only rotate once (2 emojis total)
 
 /**
- * Show "processing" indicator using minimal emoji reactions
- * Only 2 emojis + final checkmark to reduce notification spam
+ * Show "processing" indicator
+ * Just marks message as read (WhatsApp Cloud API doesn't have typing indicator)
  * @param {string} to - Recipient phone number
- * @param {string} messageId - Message ID to react to
- * @returns {Function} - Call this to remove the reaction
+ * @param {string} messageId - Message ID to mark as read
+ * @returns {Function} - Cleanup function (no-op for now)
  */
 export async function showProcessingIndicator(to, messageId) {
-  if (!messageId) {
-    console.log('[whatsapp] No messageId for processing indicator');
-    return () => {};
+  // Mark message as read to show we received it
+  if (messageId) {
+    await markAsRead(messageId);
   }
+  console.log(`[whatsapp] Processing started for ${to}`);
 
-  let rotationCount = 0;
-  let isActive = true;
-  let timeoutId = null;
-
-  // Show first emoji immediately
-  await sendReaction(to, messageId, PROCESSING_EMOJIS[0]);
-  console.log(`[whatsapp] Processing indicator started for ${to}`);
-
-  // Schedule second emoji after 3 seconds (only once)
-  timeoutId = setTimeout(async () => {
-    if (!isActive || rotationCount >= MAX_ROTATIONS) return;
-    rotationCount++;
-    try {
-      await sendReaction(to, messageId, PROCESSING_EMOJIS[1]);
-    } catch (err) {
-      // Ignore rotation errors
-    }
-  }, ROTATION_INTERVAL_MS);
-
-  // Return function to clear the indicator
+  // Return cleanup function
   return async () => {
-    isActive = false;
-    if (timeoutId) clearTimeout(timeoutId);
-
-    // Show ✅ as final indicator
-    try {
-      await sendReaction(to, messageId, '✅');
-    } catch (err) {
-      // Ignore cleanup errors
-    }
-    console.log(`[whatsapp] Processing indicator cleared for ${to}`);
+    console.log(`[whatsapp] Processing completed for ${to}`);
   };
 }
 
