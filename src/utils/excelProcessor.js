@@ -50,11 +50,28 @@ export function parseExcelFile(buffer, mimeType, userCurrency = 'COP') {
     // Detect column indices
     const columnMap = detectColumns(headers);
 
-    if (!columnMap.amount) {
+    // Validate required columns: amount, date, category
+    const missingColumns = [];
+
+    if (!columnMap.amount && columnMap.amount !== 0) {
+      missingColumns.push('amount/monto');
+    }
+    if (!columnMap.date && columnMap.date !== 0) {
+      missingColumns.push('date/fecha');
+    }
+    if (!columnMap.category && columnMap.category !== 0) {
+      missingColumns.push('category/categoría');
+    }
+
+    if (missingColumns.length > 0) {
       return {
         success: false,
         expenses: [],
-        errors: [`Could not find amount column. Found headers: ${headers.join(', ')}`],
+        errors: [
+          `Columnas obligatorias no encontradas: ${missingColumns.join(', ')}`,
+          `Required columns not found: ${missingColumns.join(', ')}`,
+          `Headers encontrados: ${headers.join(', ')}`
+        ],
         preview: ''
       };
     }
@@ -78,34 +95,40 @@ export function parseExcelFile(buffer, mimeType, userCurrency = 'COP') {
       const amount = parseAmount(rawAmount, userCurrency);
 
       if (!amount || amount <= 0) {
-        errors.push(`Row ${rowNum}: Invalid amount "${rawAmount}"`);
+        errors.push(`Fila ${rowNum}: Monto inválido "${rawAmount}"`);
         continue;
       }
 
-      // Extract date (optional, defaults to today)
-      let date = now;
-      if (columnMap.date !== null) {
-        const rawDate = row[columnMap.date];
-        const parsedDate = parseDate(rawDate);
-        if (parsedDate) {
-          // Reject future dates
-          if (parsedDate > now) {
-            errors.push(`Row ${rowNum}: Future date not allowed "${rawDate}"`);
-            continue;
-          }
-          date = parsedDate;
-        }
+      // Extract date (REQUIRED)
+      const rawDate = row[columnMap.date];
+      const parsedDate = parseDate(rawDate);
+
+      if (!parsedDate) {
+        errors.push(`Fila ${rowNum}: Fecha inválida o vacía "${rawDate || '(vacío)'}"`);
+        continue;
       }
+
+      // Reject future dates
+      if (parsedDate > now) {
+        errors.push(`Fila ${rowNum}: Fecha futura no permitida "${rawDate}"`);
+        continue;
+      }
+
+      const date = parsedDate;
 
       // Extract description (optional)
       const description = columnMap.description !== null
         ? String(row[columnMap.description] || '').trim().substring(0, 200)
         : '';
 
-      // Extract category (optional)
-      const category = columnMap.category !== null
-        ? String(row[columnMap.category] || '').trim().toLowerCase()
-        : null;
+      // Extract category (REQUIRED)
+      const rawCategory = row[columnMap.category];
+      const category = rawCategory ? String(rawCategory).trim().toLowerCase() : null;
+
+      if (!category) {
+        errors.push(`Fila ${rowNum}: Categoría vacía o inválida "${rawCategory || '(vacío)'}"`);
+        continue;
+      }
 
       expenses.push({
         amount,
@@ -121,7 +144,7 @@ export function parseExcelFile(buffer, mimeType, userCurrency = 'COP') {
 
     // Add warning if truncated
     if (rows.length > MAX_ROWS) {
-      errors.push(`File has ${rows.length} rows, only first ${MAX_ROWS} will be imported`);
+      errors.push(`El archivo tiene ${rows.length} filas, solo se importarán las primeras ${MAX_ROWS}`);
     }
 
     return {
