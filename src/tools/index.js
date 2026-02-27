@@ -33,7 +33,6 @@ import settleDebt from "./settleDebt.js";
 import showGroups from "./showGroups.js";
 import importExpenses from "./importExpenses.js";
 import createCategory from "./createCategory.js";
-import storePendingExpense from "./storePendingExpense.js";
 
 // Registry of all available tools
 const tools = {
@@ -67,7 +66,6 @@ const tools = {
   show_groups: showGroups,
   import_expenses: importExpenses,
   create_category: createCategory,
-  store_pending_expense: storePendingExpense,
 };
 
 /**

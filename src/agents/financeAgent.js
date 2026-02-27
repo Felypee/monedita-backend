@@ -151,25 +151,16 @@ WHEN EXPENSE DOESN'T FIT ANY EXISTING CATEGORY:
   - User has "Comida", says "uber 8k" → "No tienes 'Transporte'. ¿La creo? 🚗"
   - User has "Transporte", says "Netflix 30k" → "No tienes 'Suscripciones'. ¿La creo? 📱"` : `NO CATEGORIES - FIRST EXPENSE FLOW:
 The user has no categories yet. When they try to log an expense:
+1. DO NOT call log_expense (it will fail)
+2. Suggest creating a category based on their expense
+3. Be brief and friendly
 
-STEP 1: Store the expense with store_pending_expense tool
-STEP 2: Suggest creating a category
-STEP 3: When they confirm, use create_category tool
-STEP 4: The expense will be AUTOMATICALLY logged with the new category
+Example responses (adapt to context):
+- "almuerzo 15mil" → "¡Vamos a crear tu primera categoría! ¿La llamamos 'Comida' 🍔?"
+- "uber 8k" → "Primero creemos una categoría. ¿Te parece 'Transporte' 🚗?"
+- "50mil" → "¿En qué gastaste? Así creamos tu primera categoría"
 
-Example flow:
-User: "almuerzo 15mil"
-1. You call: store_pending_expense(amount: 15000, description: "almuerzo")
-2. You say: "¡Vamos a crear tu primera categoría! ¿La llamamos 'Comida' 🍔?"
-3. User: "sí"
-4. You call: create_category(name: "Comida")
-5. System automatically logs the 15mil expense in "Comida" category
-
-Special cases:
-- "gasté 50mil" (no context) → First ask: "¿En qué gastaste?" Then store_pending_expense + suggest category
-- "uber 8k" → store_pending_expense(8000, "uber") + "Primero creemos 'Transporte' 🚗"
-- If they just respond with category name (e.g. "comida") after you asked, call create_category directly
-
+After they confirm, use create_category tool to create it, then log the expense.
 Alternative: They can also configure categories here: ${setupUrl}`}
 
 When logging expenses:
@@ -237,7 +228,7 @@ For shared/split expenses:
       // Save user message to context
       addMessage(this.userPhone, 'user', userMessage);
 
-      // If tools were called, return their results (unless all are silent)
+      // If tools were called, return their results
       if (toolResults.length > 0) {
         // Send stickers if any tool returned one (rate limited to 1/hour)
         for (const result of toolResults) {
@@ -246,9 +237,8 @@ For shared/split expenses:
           }
         }
 
-        // Filter out null messages AND silent messages (e.g., document sent, or silent tool responses)
+        // Filter out null messages (e.g., document sent)
         const responseMessages = toolResults
-          .filter(r => !r.silent) // Skip silent tool responses
           .map(r => r.message)
           .filter(m => m !== null);
 
@@ -258,27 +248,7 @@ For shared/split expenses:
           addMessage(this.userPhone, 'assistant', finalResponse);
           return finalResponse;
         }
-        
-        // If all tool messages are null/silent, but there's a text response, use that
-        if (textResponse) {
-          // Check AI conversation limit for text responses
-          const aiLimitCheck = await checkLimit(this.userPhone, USAGE_TYPES.AI_CONVERSATION);
-          if (!aiLimitCheck.allowed) {
-            const status = await getSubscriptionStatus(this.userPhone);
-            const limitMsg = getLimitExceededMessage(USAGE_TYPES.AI_CONVERSATION, this.userLanguage, aiLimitCheck);
-            const upgradeMsg = getUpgradeMessage(status.plan.id, this.userLanguage);
-            return `${limitMsg}\n\n${upgradeMsg}`;
-          }
-
-          // Track AI usage
-          await trackUsage(this.userPhone, USAGE_TYPES.AI_CONVERSATION);
-
-          // Save assistant response to context
-          addMessage(this.userPhone, 'assistant', textResponse);
-          return textResponse;
-        }
-        
-        // If all messages are null/silent and no text response, return nothing
+        // If all messages are null (e.g., only documents sent), return nothing
         return null;
       }
 
