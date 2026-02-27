@@ -18,6 +18,21 @@ import { sendTextMessage } from "../utils/whatsappClient.js";
 import { getMessage } from "../utils/languageUtils.js";
 import { UserDB } from "../database/index.js";
 
+// ✅ In-memory deduplication for webhook notifications
+// Prevents duplicate messages if Wompi sends the same webhook multiple times
+// Maps: transactionId -> { phone, timestamp }
+const sentNotifications = new Map();
+
+// Clean old entries every hour (older than 1 hour)
+setInterval(() => {
+  const oneHourAgo = Date.now() - (60 * 60 * 1000);
+  for (const [key, value] of sentNotifications.entries()) {
+    if (value.timestamp < oneHourAgo) {
+      sentNotifications.delete(key);
+    }
+  }
+}, 60 * 60 * 1000);
+
 /**
  * Handle incoming Wompi webhook event
  * @param {object} payload - Webhook payload from Wompi
@@ -63,7 +78,7 @@ export async function handleWompiWebhook(payload, signature, timestamp) {
     // Notify user of failed payment
     if (status === "DECLINED" || status === "ERROR") {
       if (pendingPayment) {
-        await notifyPaymentFailed(pendingPayment.phone, status);
+        await notifyPaymentFailed(pendingPayment.phone, status, transaction.id);
       }
     }
     return;
@@ -134,7 +149,7 @@ export async function handleWompiWebhook(payload, signature, timestamp) {
 
     // Notify user via WhatsApp
     console.log(`[wompi webhook] Sending success notification to ${phone}...`);
-    await notifyPaymentSuccess(phone, plan, lang);
+    await notifyPaymentSuccess(phone, plan, lang, transaction.id);
 
     console.log(`[wompi webhook] ✅ Successfully upgraded ${phone} to ${planId}`);
     console.log("[wompi webhook] ========================================");
@@ -149,8 +164,20 @@ export async function handleWompiWebhook(payload, signature, timestamp) {
  * @param {string} phone - User's phone number
  * @param {object} plan - Plan details
  * @param {string} lang - User's language
+ * @param {string} transactionId - Transaction ID for deduplication
  */
-async function notifyPaymentSuccess(phone, plan, lang) {
+async function notifyPaymentSuccess(phone, plan, lang, transactionId = null) {
+  // ✅ Deduplication: Check if we already sent this notification
+  if (transactionId) {
+    const key = `success_${transactionId}`;
+    if (sentNotifications.has(key)) {
+      console.log(`[wompi webhook] Skipping duplicate notification for transaction ${transactionId}`);
+      return;
+    }
+    // Mark as sent
+    sentNotifications.set(key, { phone, timestamp: Date.now() });
+  }
+
   const messages = {
     es: `🎉 *¡Pago exitoso!*
 
@@ -186,8 +213,20 @@ Obrigado por confiar no Monedita!`,
  * Notify user of failed payment
  * @param {string} phone - User's phone number
  * @param {string} status - Transaction status
+ * @param {string} transactionId - Transaction ID for deduplication
  */
-async function notifyPaymentFailed(phone, status) {
+async function notifyPaymentFailed(phone, status, transactionId = null) {
+  // ✅ Deduplication: Check if we already sent this notification
+  if (transactionId) {
+    const key = `failed_${transactionId}`;
+    if (sentNotifications.has(key)) {
+      console.log(`[wompi webhook] Skipping duplicate notification for transaction ${transactionId}`);
+      return;
+    }
+    // Mark as sent
+    sentNotifications.set(key, { phone, timestamp: Date.now() });
+  }
+
   const user = await UserDB.get(phone);
   const lang = user?.language || "es";
 
@@ -310,7 +349,7 @@ async function handleRecurringPaymentWebhook(transaction) {
     // Notify user
     const user = await UserDB.get(phone);
     const lang = user?.language || "es";
-    await notifyPaymentSuccess(phone, plan, lang);
+    await notifyPaymentSuccess(phone, plan, lang, transactionId);
 
   } else if (status === "DECLINED" || status === "ERROR") {
     console.log(`[wompi webhook] ❌ Recurring payment failed for ${phone}: ${status}`);
@@ -325,7 +364,7 @@ async function handleRecurringPaymentWebhook(transaction) {
     }
 
     // Notify user
-    await notifyPaymentFailed(phone, status);
+    await notifyPaymentFailed(phone, status, transactionId);
   }
 }
 

@@ -212,10 +212,11 @@ export async function chargeRecurringPayment(phone, planId) {
       // Extend subscription (even for PENDING - webhook will confirm)
       await extendSubscription(phone, planId);
 
-      // Only notify if already approved (webhook will notify for PENDING)
-      if (status === "APPROVED") {
-        await notifyRenewalSuccess(phone, plan);
-      }
+      // ✅ FIX: Don't notify here - let webhook handler do it to avoid duplicates
+      // Webhook always arrives, even for immediately approved transactions
+      // if (status === "APPROVED") {
+      //   await notifyRenewalSuccess(phone, plan);
+      // }
 
       return {
         success: true,
