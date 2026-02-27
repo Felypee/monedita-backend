@@ -3,7 +3,9 @@
  * Creates a new expense category for the user
  */
 
-import { UserDB } from "../database/index.js";
+import { UserDB, ExpenseDB } from "../database/index.js";
+import { consumePendingExpense } from "../services/pendingExpenseService.js";
+import { formatAmount } from "../utils/currencyUtils.js";
 
 // Default emojis based on common category names
 const CATEGORY_EMOJIS = {
@@ -96,6 +98,41 @@ export async function handler(phone, params, lang) {
 
     await UserDB.setCategories(phone, categories);
 
+    // Check if there's a pending expense waiting for a category
+    const pendingExpense = consumePendingExpense(phone);
+    
+    if (pendingExpense) {
+      // Log the pending expense with the newly created category
+      try {
+        const expense = await ExpenseDB.create(phone, {
+          amount: pendingExpense.amount,
+          category: categoryId,
+          description: pendingExpense.description || null,
+        });
+
+        const user = await UserDB.get(phone);
+        const userCurrency = user?.currency || 'COP';
+
+        const messages = {
+          en: `${categoryEmoji} Category "${categoryName}" created!\n\n✅ ${formatAmount(expense.amount, userCurrency)} logged for ${categoryName}${expense.description ? ` (${expense.description})` : ''}`,
+          es: `${categoryEmoji} Categoría "${categoryName}" creada!\n\n✅ ${formatAmount(expense.amount, userCurrency)} registrado en ${categoryName}${expense.description ? ` (${expense.description})` : ''}`,
+          pt: `${categoryEmoji} Categoria "${categoryName}" criada!\n\n✅ ${formatAmount(expense.amount, userCurrency)} registrado em ${categoryName}${expense.description ? ` (${expense.description})` : ''}`,
+        };
+
+        return { success: true, message: messages[lang] || messages.es };
+      } catch (error) {
+        console.error('[createCategory] Error logging pending expense:', error);
+        // Category was created successfully, but expense failed - still return success
+        const messages = {
+          en: `${categoryEmoji} Category "${categoryName}" created! (But there was an error logging your expense)`,
+          es: `${categoryEmoji} Categoría "${categoryName}" creada! (Pero hubo un error al registrar tu gasto)`,
+          pt: `${categoryEmoji} Categoria "${categoryName}" criada! (Mas houve um erro ao registrar sua despesa)`,
+        };
+        return { success: true, message: messages[lang] || messages.es };
+      }
+    }
+
+    // No pending expense - just confirm category creation
     const messages = {
       en: `${categoryEmoji} Category "${categoryName}" created!`,
       es: `${categoryEmoji} Categoría "${categoryName}" creada!`,
