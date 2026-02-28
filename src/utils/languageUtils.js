@@ -84,6 +84,8 @@ Try it now! Tell me about a recent expense.`,
     budget_prompt_no_budget: "💡 No budget set for {category}. How much do you want to allocate monthly?\n(Reply with an amount or 'no' to skip)",
     budget_prompt_silenced: "Ok, I won't ask about {category} for 1 month",
     budget_prompt_created: "✅ {amount}/month budget set for {category}",
+    budget_exceeded_simple: "Exceeded! {spent} of {budget}",
+    budget_warning_remaining: "Only {remaining} left this month",
 
     // Summary
     summary_title: "📊 *{month} Summary*",
@@ -240,6 +242,8 @@ Pregunta: "¿Cuál es mi mayor gasto?"
     budget_prompt_no_budget: "💡 No tienes presupuesto para {category}. ¿Cuánto quieres asignar mensualmente?\n(Responde con un monto o 'no' para omitir)",
     budget_prompt_silenced: "Ok, no te preguntaré por {category} durante 1 mes",
     budget_prompt_created: "✅ Presupuesto de {amount}/mes establecido para {category}",
+    budget_exceeded_simple: "¡Excedido! {spent} de {budget}",
+    budget_warning_remaining: "Solo te quedan {remaining} este mes",
 
     // Summary
     summary_title: "📊 *Resumen de {month}*",
@@ -396,6 +400,8 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     budget_prompt_no_budget: "💡 Você não tem orçamento para {category}. Quanto deseja alocar mensalmente?\n(Responda com um valor ou 'não' para pular)",
     budget_prompt_silenced: "Ok, não vou perguntar sobre {category} por 1 mês",
     budget_prompt_created: "✅ Orçamento de {amount}/mês definido para {category}",
+    budget_exceeded_simple: "Excedido! {spent} de {budget}",
+    budget_warning_remaining: "Restam apenas {remaining} este mês",
 
     // Summary
     summary_title: "📊 *Resumo de {month}*",

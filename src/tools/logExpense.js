@@ -293,7 +293,19 @@ async function checkNoBudgetPrompt(phone, expenses, userCurrency, lang) {
 }
 
 /**
- * Check if expense triggers budget alert
+ * Generate a progress bar string
+ * @param {number} percentage - 0-100+
+ * @param {number} length - bar length (default 10)
+ * @returns {string} - e.g. "[████████░░]"
+ */
+function generateProgressBar(percentage, length = 10) {
+  const filled = Math.min(Math.round((percentage / 100) * length), length);
+  const empty = length - filled;
+  return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
+}
+
+/**
+ * Check budget status and return progress bar with alert if needed
  */
 async function checkBudgetAlert(phone, category, userCurrency, lang) {
   const budget = await BudgetDB.getByCategory(phone, category);
@@ -304,22 +316,31 @@ async function checkBudgetAlert(phone, category, userCurrency, lang) {
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
   const spent = await ExpenseDB.getTotalByCategory(phone, category, startOfMonth, endOfMonth);
-  const percentage = (spent / parseFloat(budget.amount || 0)) * 100;
+  const budgetAmount = parseFloat(budget.amount || 0);
+  const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
 
+  const progressBar = generateProgressBar(percentage);
+  const remaining = budgetAmount - spent;
+
+  // Build the message based on percentage
   if (percentage >= 100) {
-    return getMessage('budget_alert_exceeded', lang, {
-      category,
+    // Exceeded budget
+    return `🚨 *${category}*: ${progressBar} ${percentage.toFixed(0)}%\n${getMessage('budget_exceeded_simple', lang, {
       spent: formatAmount(spent, userCurrency),
-      budget: formatAmount(budget.amount, userCurrency)
-    });
+      budget: formatAmount(budgetAmount, userCurrency)
+    })}`;
   } else if (percentage >= 80) {
-    return getMessage('budget_alert_warning', lang, {
-      percentage: percentage.toFixed(0),
-      category
-    });
+    // Warning: 80%+ used (20% or less remaining)
+    return `⚠️ *${category}*: ${progressBar} ${percentage.toFixed(0)}%\n${getMessage('budget_warning_remaining', lang, {
+      remaining: formatAmount(remaining, userCurrency)
+    })}`;
+  } else {
+    // Normal progress (only show if > 0%)
+    if (percentage > 0) {
+      return `📊 *${category}*: ${progressBar} ${percentage.toFixed(0)}%`;
+    }
+    return null;
   }
-
-  return null;
 }
 
 export default { definition, handler };
