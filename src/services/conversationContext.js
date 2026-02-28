@@ -2,7 +2,12 @@
  * Conversation Context Service
  * Manages the last 20 messages per user for context in AI conversations.
  * STRICT LIMIT: Always maintains exactly 20 messages max, older ones are dropped.
+ *
+ * Persistence: Messages are saved to Supabase and cached in memory.
+ * On server restart, context is restored from the database.
  */
+
+import { saveMessage, getRecentMessages, clearMessages as dbClearMessages } from '../database/conversationDB.js';
 
 const MAX_MESSAGES = 20;
 
@@ -13,6 +18,7 @@ const contexts = new Map();
 /**
  * Add a message to user's conversation context
  * Automatically trims to keep only last 20 messages
+ * Persists to database asynchronously
  * @param {string} phone - User's phone number
  * @param {string} role - 'user' or 'assistant'
  * @param {string} content - Message content
@@ -27,10 +33,12 @@ export function addMessage(phone, role, content) {
     contexts.set(phone, context);
   }
 
-  // Add new message
+  const trimmedContent = content.trim();
+
+  // Add new message to memory (synchronous)
   context.push({
     role,
-    content: content.trim(),
+    content: trimmedContent,
     timestamp: Date.now()
   });
 
@@ -41,10 +49,17 @@ export function addMessage(phone, role, content) {
   }
 
   console.log(`[context] Added ${role} message for ${phone}, total: ${context.length}/${MAX_MESSAGES}`);
+
+  // Persist to database (async, fire-and-forget)
+  // Errors are logged but don't interrupt the chat flow
+  saveMessage(phone, role, trimmedContent).catch(err => {
+    console.error(`[context] Failed to persist message for ${phone}:`, err);
+  });
 }
 
 /**
  * Get conversation context for a user
+ * If memory is empty, loads from database first
  * @param {string} phone - User's phone number
  * @returns {Array<{role: string, content: string}>} - Last 20 messages
  */
@@ -55,11 +70,36 @@ export function getContext(phone) {
 
 /**
  * Get context formatted for Claude API
+ * Loads from database if memory cache is empty
  * @param {string} phone - User's phone number
- * @returns {Array<{role: string, content: string}>} - Formatted for Claude
+ * @returns {Promise<Array<{role: string, content: string}>>} - Formatted for Claude
  */
-export function getContextForClaude(phone) {
-  const context = getContext(phone);
+export async function getContextForClaude(phone) {
+  // Check if we have context in memory
+  let context = contexts.get(phone);
+
+  // If memory is empty, try to load from database
+  if (!context || context.length === 0) {
+    try {
+      const dbMessages = await getRecentMessages(phone, MAX_MESSAGES);
+
+      if (dbMessages && dbMessages.length > 0) {
+        // Convert DB format to our format and cache
+        context = dbMessages.map(msg => ({
+          role: msg.role,
+          content: msg.content,
+          timestamp: new Date(msg.created_at).getTime()
+        }));
+        contexts.set(phone, context);
+        console.log(`[context] Loaded ${context.length} messages from DB for ${phone}`);
+      } else {
+        context = [];
+      }
+    } catch (err) {
+      console.error(`[context] Failed to load from DB for ${phone}:`, err);
+      context = [];
+    }
+  }
 
   // Claude expects alternating user/assistant messages
   // Filter and format appropriately
@@ -86,11 +126,17 @@ export function getContextAsString(phone) {
 
 /**
  * Clear conversation context for a user
+ * Clears both memory and database
  * @param {string} phone - User's phone number
  */
 export function clearContext(phone) {
   contexts.delete(phone);
-  console.log(`[context] Cleared context for ${phone}`);
+  console.log(`[context] Cleared memory context for ${phone}`);
+
+  // Also clear from database (async, fire-and-forget)
+  dbClearMessages(phone).catch(err => {
+    console.error(`[context] Failed to clear DB context for ${phone}:`, err);
+  });
 }
 
 /**

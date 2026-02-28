@@ -106,7 +106,7 @@ export class FinanceAgent {
     }
 
     // Get conversation history (max 20 messages)
-    const conversationHistory = getContextForClaude(this.userPhone);
+    const conversationHistory = await getContextForClaude(this.userPhone);
 
     // Generate setup URL for users without categories
     const setupUrl = generateSetupUrl(this.userPhone);
