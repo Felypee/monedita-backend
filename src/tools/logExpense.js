@@ -9,6 +9,7 @@ import { getMessage } from "../utils/languageUtils.js";
 import { generateSetupUrl } from "../services/statsTokenService.js";
 import { getUserCategories, getCategoryNames } from "../utils/categoryUtils.js";
 import { validateExpenses } from "../schemas/expenseSchema.js";
+import { setPendingBudgetPrompt } from "../services/budgetPromptService.js";
 
 export const definition = {
   name: "log_expense",
@@ -213,6 +214,14 @@ export async function handler(phone, params, lang, userCurrency) {
     response += `\n\n${setupReminder}`;
   }
 
+  // Check for categories without budgets (only if no budget alerts were shown)
+  if (budgetAlerts.length === 0) {
+    const budgetPrompt = await checkNoBudgetPrompt(phone, createdExpenses, userCurrency, lang);
+    if (budgetPrompt) {
+      response += `\n\n${budgetPrompt}`;
+    }
+  }
+
   return { success: true, message: response, sticker };
 }
 
@@ -246,6 +255,39 @@ async function getSetupReminder(phone, lang) {
     return messages[lang] || messages.en;
   } catch (error) {
     console.error('[logExpense] Error checking setup reminder:', error);
+    return null;
+  }
+}
+
+/**
+ * Check if any expense category has no budget and should prompt user
+ * Only prompts once per unique category, and respects silenced categories
+ */
+async function checkNoBudgetPrompt(phone, expenses, userCurrency, lang) {
+  try {
+    // Get unique categories from expenses
+    const categories = [...new Set(expenses.map(e => e.category))];
+
+    // Check each category
+    for (const category of categories) {
+      // Check if budget exists
+      const budget = await BudgetDB.getByCategory(phone, category);
+      if (budget) continue; // Has budget, skip
+
+      // Check if category is silenced
+      const isSilenced = await UserDB.isCategorySilenced(phone, category);
+      if (isSilenced) continue; // Silenced, skip
+
+      // No budget and not silenced - prompt user
+      // Store pending prompt state for follow-up handling
+      await setPendingBudgetPrompt(phone, category);
+
+      return getMessage('budget_prompt_no_budget', lang, { category });
+    }
+
+    return null;
+  } catch (error) {
+    console.error('[logExpense] Error checking budget prompt:', error);
     return null;
   }
 }

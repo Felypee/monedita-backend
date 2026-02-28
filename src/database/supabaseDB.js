@@ -204,6 +204,102 @@ export const UserDB = {
     if (error) throw error;
     return user;
   },
+
+  /**
+   * Get silenced budget categories for a user
+   * Returns array of { category, silenced_at } objects
+   */
+  async getSilencedBudgetCategories(phone) {
+    const { data, error } = await supabase
+      .from("users")
+      .select("silenced_budget_categories")
+      .eq("phone", phone)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return data?.silenced_budget_categories || [];
+  },
+
+  /**
+   * Silence budget prompt for a category (won't ask for 30 days)
+   */
+  async silenceBudgetCategory(phone, category) {
+    // Get current silenced categories
+    const current = await this.getSilencedBudgetCategories(phone);
+
+    // Remove old entry for this category if exists
+    const filtered = current.filter(s => s.category !== category.toLowerCase());
+
+    // Add new entry
+    filtered.push({
+      category: category.toLowerCase(),
+      silenced_at: new Date().toISOString()
+    });
+
+    const { data: user, error } = await supabase
+      .from("users")
+      .update({ silenced_budget_categories: filtered })
+      .eq("phone", phone)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return user;
+  },
+
+  /**
+   * Remove silence for a category (used when budget is created)
+   */
+  async unsilenceBudgetCategory(phone, category) {
+    const current = await this.getSilencedBudgetCategories(phone);
+    const filtered = current.filter(s => s.category !== category.toLowerCase());
+
+    const { data: user, error } = await supabase
+      .from("users")
+      .update({ silenced_budget_categories: filtered })
+      .eq("phone", phone)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return user;
+  },
+
+  /**
+   * Check if a category is currently silenced (within 30 days)
+   */
+  async isCategorySilenced(phone, category) {
+    const silenced = await this.getSilencedBudgetCategories(phone);
+    const entry = silenced.find(s => s.category === category.toLowerCase());
+
+    if (!entry) return false;
+
+    const daysSinceSilenced = (Date.now() - new Date(entry.silenced_at).getTime()) / (1000 * 60 * 60 * 24);
+    return daysSinceSilenced < 30;
+  },
+
+  /**
+   * Clean up old silenced entries (older than 30 days)
+   */
+  async cleanupSilencedCategories(phone) {
+    const current = await this.getSilencedBudgetCategories(phone);
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+
+    const filtered = current.filter(s => {
+      const silencedAt = new Date(s.silenced_at).getTime();
+      return silencedAt > thirtyDaysAgo;
+    });
+
+    // Only update if we removed something
+    if (filtered.length !== current.length) {
+      await supabase
+        .from("users")
+        .update({ silenced_budget_categories: filtered })
+        .eq("phone", phone);
+    }
+
+    return filtered;
+  },
 };
 
 /**

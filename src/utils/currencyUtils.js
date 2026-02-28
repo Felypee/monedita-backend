@@ -186,3 +186,81 @@ export function getCurrencyName(currencyCode) {
   const rules = CURRENCY_RULES[currencyCode];
   return rules ? rules.name : currencyCode;
 }
+
+/**
+ * Parse an amount from a text string
+ * Supports formats like: "200k", "200000", "200.000", "200,000", "200 mil"
+ * @param {string} text - The text to parse
+ * @returns {number|null} The parsed amount or null if not parseable
+ */
+export function parseAmount(text) {
+  if (!text) return null;
+
+  let cleaned = text.trim().toLowerCase();
+
+  // Remove currency symbols and common prefixes
+  cleaned = cleaned.replace(/^[$€£¥₹₩฿₱₫RM]+/i, '').trim();
+
+  // Handle "mil" suffix (Spanish/Portuguese for thousand)
+  if (cleaned.match(/\d+\s*mil$/i)) {
+    const num = parseFloat(cleaned.replace(/\s*mil$/i, '').replace(/[,.]/g, ''));
+    if (!isNaN(num)) return num * 1000;
+  }
+
+  // Handle "k" suffix (200k = 200,000)
+  if (cleaned.match(/\d+k$/i)) {
+    const num = parseFloat(cleaned.replace(/k$/i, ''));
+    if (!isNaN(num)) return num * 1000;
+  }
+
+  // Handle "m" or "millon/million" suffix
+  if (cleaned.match(/\d+\s*(m|millon|millón|million)$/i)) {
+    const num = parseFloat(cleaned.replace(/\s*(m|millon|millón|million)$/i, ''));
+    if (!isNaN(num)) return num * 1000000;
+  }
+
+  // Remove thousand separators (both . and ,)
+  // First, determine which is the decimal separator
+  // If pattern is like "200.000" or "200,000" (no decimal part), treat as thousands
+  // If pattern is like "200.50" or "200,50", treat as decimal
+  const dotCount = (cleaned.match(/\./g) || []).length;
+  const commaCount = (cleaned.match(/,/g) || []).length;
+
+  if (dotCount === 1 && commaCount === 0) {
+    // Could be decimal (200.50) or thousand (200.000)
+    const parts = cleaned.split('.');
+    if (parts[1] && parts[1].length === 3) {
+      // Likely thousand separator: 200.000 -> 200000
+      cleaned = cleaned.replace(/\./g, '');
+    }
+    // Otherwise leave as is (200.50 -> 200.50)
+  } else if (commaCount === 1 && dotCount === 0) {
+    // Could be decimal (200,50) or thousand (200,000)
+    const parts = cleaned.split(',');
+    if (parts[1] && parts[1].length === 3) {
+      // Likely thousand separator: 200,000 -> 200000
+      cleaned = cleaned.replace(/,/g, '');
+    } else {
+      // Likely decimal separator: 200,50 -> 200.50
+      cleaned = cleaned.replace(',', '.');
+    }
+  } else {
+    // Multiple separators: 1.000.000 or 1,000,000
+    // Remove all but keep structure
+    if (dotCount > commaCount) {
+      // Dots are thousand separators: 1.000.000 -> 1000000
+      cleaned = cleaned.replace(/\./g, '');
+      cleaned = cleaned.replace(',', '.'); // comma might be decimal
+    } else if (commaCount > dotCount) {
+      // Commas are thousand separators: 1,000,000 -> 1000000
+      cleaned = cleaned.replace(/,/g, '');
+      // dot stays as decimal
+    }
+  }
+
+  // Remove any remaining non-numeric characters except decimal point
+  cleaned = cleaned.replace(/[^\d.]/g, '');
+
+  const result = parseFloat(cleaned);
+  return isNaN(result) ? null : result;
+}

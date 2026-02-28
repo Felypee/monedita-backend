@@ -11,6 +11,9 @@ import {
   queueMessage,
   flushBatch,
 } from "../services/messageBatcher.js";
+import {
+  handleBudgetPromptResponse,
+} from "../services/budgetPromptService.js";
 import { UserDB, ExpenseDB, BudgetDB, UnprocessedDB } from "../database/index.js";
 import { FinanceAgent } from "../agents/financeAgent.js";
 import {
@@ -22,10 +25,6 @@ import {
   processExpenseImage,
   processExpenseAudio,
 } from "../utils/mediaProcessor.js";
-import {
-  hasPendingReminder,
-  clearPendingReminder,
-} from "../services/reminderService.js";
 import {
   getLanguageFromPhone,
   getMessage,
@@ -171,18 +170,9 @@ export async function handleIncomingMessage(message, phone) {
       const buttonTitle = message.interactive.button_reply.title;
       console.log(`📨 Button from ${phone}: ${buttonTitle} (${buttonId})`);
 
-      // Handle reminder button responses
-      if (buttonId === "reminder_yes") {
-        clearPendingReminder(phone);
-        response = getMessage('reminder_yes_response', lang);
-      } else if (buttonId === "reminder_no") {
-        clearPendingReminder(phone);
-        response = getMessage('reminder_no_response', lang);
-      } else {
-        // Other button responses - process via agent
-        const agent = new FinanceAgent(phone, user.currency, lang);
-        response = await agent.processMessage(buttonTitle);
-      }
+      // Process button responses via agent
+      const agent = new FinanceAgent(phone, user.currency, lang);
+      response = await agent.processMessage(buttonTitle);
 
     } else if (message.type === "image") {
       console.log(`📷 Image from ${phone}`);
@@ -348,6 +338,14 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
     const messageCount = batchedMessage.messageCount || 1;
 
     console.log(`📨 Processing batch for ${phone}: ${messageCount} messages -> "${messageText.substring(0, 50)}..."`);
+
+    // Check if user is responding to a budget prompt
+    const budgetPromptResult = await handleBudgetPromptResponse(phone, messageText, lang, user.currency);
+    if (budgetPromptResult.handled) {
+      if (clearIndicator) await clearIndicator();
+      await sendTextMessage(phone, budgetPromptResult.response);
+      return;
+    }
 
     // Check if user is confirming/canceling a pending Excel import
     const importConfirmResult = await checkPendingImportConfirmation(phone, messageText, lang, user.currency);

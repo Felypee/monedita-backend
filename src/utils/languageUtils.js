@@ -81,6 +81,9 @@ Try it now! Tell me about a recent expense.`,
     budget_remaining: "Remaining:",
     budget_alert_exceeded: "⚠️ *Budget Alert!* You've exceeded your {category} budget ({spent}/{budget})",
     budget_alert_warning: "⚠️ You've used {percentage}% of your {category} budget",
+    budget_prompt_no_budget: "💡 No budget set for {category}. How much do you want to allocate monthly?\n(Reply with an amount or 'no' to skip)",
+    budget_prompt_silenced: "Ok, I won't ask about {category} for 1 month",
+    budget_prompt_created: "✅ {amount}/month budget set for {category}",
 
     // Summary
     summary_title: "📊 *{month} Summary*",
@@ -234,6 +237,9 @@ Pregunta: "¿Cuál es mi mayor gasto?"
     budget_remaining: "Restante:",
     budget_alert_exceeded: "⚠️ *¡Alerta de Presupuesto!* Has excedido tu presupuesto de {category} ({spent}/{budget})",
     budget_alert_warning: "⚠️ Has usado el {percentage}% de tu presupuesto de {category}",
+    budget_prompt_no_budget: "💡 No tienes presupuesto para {category}. ¿Cuánto quieres asignar mensualmente?\n(Responde con un monto o 'no' para omitir)",
+    budget_prompt_silenced: "Ok, no te preguntaré por {category} durante 1 mes",
+    budget_prompt_created: "✅ Presupuesto de {amount}/mes establecido para {category}",
 
     // Summary
     summary_title: "📊 *Resumen de {month}*",
@@ -387,6 +393,9 @@ Experimente agora! Me conte sobre uma despesa recente.`,
     budget_remaining: "Restante:",
     budget_alert_exceeded: "⚠️ *Alerta de Orçamento!* Você excedeu seu orçamento de {category} ({spent}/{budget})",
     budget_alert_warning: "⚠️ Você usou {percentage}% do seu orçamento de {category}",
+    budget_prompt_no_budget: "💡 Você não tem orçamento para {category}. Quanto deseja alocar mensalmente?\n(Responda com um valor ou 'não' para pular)",
+    budget_prompt_silenced: "Ok, não vou perguntar sobre {category} por 1 mês",
+    budget_prompt_created: "✅ Orçamento de {amount}/mês definido para {category}",
 
     // Summary
     summary_title: "📊 *Resumo de {month}*",

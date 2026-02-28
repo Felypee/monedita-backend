@@ -117,6 +117,87 @@ export const UserDB = {
       users.set(phone, user);
     }
     return user;
+  },
+
+  /**
+   * Get silenced budget categories for a user
+   * Returns array of { category, silenced_at } objects
+   */
+  getSilencedBudgetCategories(phone) {
+    const user = users.get(phone);
+    return user?.silenced_budget_categories || [];
+  },
+
+  /**
+   * Silence budget prompt for a category (won't ask for 30 days)
+   */
+  silenceBudgetCategory(phone, category) {
+    const user = users.get(phone);
+    if (!user) return null;
+
+    if (!user.silenced_budget_categories) {
+      user.silenced_budget_categories = [];
+    }
+
+    // Remove old entry for this category if exists
+    user.silenced_budget_categories = user.silenced_budget_categories.filter(
+      s => s.category !== category.toLowerCase()
+    );
+
+    // Add new entry
+    user.silenced_budget_categories.push({
+      category: category.toLowerCase(),
+      silenced_at: new Date().toISOString()
+    });
+
+    users.set(phone, user);
+    return user;
+  },
+
+  /**
+   * Remove silence for a category (used when budget is created)
+   */
+  unsilenceBudgetCategory(phone, category) {
+    const user = users.get(phone);
+    if (!user || !user.silenced_budget_categories) return user;
+
+    user.silenced_budget_categories = user.silenced_budget_categories.filter(
+      s => s.category !== category.toLowerCase()
+    );
+
+    users.set(phone, user);
+    return user;
+  },
+
+  /**
+   * Check if a category is currently silenced (within 30 days)
+   */
+  isCategorySilenced(phone, category) {
+    const silenced = this.getSilencedBudgetCategories(phone);
+    const entry = silenced.find(s => s.category === category.toLowerCase());
+
+    if (!entry) return false;
+
+    const daysSinceSilenced = (Date.now() - new Date(entry.silenced_at).getTime()) / (1000 * 60 * 60 * 24);
+    return daysSinceSilenced < 30;
+  },
+
+  /**
+   * Clean up old silenced entries (older than 30 days)
+   */
+  cleanupSilencedCategories(phone) {
+    const user = users.get(phone);
+    if (!user || !user.silenced_budget_categories) return [];
+
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+
+    user.silenced_budget_categories = user.silenced_budget_categories.filter(s => {
+      const silencedAt = new Date(s.silenced_at).getTime();
+      return silencedAt > thirtyDaysAgo;
+    });
+
+    users.set(phone, user);
+    return user.silenced_budget_categories;
   }
 };
 

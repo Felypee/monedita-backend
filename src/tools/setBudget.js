@@ -3,9 +3,10 @@
  * Creates or updates a budget for a category
  */
 
-import { BudgetDB } from "../database/index.js";
+import { BudgetDB, UserDB } from "../database/index.js";
 import { formatAmount } from "../utils/currencyUtils.js";
 import { getMessage } from "../utils/languageUtils.js";
+import { clearPendingBudgetPrompt } from "../services/budgetPromptService.js";
 // Note: Budgets are unlimited for all plans in the new moneditas system
 
 export const definition = {
@@ -54,6 +55,10 @@ export async function handler(phone, params, lang, userCurrency) {
       amount,
       period: "monthly"
     });
+
+    // Clear any pending budget prompt and unsilence this category
+    clearPendingBudgetPrompt(phone);
+    await UserDB.unsilenceBudgetCategory(phone, category.toLowerCase());
 
     return {
       success: true,
