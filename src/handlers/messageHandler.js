@@ -30,7 +30,7 @@ import {
   getLanguageFromPhone,
   getMessage,
 } from "../utils/languageUtils.js";
-import { getUserCategories } from "../utils/categoryUtils.js";
+import { getUserCategories, getDefaultCategories } from "../utils/categoryUtils.js";
 import {
   checkMoneditas,
   consumeMoneditas,
@@ -89,6 +89,14 @@ export async function handleIncomingMessage(message, phone) {
     }
 
     const lang = user.language || 'en';
+
+    // Assign default categories if user doesn't have any
+    const existingCategories = await UserDB.getCategories(phone);
+    if (!existingCategories || existingCategories.length === 0) {
+      const defaultCategories = getDefaultCategories(lang);
+      await UserDB.setCategories(phone, defaultCategories);
+      console.log(`[messageHandler] Assigned ${defaultCategories.length} default categories for ${phone} (${lang})`);
+    }
 
     // For new users, send vCard first, then welcome message
     if (isNewUser) {
