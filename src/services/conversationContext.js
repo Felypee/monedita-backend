@@ -8,6 +8,7 @@
  */
 
 import { saveMessage, getRecentMessages, clearMessages as dbClearMessages } from '../database/conversationDB.js';
+import { startTimer } from '../utils/performanceTimer.js';
 
 const MAX_MESSAGES = 20;
 
@@ -81,7 +82,9 @@ export async function getContextForClaude(phone) {
   // If memory is empty, try to load from database
   if (!context || context.length === 0) {
     try {
+      const timer = startTimer('context_db_load', phone);
       const dbMessages = await getRecentMessages(phone, MAX_MESSAGES);
+      timer.end();
 
       if (dbMessages && dbMessages.length > 0) {
         // Convert DB format to our format and cache

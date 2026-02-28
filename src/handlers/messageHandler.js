@@ -43,6 +43,7 @@ import {
 } from "../services/costTracker.js";
 import { sendContextSticker, STICKER_CONTEXTS } from "../services/stickerService.js";
 import { sendWelcomeAudio } from "../services/welcomeAudioService.js";
+import { createTimeline, startTimer } from "../utils/performanceTimer.js";
 
 // In-memory backup for test commands (phone -> categories)
 const testCategoryBackups = new Map();
@@ -339,6 +340,9 @@ async function checkPendingImportConfirmation(phone, messageText, lang, userCurr
  * @param {string} lang - Language code
  */
 async function processBatchedMessage(phone, batchedMessage, user, lang) {
+  const timeline = createTimeline(phone);
+  timeline.mark('batch_start');
+
   const clearIndicator = batchedMessage.clearIndicator;
   try {
     const messageText = batchedMessage.text.body;
@@ -348,9 +352,12 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
     // Check if user is responding to a budget prompt
     const budgetPromptResult = await handleBudgetPromptResponse(phone, messageText, lang, user.currency);
+    timeline.mark('budget_prompt_checked');
     if (budgetPromptResult.handled) {
       if (clearIndicator) await clearIndicator();
       await sendTextMessage(phone, budgetPromptResult.response);
+      timeline.mark('response_sent');
+      timeline.summary();
       return;
     }
 
@@ -359,6 +366,8 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
     if (importConfirmResult) {
       if (clearIndicator) await clearIndicator();
       await sendTextMessage(phone, importConfirmResult);
+      timeline.mark('response_sent');
+      timeline.summary();
       return;
     }
 
@@ -391,18 +400,22 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
     // Check moneditas before processing (use max estimate for pre-check)
     const moneditasCheck = await checkMoneditas(phone, MAX_ESTIMATES.TEXT_MESSAGE);
+    timeline.mark('moneditas_checked');
     if (!moneditasCheck.allowed) {
       const status = await getMoneditasStatus(phone);
       const exhaustedMsg = getMoneditasExhaustedMessage(lang, moneditasCheck);
       const upgradeMsg = getUpgradeMessage(status.plan.id, lang);
       if (clearIndicator) await clearIndicator();
       await sendTextMessage(phone, `${exhaustedMsg}\n\n${upgradeMsg}`);
+      timeline.mark('response_sent');
+      timeline.summary();
       return;
     }
 
     // Use the AI agent to process the combined message
     const agent = new FinanceAgent(phone, user.currency, lang);
     const response = await agent.processMessage(messageText);
+    timeline.mark('agent_processed');
 
     // Calculate REAL cost based on actual token usage
     const tokenUsage = agent.getLastTokenUsage();
@@ -419,15 +432,20 @@ async function processBatchedMessage(phone, batchedMessage, user, lang) {
 
     // Clear the processing indicator (was set when first message arrived)
     if (clearIndicator) await clearIndicator();
+    timeline.mark('indicator_cleared');
 
     if (response) {
       await sendTextMessage(phone, response);
+      timeline.mark('response_sent');
     }
+    timeline.summary();
   } catch (error) {
     console.error("Error processing batched message:", error);
     // Clear indicator on error too
     if (clearIndicator) await clearIndicator();
     await sendTextMessage(phone, getMessage('error_generic', lang));
+    timeline.mark('error');
+    timeline.summary();
   }
 }
 

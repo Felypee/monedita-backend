@@ -6,6 +6,7 @@
  */
 
 import axios from "axios";
+import { startTimer } from "../utils/performanceTimer.js";
 
 // API configurations
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
@@ -32,6 +33,7 @@ function isRecoverableError(error) {
  * Call Claude API
  */
 async function callClaude(systemPrompt, messages, tools) {
+  const timer = startTimer('claude_api');
   const response = await axios.post(
     CLAUDE_API_URL,
     {
@@ -50,6 +52,7 @@ async function callClaude(systemPrompt, messages, tools) {
       timeout: 30000,
     }
   );
+  timer.end();
 
   return {
     provider: 'claude',
@@ -77,6 +80,8 @@ async function callGemini(systemPrompt, messages, tools) {
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY not configured');
   }
+
+  const timer = startTimer('gemini_api');
 
   // Convert messages to Gemini format
   const geminiMessages = messages.map(m => ({
@@ -117,6 +122,7 @@ async function callGemini(systemPrompt, messages, tools) {
       timeout: 30000,
     }
   );
+  timer.end();
 
   const candidate = response.data.candidates?.[0];
   if (!candidate) {
@@ -170,6 +176,8 @@ async function callOpenAI(systemPrompt, messages, tools) {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
+  const timer = startTimer('openai_api');
+
   // Convert messages to OpenAI format
   const openaiMessages = [
     { role: 'system', content: systemPrompt },
@@ -198,6 +206,7 @@ async function callOpenAI(systemPrompt, messages, tools) {
       timeout: 30000,
     }
   );
+  timer.end();
 
   const choice = response.data.choices?.[0];
   if (!choice) {

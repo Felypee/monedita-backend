@@ -10,6 +10,7 @@ import { sendContextStickerWithLimit } from "../services/stickerService.js";
 import { getUserCategories, getCategoryNames, getCategoryIds } from "../utils/categoryUtils.js";
 import { generateSetupUrl } from "../services/statsTokenService.js";
 import { callWithFallback } from "../services/llmFallbackService.js";
+import { createTimeline } from "../utils/performanceTimer.js";
 
 dotenv.config();
 
@@ -82,7 +83,12 @@ export class FinanceAgent {
    * Uses conversation context (last 20 messages) for better understanding
    */
   async processMessage(userMessage) {
+    const timeline = createTimeline(this.userPhone);
+    timeline.mark('start');
+
     const financialContext = await this.getFinancialContext();
+    timeline.mark('financial_context_loaded');
+
     const tools = getToolDefinitions();
 
     // Filter out "otros/other/outro" from available categories
@@ -107,6 +113,7 @@ export class FinanceAgent {
 
     // Get conversation history (max 20 messages)
     const conversationHistory = await getContextForClaude(this.userPhone);
+    timeline.mark('conversation_context_loaded');
 
     // Generate setup URL for users without categories
     const setupUrl = generateSetupUrl(this.userPhone);
@@ -192,6 +199,7 @@ For shared/split expenses:
 
       // Call LLM with automatic fallback (Claude → Gemini → OpenAI)
       const response = await callWithFallback(systemPrompt, messages, tools);
+      timeline.mark('llm_response_received');
 
       // Capture token usage for dynamic cost calculation
       this.lastTokenUsage = {
@@ -224,6 +232,7 @@ For shared/split expenses:
           textResponse = block.text;
         }
       }
+      timeline.mark('tools_executed');
 
       // Save user message to context
       addMessage(this.userPhone, 'user', userMessage);
@@ -246,9 +255,13 @@ For shared/split expenses:
           const finalResponse = responseMessages.join("\n\n");
           // Save assistant response to context
           addMessage(this.userPhone, 'assistant', finalResponse);
+          timeline.mark('response_ready');
+          timeline.summary();
           return finalResponse;
         }
         // If all messages are null (e.g., only documents sent), return nothing
+        timeline.mark('response_ready');
+        timeline.summary();
         return null;
       }
 
@@ -269,15 +282,21 @@ For shared/split expenses:
         // Save assistant response to context
         addMessage(this.userPhone, 'assistant', textResponse);
 
+        timeline.mark('response_ready');
+        timeline.summary();
         return textResponse;
       }
 
+      timeline.mark('response_ready');
+      timeline.summary();
       return getMessage('error_generic', this.userLanguage);
     } catch (error) {
       console.error(
         "[financeAgent] All LLM providers failed:",
         error.response?.data || error.message,
       );
+      timeline.mark('error');
+      timeline.summary();
       return getMessage('error_generic', this.userLanguage);
     }
   }
