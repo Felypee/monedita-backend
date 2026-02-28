@@ -56,8 +56,15 @@ export async function handleIncomingMessage(message, phone) {
   let clearIndicator = null;
 
   try {
+    // Detect language from phone number for processing message
+    const detectedLang = getLanguageFromPhone(phone);
+    // Determine context based on message type
+    const context = message.type === 'image' ? 'image'
+      : message.type === 'audio' ? 'audio'
+      : 'general';
+
     // Show processing indicator IMMEDIATELY (before any DB calls)
-    clearIndicator = await showProcessingIndicator(phone, message.id);
+    clearIndicator = await showProcessingIndicator(phone, message.id, detectedLang, context);
 
     // Mark message as read
     await markAsRead(message.id);

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
+import { getRandomProcessingMessage } from './processingMessages.js';
 
 dotenv.config();
 
@@ -190,38 +191,28 @@ export async function sendReaction(to, messageId, emoji) {
 }
 
 /**
- * Processing indicator - only 2 emojis to avoid notification spam (Issue #13)
- * Flow: ⏳ (start) → 💭 (after 3s) → ✅ (done)
- */
-const PROCESSING_EMOJIS = ['⏳', '💭'];
-const ROTATION_INTERVAL_MS = 3000; // Change every 3 seconds
-const MAX_ROTATIONS = 1; // Only rotate once (2 emojis total)
-
-/**
- * Show "processing" indicator using 💭 reaction
+ * Show "processing" indicator by sending a motivational text message
  * @param {string} to - Recipient phone number
- * @param {string} messageId - Message ID to react to
- * @returns {Function} - Call this to remove the reaction
+ * @param {string} messageId - Message ID (not used, kept for backwards compatibility)
+ * @param {string} lang - Language code (es, en, pt)
+ * @param {string} context - Context type (expense, image, audio, general)
+ * @returns {Function} - Call this when processing is complete (no-op for text messages)
  */
-export async function showProcessingIndicator(to, messageId) {
-  if (!messageId) {
-    console.log('[whatsapp] No messageId for processing indicator');
-    return () => {};
+export async function showProcessingIndicator(to, messageId, lang = 'es', context = 'general') {
+  // Get a random motivational message based on language and context
+  const message = getRandomProcessingMessage(lang, context);
+
+  // Send the processing message as text
+  try {
+    await sendTextMessage(to, message);
+    console.log(`[whatsapp] Processing message sent to ${to}: "${message}"`);
+  } catch (err) {
+    console.error(`[whatsapp] Failed to send processing message to ${to}:`, err);
   }
 
-  // Show 💭 while processing
-  await sendReaction(to, messageId, '💭');
-  console.log(`[whatsapp] Processing indicator started for ${to}`);
-
-  // Return function to remove the reaction
+  // Return empty function (text messages can't be removed)
   return async () => {
-    try {
-      // Empty string removes the reaction
-      await sendReaction(to, messageId, '');
-    } catch (err) {
-      // Ignore cleanup errors
-    }
-    console.log(`[whatsapp] Processing indicator cleared for ${to}`);
+    console.log(`[whatsapp] Processing completed for ${to}`);
   };
 }
 
