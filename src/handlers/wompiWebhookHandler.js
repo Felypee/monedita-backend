@@ -335,21 +335,42 @@ async function handleRecurringPaymentWebhook(transaction) {
     (r) => r.wompiTransactionId === transactionId || r.status === "pending"
   );
 
+  // IDEMPOTENCY CHECK: Skip if this transaction was already processed
+  const alreadyProcessed = billingRecords.find(
+    (r) => r.wompiTransactionId === transactionId && r.status === "approved"
+  );
+  if (alreadyProcessed) {
+    console.log(`[wompi webhook] ⏭️ Transaction ${transactionId} already processed, skipping`);
+    return;
+  }
+
   if (status === "APPROVED") {
     console.log(`[wompi webhook] ✅ Recurring payment approved for ${phone}`);
 
     // Update billing record if found
     if (billingRecord) {
+      // Check if notification was already sent (by chargeRecurringPayment)
+      const wasAlreadyApproved = billingRecord.status === "approved";
+
       await BillingHistoryDB.update(billingRecord.id, {
         status: "approved",
         wompiTransactionId: transactionId,
       });
-    }
 
-    // Notify user
-    const user = await UserDB.get(phone);
-    const lang = user?.language || "es";
-    await notifyPaymentSuccess(phone, plan, lang, transactionId);
+      // Only notify if the status changed (wasn't already approved)
+      if (!wasAlreadyApproved) {
+        const user = await UserDB.get(phone);
+        const lang = user?.language || "es";
+        await notifyPaymentSuccess(phone, plan, lang, transactionId);
+      } else {
+        console.log(`[wompi webhook] ⏭️ Billing record already approved, skipping notification`);
+      }
+    } else {
+      // No billing record found - this is unusual but notify anyway
+      const user = await UserDB.get(phone);
+      const lang = user?.language || "es";
+      await notifyPaymentSuccess(phone, plan, lang, transactionId);
+    }
 
   } else if (status === "DECLINED" || status === "ERROR") {
     console.log(`[wompi webhook] ❌ Recurring payment failed for ${phone}: ${status}`);
